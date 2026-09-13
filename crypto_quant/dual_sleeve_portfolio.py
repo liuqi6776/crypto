@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Dual-Sleeve Portfolio Engine for Spatio-Temporal Transformer Quantitative System
-Combines:
-- Sleeve 1 (70%): Adaptive Momentum with Intra-Trade Hard Stop-Loss & Cooldown
+Dual-Sleeve Portfolio Engine for Spatio-Temporal Transformer Quantitative System (Phase 12)
+Features:
+- Multi-Factor Top-Exhaustion Radar (Price Extension, Perpetual Funding Crowding, FNG Euphoria)
+- Dynamic Continuous Position Sizing w_t in [0.35, 1.0] (Automatic High-Point Downsizing)
+- State-Driven Re-entry: Zero Clock Freezes! Re-entry unlocked on stabilization candle.
+- Sleeve 1 (70%): Adaptive Momentum with Dynamic High-Point Sizing & Hard Stop-Loss
 - Sleeve 2 (30%): 8h Micro-Momentum Basis Arbitrage (3x / Day)
 """
 
@@ -12,51 +15,83 @@ import numpy as np
 import pandas as pd
 
 
+def compute_top_exhaustion_risk(closes, funding_rate, fng_score):
+    """
+    Computes a composite Top-Exhaustion Risk Index in [0.0, 1.0] based on:
+    1. 72-bar (12-day) EMA Price Extension / Stretch
+    2. Binance 8h perpetual funding rate
+    3. Alternative.me Fear & Greed Index
+    """
+    ema72 = closes.shift(1).ewm(span=72).mean()
+    stretch72 = ((closes.shift(1) - ema72) / (ema72 + 1e-8)).fillna(0.0).values
+
+    stretch_risk = np.clip(stretch72 / 0.05, 0.0, 1.0) # 0 to 1 as stretch goes 0% -> +5%
+    funding_risk = np.clip((funding_rate * 100.0) / 0.02, 0.0, 1.0) # 0 to 1 as funding goes 0 -> 0.02%
+    fng_risk = np.clip((fng_score - 60.0) / 25.0, 0.0, 1.0) # 0 to 1 as FNG goes 60 -> 85
+
+    composite_risk = 0.45 * stretch_risk + 0.35 * funding_risk + 0.20 * fng_risk
+    # Continuous Position Sizing: 1.0 at low risk, scales down to 0.35 at peak overheat
+    pos_size = np.clip(1.0 - 0.65 * np.maximum(0.0, composite_risk - 0.25) / 0.75, 0.35, 1.0)
+    return composite_risk, pos_size
+
+
 def compute_sleeve_adaptive(preds, opens, closes, lows, fng, stb,
                             funding=None, basis=None,
-                            stop_loss=0.035, cd_bars=4, use_dyn=True):
+                            stop_loss=0.035, use_dyn=True, use_top_derisking=True):
     """
-    Sleeve 1: Adaptive Momentum Exit with Dynamic Entry Threshold & Hard Stop-Loss
+    Sleeve 1: Adaptive Momentum Exit with Dynamic Entry Threshold, High-Point Sizing & Stop-Loss
+    Zero Clock Cooldown: Re-entry unlocked immediately on green candle (Close >= Open).
     """
     p_series = pd.Series(preds.values, index=preds.index)
     prior_mean = p_series.shift(1).rolling(72).mean()
     prior_std = p_series.shift(1).rolling(72).std() + 1e-8
     z_vals = ((p_series - prior_mean) / prior_std).values
 
+    funding_vals = funding.values if funding is not None else np.zeros(len(preds))
+
     if use_dyn and (funding is not None) and (basis is not None):
         basis_mean = basis.shift(1).rolling(72).mean()
         basis_std = basis.shift(1).rolling(72).std() + 1e-8
         basis_z = np.clip(((basis - basis_mean) / basis_std).fillna(0.0).values, -2.0, 2.0)
-        z_threshold = 1.0 - 0.25 * np.tanh(50.0 * funding.values) - 0.15 * basis_z
+        z_threshold = 1.0 - 0.20 * np.tanh(50.0 * funding_vals) - 0.10 * basis_z
     else:
         z_threshold = np.ones(len(preds)) * 1.0
 
     raw_sig = (z_vals > z_threshold) & (stb > 0.0) & (fng < 85)
 
+    if use_top_derisking:
+        _, target_size = compute_top_exhaustion_risk(closes, funding_vals, fng)
+    else:
+        target_size = np.ones(len(preds))
+
     n = len(preds)
     pos = np.zeros(n)
     in_pos = False
     entry_bar = 0
-    cooldown = 0
+    in_waterfall = False
     trades = []
 
+    # ZERO 16-HOUR CLOCK FREEZE!
     for i in range(n - 2):
-        if cooldown > 0:
-            cooldown -= 1
-            pos[i] = 0.0
-            continue
+        if in_waterfall:
+            if closes.iloc[i] >= opens.iloc[i]: # stabilization confirmation
+                in_waterfall = False
+            else:
+                pos[i] = 0.0
+                continue
 
         if not in_pos:
             if raw_sig[i]:
                 in_pos = True
                 entry_bar = i
-                pos[i] = 1.0
+                pos[i] = target_size[i]
             else:
                 pos[i] = 0.0
         else:
             entry_p = opens.iloc[entry_bar + 1]
             curr_c = closes.iloc[i]
             is_stop = False
+
             if stop_loss is not None and (curr_c / entry_p - 1.0 <= -stop_loss):
                 is_stop = True
 
@@ -80,16 +115,18 @@ def compute_sleeve_adaptive(preds, opens, closes, lows, fng, stb,
                     'exit_time': opens.index[exit_idx],
                     'entry_price': entry_p,
                     'exit_price': exit_p,
+                    'size': target_size[entry_bar],
                     'duration_hours': duration_hours,
                     'gross_ret': gross_ret,
                     'net_ret': net_ret,
+                    'weighted_pnl': net_ret * target_size[entry_bar],
                     'is_stop_loss': is_stop
                 })
 
                 if is_stop:
-                    cooldown = cd_bars
+                    in_waterfall = True # Cleared as soon as market stabilizes
             else:
-                pos[i] = 1.0
+                pos[i] = target_size[entry_bar]
 
     o_series = pd.Series(opens.values, index=opens.index)
     rets_oto = (o_series.shift(-2) / o_series.shift(-1) - 1).values

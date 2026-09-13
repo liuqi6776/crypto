@@ -192,6 +192,26 @@ class TestCryptoQuantOffline(unittest.TestCase):
         self.assertTrue(np.isfinite(res['total_return']))
         self.assertTrue(np.isfinite(res['daily_sharpe']))
 
+    def test_top_exhaustion_risk_and_continuous_sizing(self):
+        """测试顶部衰竭风险雷达与连续仓位缩减机制 (Phase 12)"""
+        from crypto_quant.dual_sleeve_portfolio import compute_top_exhaustion_risk
+        # 1. 正常平稳横盘行情下的仓位与风险
+        closes_flat = pd.Series([100.0 for _ in range(100)])
+        risk_calm, size_calm = compute_top_exhaustion_risk(closes_flat, funding_rate=np.zeros(100), fng_score=np.ones(100) * 50)
+        self.assertAlmostEqual(size_calm[-1], 1.0, places=2)
+        self.assertLess(risk_calm[-1], 0.25)
+
+        # 2. 极端顶部狂热 (价格乖离+高资金费率+FNG贪婪)
+        closes_euphoria = closes_flat.copy()
+        closes_euphoria.iloc[-5:] = closes_flat.iloc[-5:] * 1.15 # 过去多根持续+15% 快速暴拉 (让shift(1)无未来函数观测到)
+        risk_peak, size_peak = compute_top_exhaustion_risk(
+            closes_euphoria,
+            funding_rate=np.ones(100) * 0.0003, # 0.03% 资金费率拥挤
+            fng_score=np.ones(100) * 88.0 # FNG 88 极度贪婪
+        )
+        self.assertGreater(risk_peak[-1], 0.70)
+        self.assertAlmostEqual(size_peak[-1], 0.35, places=2)
+
 
 if __name__ == '__main__':
     unittest.main()
