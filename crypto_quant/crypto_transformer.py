@@ -210,7 +210,7 @@ class CryptoCombinedLoss(nn.Module):
     2. 批次标准差归一化 Huber 收益拟合损失 (~O(1))
     3. 方向二分类损失 (~O(1))
     """
-    def __init__(self, alpha_pearson=1.0, beta_huber=1.0, gamma_cls=0.5, delta=1.0):
+    def __init__(self, alpha_pearson=1.0, beta_huber=0.05, gamma_cls=0.1, delta=1.0):
         super().__init__()
         self.alpha = alpha_pearson
         self.beta = beta_huber

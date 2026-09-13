@@ -78,12 +78,17 @@ def evaluate_model(model, dataloader, device):
     return metrics, preds, targets, probs
 
 
-def train_3way_pipeline(epochs=35, batch_size=128, lr=1e-3, patience=10, seed=42, temporal_mode='conv'):
+def train_3way_pipeline(epochs=20, batch_size=128, lr=1.5e-4, patience=10, seed=42, temporal_mode='conv', warm_start=True):
     seed_everything(seed)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"=== Starting 3-Way CryptoSTTransformer Training on {device} (seed={seed}, temporal_mode={temporal_mode}) ===")
+    print(f"=== Starting 3-Way CryptoSTTransformer Training on {device} (seed={seed}, temporal_mode={temporal_mode}, warm_start={warm_start}) ===")
 
     root_dir = find_project_root()
+    ckpt_dir = os.path.join(root_dir, 'checkpoints')
+    pred_dir = os.path.join(root_dir, 'predictions')
+    os.makedirs(ckpt_dir, exist_ok=True)
+    os.makedirs(pred_dir, exist_ok=True)
+    best_ckpt_path = os.path.join(ckpt_dir, 'best_transformer_2020_2023.pt')
 
     # 1. 加载严格三段式切分数据集
     train_ds, val_ds, blind_test_ds, meta = prepare_crypto_datasets(lookback_len=12)
@@ -103,24 +108,33 @@ def train_3way_pipeline(epochs=35, batch_size=128, lr=1e-3, patience=10, seed=42
         temporal_mode=temporal_mode
     ).to(device)
 
-    # 3. 平衡多任务损失函数 (解决审查问题 5: Huber 量纲标准化)
-    criterion = CryptoCombinedLoss(alpha_pearson=1.0, beta_huber=1.0, gamma_cls=0.5)
+    # 预训练权重热启动迁移 (Warm-Start Transfer Learning)
+    aug_ckpt_path = os.path.join(ckpt_dir, 'best_crypto_transformer_augmented.pt')
+    if warm_start and temporal_mode == 'conv' and os.path.exists(aug_ckpt_path):
+        print(f"Initializing 33-feature model with transferred weights from {aug_ckpt_path}...")
+        aug_ckpt = torch.load(aug_ckpt_path, map_location='cpu', weights_only=False)
+        pretrained_dict = aug_ckpt['model_state_dict']
+        model_dict = model.state_dict()
+        for k, v in pretrained_dict.items():
+            if k == 'temporal_encoder.net.0.weight' and v.shape[1] == 29 and meta['num_features'] == 33:
+                model_dict[k][:, :29, :] = v
+                model_dict[k][:, 29:, :] = torch.randn(64, 4, 3) * 0.01
+            elif k in model_dict and model_dict[k].shape == v.shape:
+                model_dict[k] = v
+        model.load_state_dict(model_dict)
+        print("Warm-start transfer complete! 29 features transferred, 4 new derivatives features initialized.")
+
+    # 3. 平衡多任务损失函数 (优先 Rank IC，辅助标准差归一化 Huber 收益拟合)
+    criterion = CryptoCombinedLoss(alpha_pearson=1.0, beta_huber=0.05, gamma_cls=0.1)
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs, eta_min=1e-5)
-
-    ckpt_dir = os.path.join(root_dir, 'checkpoints')
-    pred_dir = os.path.join(root_dir, 'predictions')
-    os.makedirs(ckpt_dir, exist_ok=True)
-    os.makedirs(pred_dir, exist_ok=True)
-    best_ckpt_path = os.path.join(ckpt_dir, 'best_transformer_2020_2023.pt')
 
     best_val_score = -999.0
     best_epoch = 0
     patience_counter = 0
 
     # 解决审查问题 12: 动态打印准确的样本序列数与原始 K 线数对齐说明
-    print(f"
---- Training Loop on 2020-2023 In-Sample ({len(train_ds):,} aligned sequences from 7,422 raw 4h bars) ---")
+    print(f"\n--- Training Loop on 2020-2023 In-Sample ({len(train_ds):,} aligned sequences from 7,422 raw 4h bars) ---")
     for epoch in range(1, epochs + 1):
         model.train()
         train_losses = []
@@ -174,8 +188,7 @@ def train_3way_pipeline(epochs=35, batch_size=128, lr=1e-3, patience=10, seed=42
                 break
 
     # 4. 加载最佳权重导出预测
-    print(f"
-Reloading best checkpoint from Epoch {best_epoch} for dataset inference...")
+    print(f"\nReloading best checkpoint from Epoch {best_epoch} for dataset inference...")
     checkpoint = torch.load(best_ckpt_path, map_location=device, weights_only=False)
     model.load_state_dict(checkpoint['model_state_dict'])
 
@@ -207,8 +220,23 @@ Reloading best checkpoint from Epoch {best_epoch} for dataset inference...")
     blind_df.to_parquet(blind_out_path)
     print(f"Saved 2026 Blind Test predictions ({len(blind_df)} bars) to {blind_out_path}")
 
+    # 导出包含 2024-2026 全样本外的完整预测表
+    comb_df = pd.concat([val_df, blind_df])
+    comb_path = os.path.join(pred_dir, 'test_predictions.parquet')
+    comb_df.to_parquet(comb_path)
+    print(f"Saved Combined Out-of-Sample predictions ({len(comb_df)} bars, 2024-2026) to {comb_path}")
+
     return model, val_metrics, blind_metrics
 
 
 if __name__ == '__main__':
-    train_3way_pipeline(epochs=2)
+    import argparse
+    parser = argparse.ArgumentParser(description="Train 3-Way CryptoSTTransformer on GPU")
+    parser.add_argument('--epochs', type=int, default=35, help='Number of epochs to train')
+    parser.add_argument('--batch_size', type=int, default=128, help='Batch size')
+    parser.add_argument('--temporal_mode', type=str, default='conv', choices=['conv', 'attention'], help='Temporal encoder mode')
+    parser.add_argument('--patience', type=int, default=10, help='Early stopping patience')
+    args = parser.parse_args()
+
+    train_3way_pipeline(epochs=args.epochs, batch_size=args.batch_size, temporal_mode=args.temporal_mode, patience=args.patience)
+

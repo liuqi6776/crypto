@@ -121,7 +121,7 @@ def run_transformer_backtest():
     # -------------------------------------------------------------
     # 策略 1: ETH 双层分级强化系统 (Transformer + 链上资金流 + 情绪风控)
     # -------------------------------------------------------------
-    eth_pred = df_pred['eth_pred_4h']
+    eth_pred = df_pred['ETHUSDT_pred_4h'] if 'ETHUSDT_pred_4h' in df_pred.columns else df_pred['eth_pred_4h']
     # 严格先 shift(1) 再 rolling，消除自我参照偏差 (解决审查问题 4)
     prior_mean = eth_pred.shift(1).rolling(rolling_w).mean()
     prior_std = eth_pred.shift(1).rolling(rolling_w).std() + 1e-8

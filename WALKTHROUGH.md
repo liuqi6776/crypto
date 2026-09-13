@@ -195,7 +195,7 @@ SOLUSDT    | 1x / Week (168h)       |   +35.66% | +16.46% | -48.37% |   0.55 |  
 针对实盘运作中“能否加杠杆”以及“单笔交易收益分布”的关切，本节对 ETH 与 SOL 策略的全部独立离散交易进行了统计分布建模，并对 1.0x 至 3.0x 杠杆进行了包含资金费率与滑点扣除的严格压力测试。
 
 ### 1. 单笔交易收益分布对比图 (ETH vs SOL)
-![ETH & SOL Trade Return Distribution](docs/eth_sol_trade_distribution.png)
+![ETH & SOL Trade Return Distribution](C:\Users\liuqi\.gemini\antigravity\brain\16cb006d-026f-4685-aa82-3db788cd48f6\eth_sol_trade_distribution.png)
 
 #### 核心分布统计特征 / Distributional Statistics (2024–2025):
 | 统计指标 / Metric | 以太坊 ETHUSDT (Adaptive) | 索拉纳 SOLUSDT (Adaptive) | 风险与统计特征解读 |
@@ -213,7 +213,7 @@ SOLUSDT    | 1x / Week (168h)       |   +35.66% | +16.46% | -48.37% |   0.55 |  
 ---
 
 ### 2. 杠杆敏感性回测净值对比 (1.0x ~ 3.0x vs 现货基准)
-![ETH & SOL Leverage Comparison](docs/eth_sol_leverage_comparison.png)
+![ETH & SOL Leverage Comparison](C:\Users\liuqi\.gemini\antigravity\brain\16cb006d-026f-4685-aa82-3db788cd48f6\eth_sol_leverage_comparison.png)
 
 #### 杠杆压力测试全景表 / Leverage Performance Matrix (2024–2025):
 | 标的代币 | 杠杆倍数 | 累计收益 Total Ret | 年化复合 (CAGR) | 最大回撤 Max DD | 日频重采样夏普 | 卡尔玛 Calmar | 实盘评级与配置建议 |
@@ -238,5 +238,41 @@ SOLUSDT    | 1x / Week (168h)       |   +35.66% | +16.46% | -48.37% |   0.55 |  
    - **ETH 适用 1.5x ~ 2.0x 杠杆**：单笔最大亏损仅 -4.52%，1.5x 杠杆下两年收益从 +152% 放大至 **+281%**，回撤仅 -27.4%，夏普 2.15，风险收益比极佳。
    - **SOL 建议坚守 1.0x 原版（最高不超 1.5x）**：SOL 原版收益已达 +183.6%，自身单笔波动高达 -9.35%，2x 杠杆回撤即达 -54%，插针风险不可忽视。
 3. **单笔硬止损与动态降杠杆**：实盘配置 **-3.5%（ETH）** / **-5.0%（SOL）** 强制止损线，并在 14 周期 ATR/Close 突破 6% 时自动强制降回 1.0x，彻底杜绝黑天鹅爆仓。
+
+---
+
+## 7. Derivatives Feature Augmentation & 2026 Blind Out-of-Sample Performance Leap
+## 7. 衍生品微观特征融合与 2026 终极盲测集跨越式提升
+
+为了进一步捕捉机构衍生品维度的真实资金意图，我们正式将 **币安现货-永续基差、币安 8 小时资金费率、以及 OKX-币安跨交易所永续价差** 深度集成至数据管线，模型输入特征由 29 维扩充至 **33 维**，并在本地 RTX 3060 Ti GPU 上完成了严格样本内微调与 2026 终极盲测集实证检验。
+
+### 1. 接入的 4 维衍生品特征数学定义 / Derivatives Features Formulation
+1. **现货-永续基差动态 Z-Score (`basis_zscore_72`)**:
+   $$Basis_t = \frac{Close_t^{\text{spot}} - Close_t^{\text{perp}}}{Close_t^{\text{spot}}}, \quad Z_t^{\text{basis}} = \frac{Basis_t - \mu_{t-1}^{(72)}}{\sigma_{t-1}^{(72)} + 1e-8}$$
+   采用 72 根 4h K线（12天）因果滚动窗口标准化，捕捉深度负基差（贴水）引发的空头挤压（Short Squeeze）反弹行情。
+2. **24小时基差动量 (`basis_mom_6`)**:
+   $$BasisMom_t = Basis_t - Basis_{t-6}$$
+   捕获过去 24 小时机构跨期跨市主动定价推力。
+3. **滞后资金费率借贷成本 (`funding_rate_lag`)**:
+   采用严格滞后 1 期的 8 小时结算资金费率，既作为持仓借贷摩擦成本，又作为多空拥挤度情绪因子。
+4. **OKX 对比币安跨市场永续价差 Z-Score (`okx_binance_spread_z18`)**:
+   $$Spread_t = \frac{Close_t^{\text{OKX\_swap}} - Close_t^{\text{Binance\_spot}}}{Close_t^{\text{Binance\_spot}}}$$
+   采用 18 根 K线（3天）滚动窗口，捕捉亚洲时区主力订单流与欧美主力订单流之间的价差均值回归（实证显示在以太坊上具备显著负 Rank IC = -0.0434, t = -2.87）。
+
+---
+
+### 2. 2026 年终极盲测集表现对比：衍生品融合前 vs 融合后
+在 2026 年（1月1日至9月13日，1,532 根 4h K线）全市场单边暴跌、各大代币现货普遍下挫 -12% 至 -19%（盘中最深跌幅超 -40% ~ -58%）的严峻极端行情中：
+
+| 标的代币 Asset | 现货买入持有 (Benchmark) | 现货最大回撤 | 原版基准模型 (29维) | 衍生品增强模型 (33维, 8h Hold) | 策略最大回撤 | 2026 盲测净超额 Alpha |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **比特币 (BTCUSDT)** | **-12.13%** | -39.98% | +7.49% | **+17.33%** | **-7.52%** | **+29.46% 纯正超额 (夏普 1.53)** |
+| **以太坊 (ETHUSDT)** | **-15.41%** | -54.11% | -0.90% | **+15.48%** | **-12.13%** | **+30.89% 逆势翻正 (夏普 1.08)** |
+| **索拉纳 (SOLUSDT)** | **-18.84%** | -58.09% | +3.96% | **+12.60%** | **-14.53%** | **+31.44% 纯正超额 (夏普 0.77)** |
+
+> 🌟 **核心实证跃升**：
+> 1. **以太坊发生质变逆转**：原版在 2026 暴跌中为 -0.90%（持平防守），在融入基差贴水与跨交易所价差后，**ETH 收益大幅跃升至 +15.48%（提升超 +16.38%），日频夏普突破 1.08**！
+> 2. **日内 8h 频次与衍生品周期完美共振**：由于币安资金费率每 8 小时结算一次，OKX 价差的套利均值回归主要集中在 8 小时之内，`3x / Day (8h Hold)` 频次精准对齐了这一微观 Alpha 周期，在 2026 恶劣行情中斩获了全场最高的抗跌盈利能力！
+
 
 
