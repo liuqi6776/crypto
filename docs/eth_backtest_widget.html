@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ETH Transformer Backtest Curve</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] p-4 font-sans antialiased">
+  <div class="max-w-4xl mx-auto space-y-4">
+    <!-- Header -->
+    <div class="flex flex-wrap items-center justify-between border-b border-[var(--border)] pb-3">
+      <div>
+        <h1 class="text-xl font-bold tracking-tight text-[var(--foreground)] flex items-center gap-2">
+          <span>⚡ 以太坊 Transformer 实测净值走势 (2024–2026 全样本外)</span>
+        </h1>
+        <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+          时空跨资产注意力 (BTC/SOL/BNB) + 链上稳定币资金流 (DefiLlama) + 恐慌贪婪情绪风控
+        </p>
+      </div>
+      <div class="text-xs px-2.5 py-1 rounded bg-[var(--card)] border border-[var(--border)] text-[var(--muted-foreground)] font-mono">
+        决策周期: 4h | 触发频次: 1次/5.5天
+      </div>
+    </div>
+
+    <!-- Key Metrics Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="p-3 rounded-lg border border-[var(--border)] bg-[var(--card)] shadow-sm">
+        <div class="text-xs text-[var(--muted-foreground)]">总收益率 (Total Return)</div>
+        <div class="text-xl font-black text-emerald-500 mt-0.5">+141.67%</div>
+        <div class="text-[10px] text-[var(--muted-foreground)]">ETH现货仅 +9.72% (跑赢14.6倍)</div>
+      </div>
+      <div class="p-3 rounded-lg border border-[var(--border)] bg-[var(--card)] shadow-sm">
+        <div class="text-xs text-[var(--muted-foreground)]">夏普比率 (Sharpe Ratio)</div>
+        <div class="text-xl font-black text-cyan-400 mt-0.5">1.64</div>
+        <div class="text-[10px] text-[var(--muted-foreground)]">现货仅 0.38 (大幅提升4.3倍)</div>
+      </div>
+      <div class="p-3 rounded-lg border border-[var(--border)] bg-[var(--card)] shadow-sm">
+        <div class="text-xs text-[var(--muted-foreground)]">最大回撤 (Max Drawdown)</div>
+        <div class="text-xl font-black text-emerald-400 mt-0.5">-18.85%</div>
+        <div class="text-[10px] text-[var(--muted-foreground)]">现货回撤高达 -68.03%</div>
+      </div>
+      <div class="p-3 rounded-lg border border-[var(--border)] bg-[var(--card)] shadow-sm">
+        <div class="text-xs text-[var(--muted-foreground)]">市场暴露度 (Exposure)</div>
+        <div class="text-xl font-black text-purple-400 mt-0.5">9.6%</div>
+        <div class="text-[10px] text-[var(--muted-foreground)]">90.4% 时间全额持 USDT 避险</div>
+      </div>
+    </div>
+
+    <!-- Chart Container -->
+    <div class="p-4 rounded-lg border border-[var(--border)] bg-[var(--card)] shadow-sm space-y-3">
+      <div class="flex items-center justify-between text-xs">
+        <span class="font-medium text-[var(--foreground)]">累计净值曲线 (初始本金 = 1.0)</span>
+        <div class="flex items-center gap-4 text-[11px]">
+          <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-cyan-400 rounded"></span> ETH强化分级 (+141.7%)</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-purple-400 rounded"></span> ETH基准 (+113.2%)</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-amber-400 rounded"></span> BTC现货 (+81.3%)</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-rose-500 rounded"></span> ETH现货 (+9.7%)</span>
+        </div>
+      </div>
+
+      <div class="relative w-full h-64">
+        <svg viewBox="0 0 700 240" class="w-full h-full overflow-visible">
+          <defs>
+            <linearGradient id="cyanGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#00f0ff" stop-opacity="0.0"/>
+            </linearGradient>
+          </defs>
+          <!-- Grid lines -->
+          <line x1="45" y1="20" x2="690" y2="20" stroke="currentColor" stroke-opacity="0.08" />
+          <line x1="45" y1="75" x2="690" y2="75" stroke="currentColor" stroke-opacity="0.08" />
+          <line x1="45" y1="130" x2="690" y2="130" stroke="currentColor" stroke-opacity="0.08" />
+          <line x1="45" y1="185" x2="690" y2="185" stroke="currentColor" stroke-opacity="0.08" />
+
+          <!-- Y axis labels -->
+          <text x="35" y="24" text-anchor="end" class="text-[10px] fill-[var(--muted-foreground)] font-mono">2.5</text>
+          <text x="35" y="79" text-anchor="end" class="text-[10px] fill-[var(--muted-foreground)] font-mono">2.0</text>
+          <text x="35" y="134" text-anchor="end" class="text-[10px] fill-[var(--muted-foreground)] font-mono">1.5</text>
+          <text x="35" y="189" text-anchor="end" class="text-[10px] fill-[var(--muted-foreground)] font-mono">1.0</text>
+          <text x="35" y="225" text-anchor="end" class="text-[10px] fill-[var(--muted-foreground)] font-mono">0.5</text>
+
+          <g id="paths"></g>
+        </svg>
+      </div>
+
+      <div class="flex justify-between text-[10px] text-[var(--muted-foreground)] px-8 font-mono">
+        <span>2024-01</span>
+        <span>2024-07</span>
+        <span>2025-01</span>
+        <span>2025-07</span>
+        <span>2026-01</span>
+        <span>2026-09</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const data = [{"d": "2024-01-01", "hier": 1.0, "base": 1.0, "eth": 1.04, "btc": 1.067}, {"d": "2024-01-08", "hier": 1.0, "base": 1.0, "eth": 1.006, "btc": 1.103}, {"d": "2024-01-15", "hier": 1.0, "base": 1.0, "eth": 1.106, "btc": 1.009}, {"d": "2024-01-22", "hier": 1.0, "base": 0.998, "eth": 1.019, "btc": 0.94}, {"d": "2024-01-29", "hier": 1.0, "base": 0.959, "eth": 1.007, "btc": 1.023}, {"d": "2024-02-05", "hier": 1.0, "base": 0.959, "eth": 1.01, "btc": 1.007}, {"d": "2024-02-12", "hier": 1.047, "base": 1.005, "eth": 1.151, "btc": 1.171}, {"d": "2024-02-19", "hier": 1.09, "base": 1.046, "eth": 1.267, "btc": 1.213}, {"d": "2024-02-26", "hier": 1.09, "base": 1.046, "eth": 1.402, "btc": 1.309}, {"d": "2024-03-04", "hier": 1.193, "base": 1.144, "eth": 1.608, "btc": 1.601}, {"d": "2024-03-11", "hier": 1.247, "base": 1.301, "eth": 1.756, "btc": 1.684}, {"d": "2024-03-18", "hier": 1.216, "base": 1.274, "eth": 1.49, "btc": 1.549}, {"d": "2024-03-25", "hier": 1.247, "base": 1.306, "eth": 1.579, "btc": 1.656}, {"d": "2024-04-01", "hier": 1.247, "base": 1.306, "eth": 1.467, "btc": 1.568}, {"d": "2024-04-08", "hier": 1.257, "base": 1.34, "eth": 1.609, "btc": 1.676}, {"d": "2024-04-15", "hier": 1.224, "base": 1.273, "eth": 1.339, "btc": 1.48}, {"d": "2024-04-22", "hier": 1.246, "base": 1.3, "eth": 1.387, "btc": 1.562}, {"d": "2024-04-29", "hier": 1.264, "base": 1.319, "eth": 1.386, "btc": 1.496}, {"d": "2024-05-06", "hier": 1.264, "base": 1.349, "eth": 1.329, "btc": 1.487}, {"d": "2024-05-13", "hier": 1.264, "base": 1.355, "eth": 1.282, "btc": 1.469}, {"d": "2024-05-20", "hier": 1.264, "base": 1.362, "eth": 1.611, "btc": 1.676}, {"d": "2024-05-27", "hier": 1.339, "base": 1.442, "eth": 1.678, "btc": 1.6}, {"d": "2024-06-03", "hier": 1.339, "base": 1.442, "eth": 1.644, "btc": 1.626}, {"d": "2024-06-10", "hier": 1.342, "base": 1.466, "eth": 1.567, "btc": 1.61}, {"d": "2024-06-17", "hier": 1.338, "base": 1.467, "eth": 1.5, "btc": 1.54}, {"d": "2024-06-24", "hier": 1.338, "base": 1.467, "eth": 1.469, "btc": 1.441}, {"d": "2024-07-01", "hier": 1.33, "base": 1.478, "eth": 1.506, "btc": 1.484}, {"d": "2024-07-08", "hier": 1.372, "base": 1.391, "eth": 1.335, "btc": 1.344}, {"d": "2024-07-15", "hier": 1.37, "base": 1.389, "eth": 1.512, "btc": 1.522}, {"d": "2024-07-22", "hier": 1.385, "base": 1.383, "eth": 1.514, "btc": 1.586}, {"d": "2024-07-29", "hier": 1.4, "base": 1.398, "eth": 1.447, "btc": 1.566}, {"d": "2024-08-05", "hier": 1.4, "base": 1.359, "eth": 1.086, "btc": 1.309}, {"d": "2024-08-12", "hier": 1.4, "base": 1.358, "eth": 1.158, "btc": 1.388}, {"d": "2024-08-19", "hier": 1.4, "base": 1.358, "eth": 1.16, "btc": 1.425}, {"d": "2024-08-26", "hier": 1.51, "base": 1.465, "eth": 1.17, "btc": 1.48}, {"d": "2024-09-02", "hier": 1.599, "base": 1.565, "eth": 1.096, "btc": 1.39}, {"d": "2024-09-09", "hier": 1.599, "base": 1.598, "eth": 1.02, "btc": 1.329}, {"d": "2024-09-16", "hier": 1.599, "base": 1.598, "eth": 0.995, "btc": 1.365}, {"d": "2024-09-23", "hier": 1.617, "base": 1.616, "eth": 1.145, "btc": 1.484}, {"d": "2024-09-30", "hier": 1.637, "base": 1.636, "eth": 1.146, "btc": 1.498}, {"d": "2024-10-07", "hier": 1.636, "base": 1.461, "eth": 1.062, "btc": 1.472}, {"d": "2024-10-14", "hier": 1.636, "base": 1.461, "eth": 1.138, "btc": 1.537}, {"d": "2024-10-21", "hier": 1.65, "base": 1.468, "eth": 1.152, "btc": 1.584}, {"d": "2024-10-28", "hier": 1.601, "base": 1.422, "eth": 1.136, "btc": 1.668}, {"d": "2024-11-04", "hier": 1.591, "base": 1.418, "eth": 1.055, "btc": 1.604}, {"d": "2024-11-11", "hier": 1.754, "base": 1.563, "eth": 1.454, "btc": 2.07}, {"d": "2024-11-18", "hier": 1.69, "base": 1.579, "eth": 1.372, "btc": 2.149}, {"d": "2024-11-25", "hier": 1.69, "base": 1.579, "eth": 1.497, "btc": 2.221}, {"d": "2024-12-02", "hier": 1.69, "base": 1.579, "eth": 1.586, "btc": 2.259}, {"d": "2024-12-09", "hier": 1.748, "base": 1.634, "eth": 1.605, "btc": 2.279}, {"d": "2024-12-16", "hier": 1.874, "base": 1.751, "eth": 1.758, "btc": 2.512}, {"d": "2024-12-23", "hier": 2.038, "base": 1.904, "eth": 1.48, "btc": 2.218}, {"d": "2024-12-30", "hier": 2.038, "base": 1.904, "eth": 1.456, "btc": 2.175}, {"d": "2025-01-06", "hier": 2.038, "base": 1.904, "eth": 1.605, "btc": 2.391}, {"d": "2025-01-13", "hier": 2.027, "base": 1.894, "eth": 1.377, "btc": 2.23}, {"d": "2025-01-20", "hier": 2.004, "base": 1.977, "eth": 1.422, "btc": 2.42}, {"d": "2025-01-27", "hier": 2.099, "base": 2.071, "eth": 1.396, "btc": 2.413}, {"d": "2025-02-03", "hier": 2.15, "base": 2.122, "eth": 1.225, "btc": 2.366}, {"d": "2025-02-10", "hier": 2.15, "base": 2.122, "eth": 1.167, "btc": 2.295}, {"d": "2025-02-17", "hier": 2.107, "base": 2.079, "eth": 1.182, "btc": 2.262}, {"d": "2025-02-24", "hier": 2.107, "base": 2.079, "eth": 1.087, "btc": 2.166}, {"d": "2025-03-03", "hier": 2.25, "base": 1.844, "eth": 0.904, "btc": 1.974}, {"d": "2025-03-10", "hier": 2.25, "base": 1.93, "eth": 0.806, "btc": 1.869}, {"d": "2025-03-17", "hier": 2.238, "base": 1.92, "eth": 0.828, "btc": 1.955}, {"d": "2025-03-24", "hier": 2.232, "base": 1.91, "eth": 0.89, "btc": 2.034}, {"d": "2025-03-31", "hier": 2.214, "base": 1.896, "eth": 0.8, "btc": 1.95}, {"d": "2025-04-07", "hier": 2.214, "base": 1.916, "eth": 0.691, "btc": 1.878}, {"d": "2025-04-14", "hier": 2.214, "base": 1.916, "eth": 0.714, "btc": 2.007}, {"d": "2025-04-21", "hier": 2.214, "base": 1.943, "eth": 0.688, "btc": 2.072}, {"d": "2025-04-28", "hier": 2.214, "base": 2.066, "eth": 0.785, "btc": 2.225}, {"d": "2025-05-05", "hier": 2.222, "base": 2.072, "eth": 0.787, "btc": 2.221}, {"d": "2025-05-12", "hier": 2.281, "base": 2.556, "eth": 1.057, "btc": 2.391}, {"d": "2025-05-19", "hier": 2.281, "base": 2.764, "eth": 1.113, "btc": 2.486}, {"d": "2025-05-26", "hier": 2.197, "base": 2.689, "eth": 1.111, "btc": 2.56}, {"d": "2025-06-02", "hier": 2.197, "base": 2.689, "eth": 1.134, "btc": 2.48}, {"d": "2025-06-09", "hier": 2.37, "base": 2.9, "eth": 1.172, "btc": 2.576}, {"d": "2025-06-16", "hier": 2.402, "base": 2.754, "eth": 1.136, "btc": 2.529}, {"d": "2025-06-23", "hier": 2.463, "base": 2.824, "eth": 1.045, "btc": 2.467}, {"d": "2025-06-30", "hier": 2.508, "base": 2.938, "eth": 1.083, "btc": 2.52}, {"d": "2025-07-07", "hier": 2.485, "base": 2.83, "eth": 1.106, "btc": 2.537}, {"d": "2025-07-14", "hier": 2.484, "base": 2.829, "eth": 1.286, "btc": 2.754}, {"d": "2025-07-21", "hier": 2.484, "base": 2.829, "eth": 1.626, "btc": 2.755}, {"d": "2025-07-28", "hier": 2.454, "base": 2.794, "eth": 1.652, "btc": 2.792}, {"d": "2025-08-04", "hier": 2.36, "base": 2.688, "eth": 1.591, "btc": 2.686}, {"d": "2025-08-11", "hier": 2.344, "base": 2.669, "eth": 1.868, "btc": 2.794}, {"d": "2025-08-18", "hier": 2.299, "base": 2.619, "eth": 1.838, "btc": 2.699}, {"d": "2025-08-25", "hier": 2.47, "base": 2.813, "eth": 1.918, "btc": 2.583}, {"d": "2025-09-01", "hier": 2.481, "base": 2.826, "eth": 1.903, "btc": 2.594}, {"d": "2025-09-08", "hier": 2.498, "base": 2.845, "eth": 1.877, "btc": 2.626}, {"d": "2025-09-15", "hier": 2.537, "base": 2.889, "eth": 1.97, "btc": 2.711}, {"d": "2025-09-22", "hier": 2.411, "base": 2.746, "eth": 1.825, "btc": 2.641}, {"d": "2025-09-29", "hier": 2.493, "base": 2.838, "eth": 1.83, "btc": 2.689}, {"d": "2025-10-06", "hier": 2.493, "base": 2.843, "eth": 2.044, "btc": 2.923}, {"d": "2025-10-13", "hier": 2.324, "base": 2.723, "eth": 1.81, "btc": 2.668}, {"d": "2025-10-20", "hier": 2.324, "base": 2.714, "eth": 1.709, "btc": 2.564}, {"d": "2025-10-27", "hier": 2.344, "base": 2.718, "eth": 1.784, "btc": 2.678}, {"d": "2025-11-03", "hier": 2.373, "base": 2.607, "eth": 1.587, "btc": 2.519}, {"d": "2025-11-10", "hier": 2.25, "base": 2.472, "eth": 1.571, "btc": 2.503}, {"d": "2025-11-17", "hier": 2.25, "base": 2.472, "eth": 1.318, "btc": 2.136}, {"d": "2025-11-24", "hier": 2.25, "base": 2.392, "eth": 1.269, "btc": 2.065}, {"d": "2025-12-01", "hier": 2.269, "base": 2.412, "eth": 1.222, "btc": 2.045}, {"d": "2025-12-08", "hier": 2.293, "base": 2.467, "eth": 1.364, "btc": 2.125}, {"d": "2025-12-15", "hier": 2.293, "base": 2.467, "eth": 1.28, "btc": 2.019}, {"d": "2025-12-22", "hier": 2.465, "base": 2.684, "eth": 1.304, "btc": 2.073}, {"d": "2025-12-29", "hier": 2.462, "base": 2.693, "eth": 1.286, "btc": 2.054}, {"d": "2026-01-05", "hier": 2.462, "base": 2.687, "eth": 1.405, "btc": 2.204}, {"d": "2026-01-12", "hier": 2.439, "base": 2.625, "eth": 1.358, "btc": 2.149}, {"d": "2026-01-19", "hier": 2.439, "base": 2.609, "eth": 1.39, "btc": 2.173}, {"d": "2026-01-26", "hier": 2.439, "base": 2.645, "eth": 1.282, "btc": 2.087}, {"d": "2026-02-02", "hier": 2.439, "base": 2.534, "eth": 1.021, "btc": 1.851}, {"d": "2026-02-09", "hier": 2.439, "base": 2.415, "eth": 0.9, "btc": 1.634}, {"d": "2026-02-16", "hier": 2.439, "base": 2.415, "eth": 0.865, "btc": 1.61}, {"d": "2026-02-23", "hier": 2.439, "base": 2.398, "eth": 0.798, "btc": 1.495}, {"d": "2026-03-02", "hier": 2.444, "base": 2.398, "eth": 0.875, "btc": 1.607}, {"d": "2026-03-09", "hier": 2.444, "base": 2.398, "eth": 0.883, "btc": 1.632}, {"d": "2026-03-16", "hier": 2.444, "base": 2.398, "eth": 1.011, "btc": 1.751}, {"d": "2026-03-23", "hier": 2.405, "base": 2.359, "eth": 0.933, "btc": 1.658}, {"d": "2026-03-30", "hier": 2.43, "base": 2.356, "eth": 0.901, "btc": 1.592}, {"d": "2026-04-06", "hier": 2.425, "base": 2.35, "eth": 0.919, "btc": 1.617}, {"d": "2026-04-13", "hier": 2.419, "base": 2.344, "eth": 1.031, "btc": 1.75}, {"d": "2026-04-20", "hier": 2.482, "base": 2.405, "eth": 1.007, "btc": 1.78}, {"d": "2026-04-27", "hier": 2.547, "base": 2.475, "eth": 0.998, "btc": 1.806}, {"d": "2026-05-04", "hier": 2.547, "base": 2.37, "eth": 1.038, "btc": 1.902}, {"d": "2026-05-11", "hier": 2.547, "base": 2.37, "eth": 1.006, "btc": 1.906}, {"d": "2026-05-18", "hier": 2.4, "base": 2.18, "eth": 0.929, "btc": 1.805}, {"d": "2026-05-25", "hier": 2.426, "base": 2.21, "eth": 0.912, "btc": 1.802}, {"d": "2026-06-01", "hier": 2.438, "base": 2.257, "eth": 0.873, "btc": 1.668}, {"d": "2026-06-08", "hier": 2.438, "base": 2.225, "eth": 0.727, "btc": 1.478}, {"d": "2026-06-15", "hier": 2.438, "base": 2.202, "eth": 0.775, "btc": 1.555}, {"d": "2026-06-22", "hier": 2.438, "base": 2.176, "eth": 0.754, "btc": 1.506}, {"d": "2026-06-29", "hier": 2.438, "base": 2.093, "eth": 0.692, "btc": 1.402}, {"d": "2026-07-06", "hier": 2.438, "base": 2.1, "eth": 0.772, "btc": 1.486}, {"d": "2026-07-13", "hier": 2.438, "base": 2.1, "eth": 0.777, "btc": 1.471}, {"d": "2026-07-20", "hier": 2.438, "base": 2.015, "eth": 0.84, "btc": 1.541}, {"d": "2026-07-27", "hier": 2.438, "base": 2.119, "eth": 0.82, "btc": 1.489}, {"d": "2026-08-03", "hier": 2.438, "base": 2.109, "eth": 0.812, "btc": 1.5}, {"d": "2026-08-10", "hier": 2.438, "base": 2.108, "eth": 0.82, "btc": 1.508}, {"d": "2026-08-17", "hier": 2.438, "base": 2.116, "eth": 0.826, "btc": 1.509}, {"d": "2026-08-24", "hier": 2.426, "base": 2.14, "eth": 1.089, "btc": 1.892}, {"d": "2026-08-31", "hier": 2.426, "base": 2.14, "eth": 1.077, "btc": 1.85}, {"d": "2026-09-07", "hier": 2.417, "base": 2.132, "eth": 1.083, "btc": 1.855}, {"d": "2026-09-14", "hier": 2.417, "base": 2.132, "eth": 1.097, "btc": 1.813}];
+    const svg = document.getElementById('paths');
+    const W = 645, H = 200, ox = 45, oy = 20;
+    const minVal = 0.4, maxVal = 2.6;
+
+    const toX = (i) => ox + (i / (data.length - 1)) * W;
+    const toY = (val) => oy + (1 - (val - minVal) / (maxVal - minVal)) * H;
+
+    const makeD = (key) => data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${toX(i).toFixed(1)} ${toY(d[key]).toFixed(1)}`).join(' ');
+
+    // ETH Buy & Hold (Red)
+    const pEth = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    pEth.setAttribute('d', makeD('eth'));
+    pEth.setAttribute('fill', 'none');
+    pEth.setAttribute('stroke', '#f43f5e');
+    pEth.setAttribute('stroke-width', '1.6');
+    pEth.setAttribute('stroke-opacity', '0.85');
+    svg.appendChild(pEth);
+
+    // BTC Buy & Hold (Gold)
+    const pBtc = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    pBtc.setAttribute('d', makeD('btc'));
+    pBtc.setAttribute('fill', 'none');
+    pBtc.setAttribute('stroke', '#fbbf24');
+    pBtc.setAttribute('stroke-width', '1.4');
+    pBtc.setAttribute('stroke-dasharray', '4,2');
+    pBtc.setAttribute('stroke-opacity', '0.75');
+    svg.appendChild(pBtc);
+
+    // Baseline Transformer (Purple)
+    const pBase = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    pBase.setAttribute('d', makeD('base'));
+    pBase.setAttribute('fill', 'none');
+    pBase.setAttribute('stroke', '#c084fc');
+    pBase.setAttribute('stroke-width', '2.0');
+    pBase.setAttribute('stroke-dasharray', '5,3');
+    svg.appendChild(pBase);
+
+    // Hierarchical Area (Gradient Fill)
+    const areaD = makeD('hier') + ` L ${toX(data.length-1)} ${toY(minVal)} L ${toX(0)} ${toY(minVal)} Z`;
+    const pArea = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    pArea.setAttribute('d', areaD);
+    pArea.setAttribute('fill', 'url(#cyanGrad)');
+    svg.appendChild(pArea);
+
+    // Hierarchical Main Line (Neon Cyan)
+    const pHier = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    pHier.setAttribute('d', makeD('hier'));
+    pHier.setAttribute('fill', 'none');
+    pHier.setAttribute('stroke', '#00f0ff');
+    pHier.setAttribute('stroke-width', '3.0');
+    svg.appendChild(pHier);
+  </script>
+</body>
+</html>
