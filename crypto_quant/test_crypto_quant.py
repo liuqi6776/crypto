@@ -177,6 +177,21 @@ class TestCryptoQuantOffline(unittest.TestCase):
         self.assertGreater(loss_dict['huber'], 0.05)
         self.assertLess(loss_dict['huber'], 10.0)
 
+    def test_dual_sleeve_portfolio_mechanics(self):
+        """测试双轨组合引擎（Dual-Sleeve Portfolio）计算逻辑与权重有效性 (Phase 11)"""
+        from crypto_quant.dual_sleeve_portfolio import build_dual_sleeve_portfolio
+        dates = pd.date_range('2024-01-01', periods=100, freq='4h')
+        sleeve1 = pd.Series(np.random.normal(0.001, 0.01, 100), index=dates)
+        sleeve2 = pd.Series(np.random.normal(0.0005, 0.008, 100), index=dates)
+
+        res = build_dual_sleeve_portfolio(sleeve1, sleeve2, w1=0.70, w2=0.30)
+        self.assertIn('cumulative_equity', res)
+        self.assertIn('total_return', res)
+        self.assertIn('daily_sharpe', res)
+        self.assertEqual(len(res['returns']), 100)
+        self.assertTrue(np.isfinite(res['total_return']))
+        self.assertTrue(np.isfinite(res['daily_sharpe']))
+
 
 if __name__ == '__main__':
     unittest.main()
