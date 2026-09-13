@@ -3,8 +3,8 @@
 
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-orange.svg)](https://pytorch.org/)
-[![Data](https://img.shields.io/badge/Data-Binance%204H%20%7C%20DefiLlama%20%7C%20Alternative.me-brightgreen.svg)]()
-[![Status](https://img.shields.io/badge/Status-Research%20Verified%20%26%20Blind%20Tested-purple.svg)]()
+[![Data](https://img.shields.io/badge/Data-100%25%20Offline%20Included-brightgreen.svg)]()
+[![Status](https://img.shields.io/badge/Status-100%25%20Reproducible%20%26%20Verified-purple.svg)]()
 
 [English](#english) | [中文说明](#chinese)
 
@@ -14,9 +14,11 @@
 ## English Overview
 
 ### 1. Executive Summary
-This repository houses an end-to-end quantitative trading research framework designed for major cryptocurrencies (**BTC, ETH, SOL, and BNB**) based on a **Spatio-Temporal Relational Transformer (`CryptoSTTransformer`)**. 
+This repository houses a **100% self-contained and offline-reproducible** quantitative trading research framework designed for major cryptocurrencies (**BTC, ETH, SOL, and BNB**) based on a **Spatio-Temporal Relational Transformer (`CryptoSTTransformer`)**.
 
-The architecture tackles fundamental crypto market dynamics:
+All datasets (9-year daily, 5-year hourly, 6-year 4-hour OHLCV, DefiLlama on-chain TVL/stablecoin net flows, Alternative.me Fear & Greed sentiment, and US equity macro data) are **pre-packaged locally in `data/`**. **No API keys, no proxies, and no external Binance network connectivity are required** to replicate all unit tests, frequency grid sweeps, and historical backtests.
+
+The architecture addresses fundamental crypto market dynamics:
 1. **Cross-Asset Lead-Lag Relations**: Captures inter-token information flow (e.g., Bitcoin macro lead, BNB exchange liquidity spillover, and Solana high-beta momentum) using spatial multi-head self-attention.
 2. **Multi-Modal Macro & On-Chain Augmentation**: Integrates daily on-chain Ethereum TVL and net stablecoin capital flows (DefiLlama), sentiment indices (Alternative.me Crypto Fear & Greed), and US equity index spillovers (Nasdaq / S&P 500).
 3. **Adaptive Holding Frequency**: Solves the over-trading vs. trend-holding trade-off. An adaptive momentum-exit mechanism captures sharp upward impulse waves while staying in cash during choppiness and drawdowns.
@@ -60,7 +62,11 @@ All strategies kept drawdowns strictly below **10%** and generated double-digit 
 ### 1. 项目核心概述
 本项目构建了一套面向主流加密货币（**BTC、ETH、SOL、BNB**）的机构级量化研究框架，核心基于**时空跨资产关系注意力模型（CryptoSTTransformer）**。
 
-模型针对加密货币市场的本质特征进行了系统设计：
+**本仓库包含 100% 完整离线数据集，完全自包含（Self-Contained）**：
+- 包括 9 年日线、5 年 1 小时线、6 年 4 小时多资产对齐 K 线、DefiLlama 链上 TVL 与稳定币流动、恐慌贪婪指数、美股宏观数据。
+- **无需连接币安线上 API、无需配置 API Key、无需梯子或代理**，在任何离线或受限网络环境下均可 100% 一键秒级复现。
+
+模型核心机制：
 1. **跨资产领先滞后矩阵**：利用空间注意力自适应捕获 BTC 宏观先导、BNB 交易所生态资金与 SOL 高 Beta 动量溢出。
 2. **多模态链上与情绪特征增强**：融合 DefiLlama 以太坊链上 TVL、稳定币净流动资本数据，以及 Alternative.me 加密恐慌贪婪指数、美股标普/纳指跨市场溢出。
 3. **自适应动量退出机制**：摆脱盲目高频摩擦或僵化定期调仓，在模型置信度衰减时敏捷退出，**约 90% 的时间持有 100% USDT 现金**，以极低的市场暴露换取最高夏普比。
@@ -92,25 +98,28 @@ All strategies kept drawdowns strictly below **10%** and generated double-digit 
 
 扣除 0.05% Taker 手续费与滑点，基于次根 K 线开盘价执行：
 
-| 标的资产 Asset | 交易频率 Frequency | 总收益 Total Ret | 年化 CAGR | 最大回撤 MDD | 夏普 Sharpe | 卡玛 Calmar | 市场暴露 Exposure |
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **BTCUSDT** | 买入持有 (Buy & Hold) | +107.06% | +44.13% | -34.37% | 1.00 | 1.28 | 100.0% |
-| **BTCUSDT** | **自适应动量 (Adaptive 12h)** | **+74.50%** | **+32.05%** | **-15.56%** | **1.77** | **2.06** | **10.5%** |
-| **BTCUSDT** | 每日1次 (24h Hold) | +71.99% | +31.11% | -27.17% | 1.28 | 1.14 | 20.1% |
-| **BTCUSDT** | 3日1次 (72h Hold) | +76.66% | +32.87% | -23.44% | 1.17 | 1.40 | 28.2% |
-| **BTCUSDT** | 每周1次 (168h Hold) | +61.11% | +26.89% | -26.28% | 0.89 | 1.02 | 45.4% |
-| ---------------- | ----------------------- | --------- | --------- | --------- | ------- | ------- | -------- |
-| **ETHUSDT** | 买入持有 (Buy & Hold) | +30.69% | +13.76% | -65.12% | 0.54 | 0.21 | 100.0% |
-| **ETHUSDT** | **自适应动量 (Adaptive 12h)** | **+146.19%** | **+56.83%** | **-18.85%** | **2.04** | **3.01** | **10.7%** |
-| **ETHUSDT** | 每日1次 (24h Hold) | +144.06% | +56.15% | -27.24% | 1.49 | 2.06 | 21.6% |
-| **ETHUSDT** | 3日1次 (72h Hold) | +146.29% | +56.86% | -35.49% | 1.32 | 1.60 | 32.4% |
-| **ETHUSDT** | 每周1次 (168h Hold) | +32.90% | +15.26% | -38.86% | 0.54 | 0.39 | 47.9% |
-| ---------------- | ----------------------- | --------- | --------- | --------- | ------- | ------- | -------- |
-| **SOLUSDT** | 买入持有 (Buy & Hold) | +20.94% | +9.99% | -66.06% | 0.54 | 0.15 | 100.0% |
-| **SOLUSDT** | **自适应动量 (Adaptive 12h)** | **+176.95%** | **+66.32%** | **-29.37%** | **1.91** | **2.26** | **10.8%** |
-| **SOLUSDT** | 每日1次 (24h Hold) | +103.14% | +42.47% | -41.35% | 1.06 | 1.03 | 21.0% |
-| **SOLUSDT** | 3日1次 (72h Hold) | +80.03% | +34.13% | -42.93% | 0.84 | 0.80 | 29.8% |
-| **SOLUSDT** | 每周1次 (168h Hold) | +37.14% | +17.09% | -48.55% | 0.56 | 0.35 | 43.9% |
+| 标的资产 Asset | 交易频率 Frequency | 总收益 Total Ret | 年化 CAGR | 最大回撤 MDD | 夏普 Sharpe | 卡玛 Calmar | 市场暴露 Exposure | 交易笔数 Trades |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **BTCUSDT** | 买入持有 (Benchmark) | +107.06% | +43.82% | -34.37% | 1.00 | 1.28 | 100.0% | 1 |
+| **BTCUSDT** | **自适应动量 (Adaptive 12h)** | **+74.50%** | **+32.05%** | **-15.56%** | **1.77** | **2.06** | **10.5%** | 262 |
+| **BTCUSDT** | 每日1次 (24h Hold) | +71.99% | +31.11% | -27.17% | 1.28 | 1.14 | 20.1% | 152 |
+| **BTCUSDT** | 3日1次 (72h Hold) | +76.66% | +32.87% | -23.44% | 1.17 | 1.40 | 28.2% | 116 |
+| **BTCUSDT** | 日内高频 (8h Hold) | +49.46% | +22.23% | -30.60% | 1.03 | 0.73 | 18.1% | 174 |
+| **BTCUSDT** | 每周1次 (168h Hold) | +61.11% | +26.89% | -26.28% | 0.89 | 1.02 | 45.4% | 89 |
+| ---------------- | ----------------------- | --------- | --------- | --------- | ------- | ------- | -------- | -------- |
+| **ETHUSDT** | 买入持有 (Benchmark) | +30.69% | +14.30% | -65.12% | 0.54 | 0.22 | 100.0% | 1 |
+| **ETHUSDT** | **自适应动量 (Adaptive 12h)** | **+146.19%** | **+56.83%** | **-18.85%** | **2.04** | **3.01** | **10.7%** | 298 |
+| **ETHUSDT** | 3日1次 (72h Hold) | +146.29% | +56.86% | -35.49% | 1.32 | 1.60 | 32.4% | 130 |
+| **ETHUSDT** | 每日1次 (24h Hold) | +144.06% | +56.15% | -27.24% | 1.49 | 2.06 | 21.6% | 170 |
+| **ETHUSDT** | 日内高频 (8h Hold) | +122.11% | +48.97% | -27.23% | 1.43 | 1.80 | 19.3% | 194 |
+| **ETHUSDT** | 每周1次 (168h Hold) | +32.90% | +15.26% | -38.86% | 0.54 | 0.39 | 47.9% | 95 |
+| ---------------- | ----------------------- | --------- | --------- | --------- | ------- | ------- | -------- | -------- |
+| **SOLUSDT** | 买入持有 (Benchmark) | +20.94% | +9.96% | -66.06% | 0.54 | 0.15 | 100.0% | 1 |
+| **SOLUSDT** | **自适应动量 (Adaptive 12h)** | **+176.95%** | **+66.32%** | **-29.37%** | **1.91** | **2.26** | **10.8%** | 268 |
+| **SOLUSDT** | 每日1次 (24h Hold) | +103.14% | +42.47% | -41.35% | 1.06 | 1.03 | 21.0% | 162 |
+| **SOLUSDT** | 日内高频 (8h Hold) | +83.09% | +35.26% | -49.76% | 0.98 | 0.71 | 18.5% | 182 |
+| **SOLUSDT** | 3日1次 (72h Hold) | +80.03% | +34.13% | -42.93% | 0.84 | 0.80 | 29.8% | 124 |
+| **SOLUSDT** | 每周1次 (168h Hold) | +37.14% | +17.09% | -48.55% | 0.56 | 0.35 | 43.9% | 88 |
 
 ---
 
@@ -132,45 +141,55 @@ All strategies kept drawdowns strictly below **10%** and generated double-digit 
 
 ```text
 liuqi6776/crypto/
-├── checkpoints/                        # PyTorch 训练权重文件
-│   ├── best_crypto_transformer.pt      # 基础时空 Transformer
-│   ├── best_crypto_transformer_augmented.pt # 融合链上与宏观的多模态模型
-│   └── best_transformer_2020_2023.pt   # 纯 2020-2023 严苛训练权重 (无未来信息)
-├── crypto_quant/                       # 核心 Python 算法与回测系统
-│   ├── __init__.py                     # 包初始化
-│   ├── crypto_transformer.py           # CryptoSTTransformer 神经网络架构
-│   ├── dataset_builder.py              # 时序张量构建与特征工程
-│   ├── data_fetcher.py                 # Binance / DefiLlama / Alternative.me 数据拉取
-│   ├── news_sentiment.py               # 情绪与链上资金指标处理模块
-│   ├── train_transformer.py            # 模型训练与 Walk-Forward 流程
-│   ├── backtest_transformer.py         # 向量化与逐周期高保真回测器
-│   ├── evaluate_frequencies.py         # 5 档交易频率横向对齐评测
-│   ├── factors.py                      # 动量、波动率与形态技术因子
-│   ├── strategies.py                   # 传统多空基准与双均线策略
-│   └── test_crypto_quant.py            # 单元测试集
-├── data/                               # 4h K线历史数据与宏观/链上特征库
-│   ├── BTCUSDT_4h_2020_2026.parquet    # 比特币 2020-2026 4h 数据
-│   ├── ETHUSDT_4h_2020_2026.parquet    # 以太坊 2020-2026 4h 数据
-│   ├── SOLUSDT_4h_2020_2026.parquet    # 索拉纳 2020-2026 4h 数据
-│   ├── BNBUSDT_4h_2020_2026.parquet    # 币安币 2020-2026 4h 数据
-│   ├── eth_onchain_sentiment_daily.parquet # DefiLlama 链上资本与情绪日频表
-│   ├── us_stock_macro.parquet          # 美股标普/纳指日频数据
-│   └── grid_evaluation_2024_2025.csv   # 2024-2025 全量网格评测数据表
-├── docs/                               # 可视化与交互式图表
-│   ├── eth_transformer_equity_curve.png # ETH 回测净值曲线图
-│   └── eth_backtest_widget.html        # 交互式动态回测仪表盘
-├── predictions/                        # 模型输出概率预测集
-│   ├── val_predictions_2024_2025.parquet # 2024-2025 验证集概率序列
-│   └── blind_test_predictions_2026.parquet # 2026 终极盲测集概率序列
-├── WALKTHROUGH.md                      # 双语详尽结题实证研究长文
-├── requirements.txt                    # Python 依赖清单
-├── .gitignore                          # Git 忽略配置
-└── README.md                           # 机构级中英文项目说明文档
+├── checkpoints/                              # PyTorch 训练权重文件
+│   ├── best_crypto_transformer.pt            # 基础时空 Transformer
+│   ├── best_crypto_transformer_augmented.pt  # 融合链上与宏观的多模态模型
+│   └── best_transformer_2020_2023.pt         # 纯 2020-2023 严苛训练权重 (无未来信息)
+├── crypto_quant/                             # 核心 Python 算法与回测系统
+│   ├── __init__.py                           # 包初始化
+│   ├── crypto_transformer.py                 # CryptoSTTransformer 神经网络架构
+│   ├── dataset_builder.py                    # 时序张量构建与特征工程
+│   ├── data_fetcher.py                       # 数据获取接口 (离线/在线自适应)
+│   ├── news_sentiment.py                     # 情绪与链上资金指标处理模块
+│   ├── train_transformer.py                  # 模型训练与 Walk-Forward 流程
+│   ├── backtest_transformer.py               # 向量化与逐周期高保真回测器
+│   ├── evaluate_frequencies.py               # 5 档交易频率横向对齐评测
+│   ├── backtest_5yr_ab.py                    # 5年高频脉冲跟随与做市网格回测
+│   ├── run_5yr_ab_comparison.py              # 5年高频策略横向对比运行器
+│   ├── run_9yr_backtest.py                   # 9年跨周期牛熊压力测试运行器
+│   ├── factors.py                            # 动量、波动率与形态技术因子
+│   ├── strategies.py                         # 传统多空基准与双均线策略
+│   └── test_crypto_quant.py                  # 100% 离线自动化单元测试
+├── data/                                     # 100% 自包含完整离线数据集 (无需在线抓取)
+│   ├── BTCUSDT_1d_2017_2026.parquet          # 比特币 9年日线 (2017-2026, 3315天)
+│   ├── ETHUSDT_1d_2017_2026.parquet          # 以太坊 9年日线 (2017-2026, 3315天)
+│   ├── BTCUSDT_1h_2021_2026.parquet          # 比特币 5年1小时K线 (49942根)
+│   ├── ETHUSDT_1h_2021_2026.parquet          # 以太坊 5年1小时K线 (49942根)
+│   ├── SOLUSDT_1h_2021_2026.parquet          # 索拉纳 5年1小时K线 (49942根)
+│   ├── BNBUSDT_1h_2021_2026.parquet          # 币安币 5年1小时K线 (49942根)
+│   ├── BTCUSDT_4h_2020_2026.parquet          # 比特币 6年4小时K线 (13348根)
+│   ├── ETHUSDT_4h_2020_2026.parquet          # 以太坊 6年4小时K线 (13348根)
+│   ├── SOLUSDT_4h_2020_2026.parquet          # 索拉纳 6年4小时K线 (13348根)
+│   ├── BNBUSDT_4h_2020_2026.parquet          # 币安币 6年4小时K线 (13348根)
+│   ├── eth_onchain_sentiment_daily.parquet   # DefiLlama 链上资本与情绪日频表
+│   ├── us_stock_macro.parquet                # 美股标普/纳指日频数据
+│   └── grid_evaluation_2024_2025.csv         # 2024-2025 全量网格评测数据表
+├── docs/                                     # 可视化与交互式图表
+│   ├── eth_transformer_equity_curve.png       # ETH 回测净值曲线图
+│   └── eth_backtest_widget.html              # 交互式动态回测仪表盘
+├── predictions/                              # 模型输出概率预测集
+│   ├── test_predictions.parquet              # 2024-2026 全时段模型预测概率序列
+│   ├── val_predictions_2024_2025.parquet     # 2024-2025 验证集概率序列
+│   └── blind_test_predictions_2026.parquet   # 2026 终极盲测集概率序列
+├── WALKTHROUGH.md                            # 双语详尽结题实证研究长文
+├── requirements.txt                          # Python 依赖清单
+├── .gitignore                                # Git 忽略配置
+└── README.md                                 # 机构级中英文项目说明文档
 ```
 
 ---
 
-### 6. Quickstart & Replication / 快速启动与复现
+### 6. Quickstart & Replication / 快速启动与 100% 离线复现
 
 #### 1. 安装依赖环境
 ```bash
@@ -179,19 +198,28 @@ cd crypto
 pip install -r requirements.txt
 ```
 
-#### 2. 运行单元测试
+#### 2. 运行 100% 离线单元测试 (无需网络，50ms 内完成)
 ```bash
 python -m unittest discover -s crypto_quant -p "test_*.py"
 ```
 
-#### 3. 运行多频次与标的网格评测
+#### 3. 一键复现全量标的与 5 档交易频率网格评测
 ```bash
 python -m crypto_quant.evaluate_frequencies
 ```
 
-#### 4. 执行回测并生成净值曲线
+#### 4. 执行多模态 Transformer 实盘级别回测与净值输出
 ```bash
 python -m crypto_quant.backtest_transformer
+```
+
+#### 5. 运行历史全周期牛熊压力测试 (可选)
+```bash
+# 9年日线跨周期多轮牛熊压力测试
+python -m crypto_quant.run_9yr_backtest
+
+# 5年1小时高频策略 A (脉冲跟随) vs 策略 B (做市网格)
+python -m crypto_quant.run_5yr_ab_comparison
 ```
 
 ---

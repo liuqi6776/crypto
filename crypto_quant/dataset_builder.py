@@ -146,17 +146,19 @@ def prepare_crypto_datasets(lookback_len: int = 12, train_end='2023-12-31', val_
     print("Loading 2020-2026 4h crypto data from cache...")
     raw_dfs = {}
     for t in TOKENS:
-        p = f'data/crypto_cache/{t}_4h_2020_2026.parquet'
+        p = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', f'{t}_4h_2020_2026.parquet')
         if not os.path.exists(p):
-            p = f'data/crypto_cache/{t}_4h_2021_2026.parquet'
+            p = f'data/{t}_4h_2020_2026.parquet' 
+        if not os.path.exists(p):
+            p = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', f'{t}_4h_2021_2026.parquet')
         raw_dfs[t] = pd.read_parquet(p)
 
-    macro_path = 'data/crypto_cache/us_stock_macro.parquet'
+    macro_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'us_stock_macro.parquet')
     if not os.path.exists(macro_path):
         raise FileNotFoundError(f"Macro stock cache {macro_path} not found.")
     df_macro = pd.read_parquet(macro_path)
 
-    onchain_path = 'data/crypto_cache/eth_onchain_sentiment_daily.parquet'
+    onchain_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'eth_onchain_sentiment_daily.parquet')
     if not os.path.exists(onchain_path):
         raise FileNotFoundError(f"On-chain sentiment cache {onchain_path} not found.")
     df_onchain = pd.read_parquet(onchain_path)

@@ -9,6 +9,15 @@ import pandas as pd
 
 TOKENS = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT']
 
+def find_project_root():
+    current = os.path.abspath(os.path.dirname(__file__))
+    candidates = [os.path.abspath(os.path.join(current, '..')), current, os.getcwd()]
+    for c in candidates:
+        if os.path.exists(os.path.join(c, 'data')) and os.path.exists(os.path.join(c, 'predictions')):
+            return c
+    return os.getcwd()
+
+
 
 def calculate_metrics(returns_series, bars_per_year=2190):
     """计算专业机构量化指标 (4小时周期，每年 2,190 根K线)"""
@@ -52,7 +61,10 @@ def calculate_metrics(returns_series, bars_per_year=2190):
 
 
 def run_transformer_backtest():
-    pred_path = 'crypto_quant/predictions/test_predictions.parquet'
+    root_dir = find_project_root()
+    pred_path = os.path.join(root_dir, 'predictions', 'test_predictions.parquet')
+    if not os.path.exists(pred_path):
+        pred_path = os.path.join(root_dir, 'crypto_quant', 'predictions', 'test_predictions.parquet')
     if not os.path.exists(pred_path):
         raise FileNotFoundError(f"Predictions file {pred_path} not found.")
 
@@ -60,7 +72,14 @@ def run_transformer_backtest():
     test_idx = df_pred.index
 
     # 1. 加载底层 4h 真实行情
-    raw_dfs = {t: pd.read_parquet(f'data/crypto_cache/{t}_4h_2021_2026.parquet') for t in TOKENS}
+    raw_dfs = {}
+    for t in TOKENS:
+        p = os.path.join(root_dir, 'data', f'{t}_4h_2020_2026.parquet')
+        if not os.path.exists(p):
+            p = os.path.join(root_dir, 'data', f'{t}_4h_2021_2026.parquet')
+        if not os.path.exists(p):
+            p = os.path.join(root_dir, 'data', 'crypto_cache', f'{t}_4h_2021_2026.parquet')
+        raw_dfs[t] = pd.read_parquet(p)
 
     # 计算各资产逐根下根K线收益率 (严格在次根 open 挂单进场，无未来函数)
     rets_df = pd.DataFrame(index=test_idx)
@@ -69,7 +88,9 @@ def run_transformer_backtest():
         rets_df[t] = c.shift(-1) / c - 1
 
     # 加载链上资金流与情绪日线数据 (严格因果前向填充，滞后 1 天)
-    onchain_path = 'data/crypto_cache/eth_onchain_sentiment_daily.parquet'
+    onchain_path = os.path.join(root_dir, 'data', 'eth_onchain_sentiment_daily.parquet')
+    if not os.path.exists(onchain_path):
+        onchain_path = os.path.join(root_dir, 'data', 'crypto_cache', 'eth_onchain_sentiment_daily.parquet')
     df_onchain = pd.read_parquet(onchain_path)
     onchain_aligned = df_onchain.shift(1).reindex(test_idx.normalize(), method='ffill')
     fng = onchain_aligned['fng_score'].values
@@ -188,7 +209,7 @@ def run_transformer_backtest():
         print(f"{s_name:<35} | {ret_2024*100:+8.1f}%  | {ret_2025*100:+8.1f}%  | {ret_2026*100:+8.1f}%")
     print("=" * 72)
 
-    equity_path = 'data/crypto_cache/transformer_backtest_equity.csv'
+    equity_path = os.path.join(root_dir, 'data', 'transformer_backtest_equity.csv')
     equity_df.to_csv(equity_path)
     print(f"\nEquity curves successfully saved to {equity_path}")
 

@@ -109,10 +109,11 @@ SOLUSDT    | 1x / Week (持仓1周)  |   +37.14% | +17.09% | -48.55% |   0.56 | 
 - 🔗 **GitHub 镜像仓库 / Mirror Repository**: [https://github.com/liuqi6776/crypto_quant](https://github.com/liuqi6776/crypto_quant)
 
 ### 交付内容清单 / Delivered Assets:
-1. **算法与回测系统 (`crypto_quant/`)**: 16 个模块，覆盖从数据对齐、技术因子、链上资金情绪、Transformer 训练到步进回测的完整流水线。
-2. **PyTorch 模型权重 (`checkpoints/`)**: 包含在 2020–2023 纯历史数据上训练的 `best_transformer_2020_2023.pt` 以及增强多模态权重。
-3. **高频历史数据 (`data/`)**: 2020–2026 完整 4h K线（BTC, ETH, SOL, BNB）、DefiLlama 链上资本与宏观表、全量回测网格 CSV。
-4. **预测序列集 (`predictions/`)**: 2024–2025 验证集概率序列与 2026 终极封存盲测集预测结果。
-5. **图表与可视化 (`docs/`)**: 高清净值回测曲线与交互式 Web 回测仪表盘。
-6. **机构级双语文档 (`README.md` & `WALKTHROUGH.md`)**: 详尽阐述理论背景、数学损失、频次优选及复现步骤。
+1. **算法与回测系统 (`crypto_quant/`)**: 16 个模块，覆盖从数据对齐、技术因子、链上资金情绪、Transformer 训练到步进回测的完整流水线；
+2. **PyTorch 模型权重 (`checkpoints/`)**: 包含在 2020–2023 纯历史数据上训练的 `best_transformer_2020_2023.pt` 以及增强多模态权重；
+3. **100% 完整离线历史数据集 (`data/`)**: 包含 2017–2026 9 年日线（BTC, ETH）、2021–2026 5 年 1 小时 K 线（BTC, ETH, SOL, BNB）、2020–2026 完整 4h K 线、DefiLlama 链上 TVL/资本流动、美股宏观数据，全部本地内置，**无需访问外网 API**；
+4. **预测序列集 (`predictions/`)**: 2024–2025 验证集概率序列与 2026 终极封存盲测集预测结果；
+5. **图表与可视化 (`docs/`)**: 高清净值回测曲线与交互式 Web 回测仪表盘；
+6. **机构级双语文档 (`README.md` & `WALKTHROUGH.md`)**: 详尽阐述理论背景、数学损失、频次优选及 100% 离线复现步骤。
+
 
