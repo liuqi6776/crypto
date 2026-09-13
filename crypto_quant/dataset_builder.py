@@ -176,14 +176,15 @@ def prepare_crypto_datasets(lookback_len: int = 12, train_end='2023-12-31', val_
             df_onchain
         )
 
-    # 确定有效索引 (剔除前期 rolling nan 与后期 target nan)
-    valid_mask = (
-        ~feat_dfs['SOLUSDT']['ret_42'].isna() & 
-        ~feat_dfs['SOLUSDT']['target_ret_8h'].isna() & 
-        ~feat_dfs['SOLUSDT']['ndx_ret_1d'].isna() &
-        ~feat_dfs['SOLUSDT']['tvl_flow_7d'].isna()
-    )
-    common_idx = feat_dfs['SOLUSDT'][valid_mask].index
+    # 确定有效索引：联合检查全部4大资产特征与目标有效性 (解决审查问题 11: 杜绝单一标的掩码导致的 NaN 泄露)
+    valid_mask = pd.Series(True, index=feat_dfs['BTCUSDT'].index)
+    for t in TOKENS:
+        valid_mask &= ~feat_dfs[t]['ret_42'].isna()
+        valid_mask &= ~feat_dfs[t]['target_ret_8h'].isna()
+        valid_mask &= ~feat_dfs[t]['target_ret_4h'].isna()
+        valid_mask &= ~feat_dfs[t]['ndx_ret_1d'].isna()
+        valid_mask &= ~feat_dfs[t]['tvl_flow_7d'].isna()
+    common_idx = feat_dfs['BTCUSDT'][valid_mask].index
 
     feature_cols = [c for c in feat_dfs['ETHUSDT'].columns if not c.startswith('target_')]
     num_features = len(feature_cols)

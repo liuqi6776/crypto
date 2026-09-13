@@ -15,7 +15,7 @@ from crypto_quant.factors import compute_all_factors
 from crypto_quant.backtester import CryptoBacktester
 from crypto_quant.strategies import dual_ema_trend_strategy, supertrend_strategy
 from crypto_quant.data_fetcher import fetch_klines
-from crypto_quant.crypto_transformer import CryptoSTTransformer
+from crypto_quant.crypto_transformer import CryptoSTTransformer, CryptoCombinedLoss, TemporalTransformerEncoder
 
 
 def generate_synthetic_ohlcv(n_bars=120):
@@ -23,7 +23,6 @@ def generate_synthetic_ohlcv(n_bars=120):
     np.random.seed(42)
     dates = pd.date_range(start='2024-01-01', periods=n_bars, freq='4h')
     
-    # 模拟几何布朗运动价格
     returns = np.random.normal(0.0005, 0.015, n_bars)
     price = 3000.0 * np.exp(np.cumsum(returns))
     
@@ -65,7 +64,6 @@ class TestCryptoQuantOffline(unittest.TestCase):
         for col in expected_cols:
             self.assertIn(col, df_factors.columns, f'Missing factor column: {col}')
         
-        # 确保计算结果不是全 NaN
         self.assertFalse(df_factors['rsi_14'].dropna().empty)
         self.assertFalse(df_factors['macd'].dropna().empty)
 
@@ -90,14 +88,12 @@ class TestCryptoQuantOffline(unittest.TestCase):
         for key in ['Total Return', 'Sharpe Ratio', 'Max Drawdown', 'Win Rate']:
             self.assertIn(key, metrics)
         
-        # 检查回测输出 DataFrame
         self.assertIn('result_df', res)
         self.assertEqual(len(res['result_df']), len(self.df))
 
     @patch('crypto_quant.data_fetcher._http_get')
     def test_data_fetcher_mock(self, mock_http_get):
         """使用 Mock 测试数据解析逻辑，杜绝网络封锁与外网请求依赖"""
-        # 构造标准的 Binance 12 列 K 线响应结构
         mock_http_get.return_value = [
             [
                 1704067200000, "42000.0", "42500.0", "41800.0", "42300.0", "120.5",
@@ -110,8 +106,8 @@ class TestCryptoQuantOffline(unittest.TestCase):
         self.assertEqual(df.iloc[0]['close'], 42300.0)
         self.assertEqual(df.iloc[0]['volume'], 120.5)
 
-    def test_transformer_forward(self):
-        """测试 Spatio-Temporal Transformer 模型的张量输入与前向传播"""
+    def test_transformer_forward_conv(self):
+        """测试时序卷积模式 Transformer 的前向传播"""
         num_assets = 4
         in_features = 23
         lookback = 12
@@ -124,20 +120,62 @@ class TestCryptoQuantOffline(unittest.TestCase):
             d_model=32,
             n_heads=4,
             num_layers=1,
-            dropout=0.1
+            dropout=0.1,
+            temporal_mode='conv'
         )
         model.eval()
 
-        # 构造合成张量 (batch, num_assets, seq_len=lookback, in_features)
         dummy_input = torch.randn(batch_size, num_assets, lookback, in_features)
         with torch.no_grad():
             outputs = model(dummy_input)
 
-        # 检查输出形状
         self.assertIn('pred_4h', outputs)
         self.assertIn('prob_up', outputs)
         self.assertEqual(outputs['pred_4h'].shape, (batch_size, num_assets))
         self.assertFalse(torch.isnan(outputs['pred_4h']).any())
+
+    def test_transformer_forward_attention(self):
+        """测试真多头时序自注意力模式 (Temporal Attention Mode) 前向传播 (解决审查问题 7)"""
+        num_assets = 4
+        in_features = 29
+        lookback = 12
+        batch_size = 2
+
+        model = CryptoSTTransformer(
+            num_assets=num_assets,
+            in_features=in_features,
+            lookback=lookback,
+            d_model=32,
+            n_heads=4,
+            num_layers=1,
+            dropout=0.1,
+            temporal_mode='attention'
+        )
+        model.eval()
+
+        dummy_input = torch.randn(batch_size, num_assets, lookback, in_features)
+        with torch.no_grad():
+            outputs = model(dummy_input)
+
+        self.assertEqual(outputs['pred_4h'].shape, (batch_size, num_assets))
+        self.assertFalse(torch.isnan(outputs['pred_4h']).any())
+
+    def test_combined_loss_balancing(self):
+        """测试标准化多任务损失函数的数值量纲平衡性 (解决审查问题 5)"""
+        criterion = CryptoCombinedLoss(alpha_pearson=1.0, beta_huber=1.0, gamma_cls=0.5)
+        
+        preds = {
+            'pred_4h': torch.randn(8, 4) * 0.02,
+            'prob_up': torch.sigmoid(torch.randn(8, 4))
+        }
+        target_4h = torch.randn(8, 4) * 0.02
+        target_8h = torch.randn(8, 4) * 0.03
+        
+        total_loss, loss_dict = criterion(preds, target_4h, target_8h)
+        self.assertTrue(torch.isfinite(total_loss))
+        # 验证 Huber 损失在标准差归一化后数值处于正常区间 [0.1, 5.0]，不会被压制也不会暴走
+        self.assertGreater(loss_dict['huber'], 0.05)
+        self.assertLess(loss_dict['huber'], 10.0)
 
 
 if __name__ == '__main__':

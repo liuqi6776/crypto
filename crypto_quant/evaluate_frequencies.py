@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Systematic Evaluation: 3 Assets (BTC vs ETH vs SOL) x 5 Frequencies + Buy & Hold
-严格在 2024-2025 验证集上运行 15 组网格评测与基准对比 (含自适应动量退出)
+严格在 2024-2025 验证集上运行 15 组网格评测与基准对比
+100% 严格次根开盘价执行 (Open-to-Open) + shift(1) 滚动 z-score (零自我参照) + 机构级日频重采样夏普
 """
 import os
 import sys
@@ -17,13 +18,13 @@ import pandas as pd
 
 TOKENS = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT']
 
-# 5 档交易频率配置 (清晰中英文说明)
+# 5 档交易频率配置
 FREQUENCIES = {
     'Adaptive (12h)':   {'min_bars': 0, 'desc': 'Adaptive Momentum Exit / 自适应动量退出'},
-    '3x / Day (8h)':    {'min_bars': 2, 'desc': 'Intraday 8h / 日内高频'},
-    '1x / Day (24h)':   {'min_bars': 6, 'desc': 'Daily 24h / 每日一次'},
-    '1x / 3Days (72h)': {'min_bars': 18, 'desc': 'Swing 72h / 三天一次'},
-    '1x / Week (168h)': {'min_bars': 42, 'desc': 'Weekly 168h / 每周一次'}
+    '3x / Day (8h)':    {'min_bars': 2, 'desc': 'Intraday 8h / 日内高频 (持仓2根K线)'},
+    '1x / Day (24h)':   {'min_bars': 6, 'desc': 'Daily 24h / 每日一次 (持仓6根K线)'},
+    '1x / 3Days (72h)': {'min_bars': 18, 'desc': 'Swing 72h / 三天一次 (持仓18根K线)'},
+    '1x / Week (168h)': {'min_bars': 42, 'desc': 'Weekly 168h / 每周一次 (持仓42根K线)'}
 }
 
 
@@ -42,13 +43,25 @@ def find_project_root():
     return os.getcwd()
 
 
-def simulate_frequency_strategy(preds, closes, opens, min_bars, fng_arr, stb_flow_arr, rolling_w=72, cost=0.0005):
+def simulate_frequency_strategy(preds, opens, closes, min_bars, fng_arr, stb_flow_arr, rolling_w=72, cost=0.0005):
     """
     模拟特定交易频次与约束下的实盘交易 (扣除 0.05% Taker 手续费与滑点)
+    
+    【执行口径严格定义 (解决审查问题 10)】:
+    - 信号在第 t 根 4h K 线 close 时产生 (pos[t]);
+    - 挂单严格在第 t+1 根 K 线 open 成交，持有至第 t+2 根 open (收益率 = open[t+2] / open[t+1] - 1);
+    - 平仓时严格在退出对应 K 线的 open 执行，全流程为纯正因果的 Open-to-Open 执行。
+    
+    【z-score 标准化 (解决审查问题 4)】:
+    - 预测序列先执行 shift(1) 再做 rolling 计算，彻底杜绝当前预测值自参照拉偏均值方差的统计偏差。
     """
     n = len(preds)
     p_series = pd.Series(preds.values if hasattr(preds, 'values') else preds)
-    z_score = (p_series - p_series.rolling(rolling_w).mean()) / (p_series.rolling(rolling_w).std() + 1e-8)
+    
+    # 严格先 shift(1) 再 rolling，消除自我参照偏差
+    prior_mean = p_series.shift(1).rolling(rolling_w).mean()
+    prior_std = p_series.shift(1).rolling(rolling_w).std() + 1e-8
+    z_score = (p_series - prior_mean) / prior_std
     z_vals = z_score.values
     
     # 基础入场门槛：模型高置信度 (z > 1.0) + 链上稳定币净流入 (stb > 0) + 避开非理性癫狂 (fng < 85)
@@ -59,7 +72,7 @@ def simulate_frequency_strategy(preds, closes, opens, min_bars, fng_arr, stb_flo
     in_pos = False
     entry_bar = 0
 
-    for i in range(n - 1):
+    for i in range(n - 2):
         if not in_pos:
             if raw_sig[i]:
                 in_pos = True
@@ -91,28 +104,34 @@ def simulate_frequency_strategy(preds, closes, opens, min_bars, fng_arr, stb_flo
                     else:
                         pos[i] = 1.0
 
-    # 严格在次根 open 执行 (次根开盘收益扣除 Taker 手续费摩擦)
-    c_series = pd.Series(closes.values if hasattr(closes, 'values') else closes)
-    rets = (c_series.shift(-1) / c_series - 1).values
+    # 严格次根开盘价执行：第 t 根决策，在 t+1 open 成交，持有至 t+2 open
+    o_series = pd.Series(opens.values if hasattr(opens, 'values') else opens)
+    rets_oto = (o_series.shift(-2) / o_series.shift(-1) - 1).values
     trade_signals = pd.Series(pos).diff().abs().fillna(0).values
-    strat_rets = (pos * rets - trade_signals * cost)[:-1]
-    strat_rets = pd.Series(strat_rets, index=closes.index[:-1] if hasattr(closes, 'index') else None)
+    strat_rets = (pos * rets_oto - trade_signals * cost)[:-2]
+    strat_series = pd.Series(strat_rets, index=opens.index[:-2] if hasattr(opens, 'index') else None)
 
     # 指标计算 (每年 2,190 根 4h K线)
-    cum = (1 + strat_rets).cumprod()
+    cum = (1 + strat_series).cumprod()
     total_ret = cum.iloc[-1] - 1
-    years = len(strat_rets) / 2190
+    years = len(strat_series) / 2190
     cagr = (1 + total_ret) ** (1 / years) - 1 if total_ret > -1 else -1.0
     
-    ann_vol = strat_rets.std() * np.sqrt(2190)
-    sharpe = strat_rets.mean() / (strat_rets.std() + 1e-8) * np.sqrt(2190)
+    # 4h 逐根年化夏普
+    ann_vol_4h = strat_series.std() * np.sqrt(2190)
+    sharpe_4h = strat_series.mean() / (strat_series.std() + 1e-8) * np.sqrt(2190)
+
+    # 机构级日频重采样夏普 (解决审查问题 6: 消除 4h 空仓零值对夏普的稀释/失真)
+    daily_equity = cum.resample('1D').last().ffill()
+    daily_rets = daily_equity.pct_change().dropna()
+    sharpe_daily = daily_rets.mean() / (daily_rets.std() + 1e-8) * np.sqrt(365)
 
     cum_max = cum.cummax()
     drawdown = (cum - cum_max) / cum_max
     mdd = drawdown.min()
     calmar = cagr / abs(mdd) if abs(mdd) > 1e-6 else 0.0
 
-    non_zero = strat_rets[strat_rets != 0]
+    non_zero = strat_series[strat_series != 0]
     win_rate = (non_zero > 0).mean() if len(non_zero) > 0 else 0.0
     exposure = (pos > 0).mean()
 
@@ -120,7 +139,8 @@ def simulate_frequency_strategy(preds, closes, opens, min_bars, fng_arr, stb_flo
         'total_ret': total_ret,
         'cagr': cagr,
         'mdd': mdd,
-        'sharpe': sharpe,
+        'sharpe_4h': sharpe_4h,
+        'sharpe_daily': sharpe_daily,
         'calmar': calmar,
         'win_rate': win_rate,
         'exposure': exposure,
@@ -142,6 +162,7 @@ def run_grid_evaluation():
     df_val = df_full.loc['2024-01-01':'2025-12-31']
     val_idx = df_val.index
     print(f"=== Running 15-Grid Evaluation on 2024-2025 Validation Set ({len(df_val)} bars, {val_idx[0].date()} to {val_idx[-1].date()}) ===")
+    print("=== Execution: Strictly Causal Next-Bar Open-to-Open with Shift(1) Prior Z-Score ===")
 
     # 加载底层行情
     data_dir = os.path.join(root_dir, 'data')
@@ -165,17 +186,20 @@ def run_grid_evaluation():
 
     for token in TOKENS:
         preds = df_val[f'{token}_pred_4h']
-        closes = raw_dfs[token]['close']
         opens = raw_dfs[token]['open']
+        closes = raw_dfs[token]['close']
 
-        # 基准买入持有
-        bh_rets = closes.shift(-1) / closes - 1
-        bh_cum = (1 + bh_rets.iloc[:-1]).cumprod()
+        # 基准买入持有 (同样在 Open-to-Open 口径下评测)
+        bh_rets = opens.shift(-2) / opens.shift(-1) - 1
+        bh_cum = (1 + bh_rets.iloc[:-2]).cumprod()
         bh_tot = bh_cum.iloc[-1] - 1
-        bh_years = len(bh_rets) / 2190
+        bh_years = len(bh_rets.iloc[:-2]) / 2190
         bh_cagr = (1 + bh_tot) ** (1 / bh_years) - 1
         bh_mdd = ((bh_cum - bh_cum.cummax()) / bh_cum.cummax()).min()
-        bh_sharpe = bh_rets.mean() / (bh_rets.std() + 1e-8) * np.sqrt(2190)
+        bh_sharpe_4h = bh_rets.iloc[:-2].mean() / (bh_rets.iloc[:-2].std() + 1e-8) * np.sqrt(2190)
+        
+        bh_daily = bh_cum.resample('1D').last().ffill().pct_change().dropna()
+        bh_sharpe_daily = bh_daily.mean() / (bh_daily.std() + 1e-8) * np.sqrt(365)
 
         grid_results.append({
             'asset': token,
@@ -184,16 +208,17 @@ def run_grid_evaluation():
             'total_ret': bh_tot,
             'cagr': bh_cagr,
             'mdd': bh_mdd,
-            'sharpe': bh_sharpe,
+            'sharpe_4h': bh_sharpe_4h,
+            'sharpe_daily': bh_sharpe_daily,
             'calmar': bh_cagr / abs(bh_mdd),
-            'win_rate': (bh_rets > 0).mean(),
+            'win_rate': (bh_rets.iloc[:-2] > 0).mean(),
             'exposure': 1.0,
             'trades': 1
         })
 
         for freq_name, freq_cfg in FREQUENCIES.items():
             res = simulate_frequency_strategy(
-                preds, closes, opens, 
+                preds, opens, closes, 
                 min_bars=freq_cfg['min_bars'], 
                 fng_arr=fng_arr, 
                 stb_flow_arr=stb_flow_arr
@@ -207,16 +232,16 @@ def run_grid_evaluation():
 
     df_res = pd.DataFrame(grid_results)
     
-    # 打印排版表格
-    print("\n" + "=" * 105)
+    # 打印排版表格 (同时展示 4h Sharpe 与 Daily Resampled Sharpe)
+    print("\n" + "=" * 116)
     print("      2024-2025 VALIDATION SET GRID EVALUATION: 3 ASSETS x 5 FREQUENCIES (STRICT ZERO-LEAK)       ")
-    print("=" * 105)
-    header = f"{'Asset':<10} | {'Frequency':<22} | {'Total Ret':<10} | {'CAGR':<8} | {'MDD':<8} | {'Sharpe':<7} | {'Calmar':<7} | {'Exposure':<9} | {'Trades':<6}"
+    print("=" * 116)
+    header = f"{'Asset':<10} | {'Frequency':<22} | {'Total Ret':<10} | {'CAGR':<8} | {'MDD':<8} | {'4h Sh':<7} | {'Daily Sh':<8} | {'Calmar':<7} | {'Exposure':<9} | {'Trades':<6}"
     print(header)
-    print("-" * 105)
+    print("-" * 116)
     for _, r in df_res.iterrows():
-        print(f"{r['asset']:<10} | {r['freq']:<22} | {r['total_ret']*100:+8.2f}% | {r['cagr']*100:+6.2f}% | {r['mdd']*100:6.2f}% | {r['sharpe']:6.2f} | {r['calmar']:6.2f} | {r['exposure']*100:6.1f}%   | {r['trades']:<6}")
-    print("=" * 105)
+        print(f"{r['asset']:<10} | {r['freq']:<22} | {r['total_ret']*100:+8.2f}% | {r['cagr']*100:+6.2f}% | {r['mdd']*100:6.2f}% | {r['sharpe_4h']:6.2f} | {r['sharpe_daily']:8.2f} | {r['calmar']:6.2f} | {r['exposure']*100:6.1f}%   | {r['trades']:<6}")
+    print("=" * 116)
 
     out_csv = os.path.join(data_dir, 'grid_evaluation_2024_2025.csv')
     cols_to_save = [c for c in df_res.columns if c != 'cum_curve']
