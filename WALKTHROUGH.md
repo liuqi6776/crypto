@@ -98,3 +98,21 @@ SOLUSDT    | 1x / Week (持仓1周)  |   +37.14% | +17.09% | -48.55% |   0.56 | 
 > 在 2026 年全市场各大主流币深度下挫 **-12% 至 -20%**、现货最深跌幅腰斩（-40% ~ -58%）的极度恶劣行情中：
 > **自适应 Transformer 策略在三个标的上全部守住本金，回撤全部控制在 10% 以内（BTC 仅回撤 4.9%，SOL 回撤 7.0%，ETH 回撤 9.1%），并逆势实现正收益（BTC +7.5%，SOL +4.0%）**！
 > 这直接证明了模型没有过拟合，其基于跨币种注意力与链上资金流的机制具备跨周期、跨年份的真实鲁棒性！
+
+---
+
+## 4. Code & Data Repository Deployment / 代码与数据仓库交付
+
+所有研究代码、数据集、PyTorch模型权重、回测预测结果与双语技术文档已完成打包并上传至 GitHub：
+
+- 🔗 **GitHub 主仓库 / Primary Repository**: [https://github.com/liuqi6776/crypto](https://github.com/liuqi6776/crypto)
+- 🔗 **GitHub 镜像仓库 / Mirror Repository**: [https://github.com/liuqi6776/crypto_quant](https://github.com/liuqi6776/crypto_quant)
+
+### 交付内容清单 / Delivered Assets:
+1. **算法与回测系统 (`crypto_quant/`)**: 16 个模块，覆盖从数据对齐、技术因子、链上资金情绪、Transformer 训练到步进回测的完整流水线。
+2. **PyTorch 模型权重 (`checkpoints/`)**: 包含在 2020–2023 纯历史数据上训练的 `best_transformer_2020_2023.pt` 以及增强多模态权重。
+3. **高频历史数据 (`data/`)**: 2020–2026 完整 4h K线（BTC, ETH, SOL, BNB）、DefiLlama 链上资本与宏观表、全量回测网格 CSV。
+4. **预测序列集 (`predictions/`)**: 2024–2025 验证集概率序列与 2026 终极封存盲测集预测结果。
+5. **图表与可视化 (`docs/`)**: 高清净值回测曲线与交互式 Web 回测仪表盘。
+6. **机构级双语文档 (`README.md` & `WALKTHROUGH.md`)**: 详尽阐述理论背景、数学损失、频次优选及复现步骤。
+
