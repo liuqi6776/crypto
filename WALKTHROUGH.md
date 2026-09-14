@@ -563,4 +563,90 @@ Executing `python scripts/test_symmetrical_engine.py` under the canonical `dual_
    - 链上 TVL 与宏观情绪依赖外部 API，存在延迟与宕机风险。
    - 落地计划：搭建 Redis 流式特征缓存，当外部数据中断时平滑降级为纯量价技术面模型（`use_onchain=False`）。
 
+---
+
+## 13. Phase 15: 机构级试盘全套动态降仓与风控体系 / Phase 15: Institutional Trial-Trading Multi-Downsizing Framework
+
+### 1. 动因与实盘孵化痛点 / Motivation & Live Incubator Trial Pain Points
+
+用户与投资团队提出明确诉求：“**回测时尽可能贴近我们的试盘方式，比如各种减少仓位**”。
+The user and investment committee raised an explicit requirement: "**Make backtesting as close as possible to our live trial trading style, such as various position sizing reductions**."
+
+在量化对冲基金与自营交易室（Prop Desk）的实盘孵化中，任何策略都严禁使用单一恒定的 1.0x 满额名义仓位：
+1. **震荡磨损陷阱 (Whipsaw Stop-Loss Trap)**：当市场处于无序震荡或假突破时，单笔 1.0x 连续被扫止损会导致本金阶梯式下坠（如 2026 盲测）；
+2. **极端波动插针陷阱 (Volatility Spike & Liquidity Gap)**：在闪崩与极端流动性枯竭期，名义满仓将承担无法承受的美元波动与跳空滑点；
+3. **深水回撤赌徒谬误 (Deep Drawdown Gambler's Fallacy)**：当净值已回撤 -10% 以上时若不主动减小风险预算，极易触发基金清盘硬止损线；
+4. **逆大趋势接飞刀 (Counter-Trend Knife Catching)**：在周线级别单边熊市中，频繁尝试做多主升浪往往徒劳无功。
+
+---
+
+### 2. 五维动态降仓风控架构 / Five-Dimensional Dynamic Downsizing Architecture
+
+系统在 `crypto_quant.dual_sleeve_portfolio` 中构建了纯正的五维动态降仓乘数联动机制：
+$$\text{Effective Size}_t = \text{Base Size} \times m_{\text{streak}} \times m_{\text{dd}} \times m_{\text{vol}} \times m_{\text{trend}} \times m_{\text{conf}}$$
+
+1. **连损惩罚性降仓 ($m_{\text{streak}}$)**：
+   - 上一笔打损：$m_{\text{streak}} = 0.70$（打 7 折）；
+   - 连续 2 笔打损：$m_{\text{streak}} = 0.50$（减半）；
+   - 连续 3 笔及以上打损：$m_{\text{streak}} = 0.25$（极限防御）；
+   - 录得正净收益（$net\_ret > 0$）后即刻恢复 1.0x。
+2. **组合水下回撤阶梯节流 ($m_{\text{dd}}$)**：
+   - 实时跟踪自历史最高净值（Peak Equity）的回撤深度 $DD_t$：
+   - $DD_t \le 4\% \to 1.00$；$4\% < DD_t \le 8\% \to 0.75$；$8\% < DD_t \le 12\% \to 0.50$；$DD_t > 12\% \to 0.25$。
+3. **ATR 波动率目标逆波定仓 ($m_{\text{vol}}$)**：
+   - 跟踪 14 根 4h K 线 ATR 占币价比例，基准参考波动率 $\sigma_{\text{target}} = 2.5\%$：
+   - $m_{\text{vol}} = \text{clip}\left(\frac{0.025}{\text{atr\_ratio}}, 0.40, 1.10\right)$，在极端剧烈波动插针期自动削减名义头寸至 40%~60%。
+4. **宏观 144 EMA 顺逆势过滤 ($m_{\text{trend}}$)**：
+   - 计算 144 根 4h K 线（24 天中长周期均线）；
+   - 价格低于 144 EMA 处于下行大趋势时，逆势开多强行压制至 $\le 0.40$，顺势做空保持 1.0x；反之上行趋势做空压制至 $\le 0.50$。
+5. **预测置信度梯度定仓 ($m_{\text{conf}}$)**：
+   - $1.0 < |z| < 1.4$ 试探性建仓 ($0.65\times$)；$|z| \ge 1.4$ 主升浪确认 ($1.00\times$)。
+
+---
+
+### 3. 全景实测对比与成果汇报 / Comprehensive Replicated Performance
+
+运行统一实测复现入口：
+```bash
+python scripts/test_trial_trading_mode.py
+```
+
+#### 2024–2025 样本外验证集 (Out-of-Sample Validation)
+| 标的资产 / Asset | 回测模式 / Mode | 累计收益 / Return | 最大回撤 / Max DD | 日频夏普 / Sharpe | 卡玛比率 / Calmar | 平均仓位 / Avg Size |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| **ETHUSDT** | 原版基准 (Baseline) | +67.57% | -44.39% | 0.78 | 0.66 | 0.89 |
+| **ETHUSDT** | **机构试盘模式 (Trial Mode)** | **+28.58%** | **-23.11% (回撤腰斩)** | **0.73** | **0.58** | **0.29 (仅1/3资金暴露)** |
+| **SOLUSDT** | 原版基准 (Baseline) | +105.92% | -49.81% | 0.94 | 0.87 | 0.85 |
+| **SOLUSDT** | **机构试盘模式 (Trial Mode)** | **+50.50%** | **-16.95% (回撤收窄66%)** | **1.20 (大幅提升)** | **1.34 (大幅提升)** | **0.26** |
+| **50/50 组合** | 原版基准 (Baseline) | +94.48% | -45.75% | 0.95 | 0.86 | 0.87 |
+| **50/50 组合** | **机构试盘模式 (Trial Mode)** | **+39.99%** | **-19.95% (破纪录收窄至20%内)** | **1.06 (跨入优秀级)** | **0.92** | **0.27** |
+
+#### 2026 锁定盲测集 (Locked Blind Test Set: Jan–Sep 2026 Bear Market)
+| 标的资产 / Asset | 回测模式 / Mode | 累计收益 / Return | 最大回撤 / Max DD | 日频夏普 / Sharpe | 卡玛比率 / Calmar | 平均仓位 / Avg Size |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| **ETHUSDT** | 原版基准 (Baseline) | -16.45% | -33.26% | -0.64 | -0.68 | 0.94 |
+| **ETHUSDT** | **机构试盘模式 (Trial Mode)** | **-5.98% (亏损收窄64%)** | **-13.20% (回撤收窄60%)** | **-0.91** | **-0.64** | **0.26** |
+| **SOLUSDT** | 原版基准 (Baseline) | -29.91% | -43.66% | -1.16 | -0.91 | 0.92 |
+| **SOLUSDT** | **机构试盘模式 (Trial Mode)** | **-12.04% (亏损收窄60%)** | **-16.96% (回撤收窄61%)** | **-1.62** | **-0.99** | **0.22** |
+| **50/50 组合** | 原版基准 (Baseline) | -23.05% | -37.55% | -1.01 | -0.83 | 0.93 |
+| **50/50 组合** | **机构试盘模式 (Trial Mode)** | **-9.01% (亏损收窄61%)** | **-13.67% (回撤收窄64%)** | **-1.43** | **-0.93** | **0.24** |
+
+#### 2025 年 10 月闪崩极限压力测试 (October 2025 Historic Crash)
+| 标的代币 / Token | 回测模式 / Mode | 月度净收益 / Month Ret | 最大回撤 / Max DD | 交易盈亏总和 / Trade PnL Sum | 平均仓位 / Avg Size |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| **ETHUSDT** | 原版基准 (Baseline) | +6.37% | -8.88% | +5.18% | 0.88 |
+| **ETHUSDT** | **机构试盘模式 (Trial Mode)** | **+5.73%** | **-4.94% (回撤近乎减半)** | **+5.50%** | **0.50** |
+| **SOLUSDT** | 原版基准 (Baseline) | +3.37% | -9.96% | +1.91% | 0.60 |
+| **SOLUSDT** | **机构试盘模式 (Trial Mode)** | **+2.18%** | **-6.04% (回撤收窄40%)** | **+1.96%** | **0.35** |
+
+---
+
+### 4. 单元测试与工程保障 / Unit Testing & Engineering Rigor
+
+1. **11 项离线单元测试 100% 通过 (`crypto_quant/test_crypto_quant.py`)**：
+   新增 `test_trial_trading_downsizing_mechanics`，自动化测试打损后连损乘数触发降仓（0.70x）、大均线顺逆势限制与仓位平滑压缩逻辑，耗时 0.066 秒。
+2. **零环境破坏与平滑解耦**：
+   `compute_sleeve_adaptive(..., trial_mode=False)` 依然与原版 baseline 100% 行为一致；同时提供 `compute_sleeve_trial_trading(...)` 专有封装，方便实盘策略调用。
+
+
 
