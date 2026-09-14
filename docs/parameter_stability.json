@@ -1,0 +1,72 @@
+{
+  "parameter_grid_results": [
+    {
+      "parameter_neighborhood": "Baseline (1.0 Z, 0.20 DB, 1.0x SL)",
+      "deadband": 0.2,
+      "stop_loss_mult": 1.0,
+      "val_return_pct": 23.76,
+      "val_sharpe": 0.82,
+      "val_max_dd_pct": -18.93,
+      "val_calmar": 0.59
+    },
+    {
+      "parameter_neighborhood": "-20% Deadband (0.16 DB)",
+      "deadband": 0.16,
+      "stop_loss_mult": 1.0,
+      "val_return_pct": 21.17,
+      "val_sharpe": 0.75,
+      "val_max_dd_pct": -19.32,
+      "val_calmar": 0.52
+    },
+    {
+      "parameter_neighborhood": "+20% Deadband (0.24 DB)",
+      "deadband": 0.24,
+      "stop_loss_mult": 1.0,
+      "val_return_pct": 24.75,
+      "val_sharpe": 0.87,
+      "val_max_dd_pct": -15.43,
+      "val_calmar": 0.76
+    },
+    {
+      "parameter_neighborhood": "-20% Stop Loss (Tighter Stops)",
+      "deadband": 0.2,
+      "stop_loss_mult": 0.8,
+      "val_return_pct": 8.37,
+      "val_sharpe": 0.41,
+      "val_max_dd_pct": -17.34,
+      "val_calmar": 0.24
+    },
+    {
+      "parameter_neighborhood": "+20% Stop Loss (Looser Stops)",
+      "deadband": 0.2,
+      "stop_loss_mult": 1.2,
+      "val_return_pct": 30.79,
+      "val_sharpe": 0.95,
+      "val_max_dd_pct": -19.18,
+      "val_calmar": 0.75
+    },
+    {
+      "parameter_neighborhood": "Defensive Neighborhood (-20% DB, +20% SL)",
+      "deadband": 0.16,
+      "stop_loss_mult": 1.2,
+      "val_return_pct": 27.98,
+      "val_sharpe": 0.88,
+      "val_max_dd_pct": -19.42,
+      "val_calmar": 0.68
+    },
+    {
+      "parameter_neighborhood": "Aggressive Neighborhood (+20% DB, -20% SL)",
+      "deadband": 0.24,
+      "stop_loss_mult": 0.8,
+      "val_return_pct": 15.88,
+      "val_sharpe": 0.65,
+      "val_max_dd_pct": -13.82,
+      "val_calmar": 0.55
+    }
+  ],
+  "plateau_metrics": {
+    "mean_sharpe": 0.76,
+    "std_sharpe": 0.17,
+    "coeff_of_variation_pct": 22.25
+  }
+}

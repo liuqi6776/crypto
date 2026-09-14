@@ -1,0 +1,21 @@
+{
+  "iterations": 2000,
+  "block_size_days": 6,
+  "sample_period": "2024-01-01 to 2025-12-31",
+  "ci_95": {
+    "return_lower_pct": -16.06,
+    "return_upper_pct": 106.75,
+    "return_median_pct": 28.1,
+    "sharpe_lower": -0.59,
+    "sharpe_upper": 2.23,
+    "sharpe_median": 0.89,
+    "mdd_lower_pct": -29.48,
+    "mdd_upper_pct": -7.9,
+    "mdd_median_pct": -14.91
+  },
+  "probabilities": {
+    "p_return_gt_zero": 0.869,
+    "p_sharpe_gt_zero": 0.8805,
+    "p_beat_buy_and_hold": 0.5075
+  }
+}

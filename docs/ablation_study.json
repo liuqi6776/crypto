@@ -1,0 +1,68 @@
+{
+  "ablation_results": [
+    {
+      "stage_id": "S1",
+      "configuration": "Raw Signal Only",
+      "val_return_pct": -11.81,
+      "val_sharpe": -0.65,
+      "val_max_dd_pct": -11.88,
+      "val_calmar": -0.51
+    },
+    {
+      "stage_id": "S2",
+      "configuration": "+ FNG Sentiment",
+      "val_return_pct": -11.81,
+      "val_sharpe": -0.65,
+      "val_max_dd_pct": -11.88,
+      "val_calmar": -0.51
+    },
+    {
+      "stage_id": "S3",
+      "configuration": "+ Funding Filter",
+      "val_return_pct": -11.81,
+      "val_sharpe": -0.65,
+      "val_max_dd_pct": -11.88,
+      "val_calmar": -0.51
+    },
+    {
+      "stage_id": "S4",
+      "configuration": "+ EMA Trend Filter",
+      "val_return_pct": 35.25,
+      "val_sharpe": 0.93,
+      "val_max_dd_pct": -23.04,
+      "val_calmar": 0.71
+    },
+    {
+      "stage_id": "S5",
+      "configuration": "+ Volatility Sizing (ATR)",
+      "val_return_pct": 35.25,
+      "val_sharpe": 0.93,
+      "val_max_dd_pct": -23.04,
+      "val_calmar": 0.71
+    },
+    {
+      "stage_id": "S6",
+      "configuration": "+ Drawdown Throttle (m_dd)",
+      "val_return_pct": 23.76,
+      "val_sharpe": 0.82,
+      "val_max_dd_pct": -18.93,
+      "val_calmar": 0.59
+    },
+    {
+      "stage_id": "S7",
+      "configuration": "+ Loss Streak Throttle",
+      "val_return_pct": 23.76,
+      "val_sharpe": 0.82,
+      "val_max_dd_pct": -18.93,
+      "val_calmar": 0.59
+    },
+    {
+      "stage_id": "S8",
+      "configuration": "Full Institutional System",
+      "val_return_pct": 23.76,
+      "val_sharpe": 0.82,
+      "val_max_dd_pct": -18.93,
+      "val_calmar": 0.59
+    }
+  ]
+}

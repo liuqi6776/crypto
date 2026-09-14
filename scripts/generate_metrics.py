@@ -28,6 +28,7 @@ sys.path.insert(0, str(ROOT_DIR))
 from crypto_quant.execution_model import ExecutionModel
 from crypto_quant.continuous_backtest import ContinuousBacktestEngine
 from crypto_quant.portfolio import MultiAssetPortfolioEngine
+from crypto_quant.data_aligner import get_lag_policy
 
 
 def compute_file_hash(filepath: Path) -> str:
@@ -103,16 +104,19 @@ def main():
 
     metrics = {
         "metadata": {
-            "system": "Crypto Transformer Multi-Asset Quantitative Engine (Phase 16)",
+            "system": "Crypto Transformer Multi-Asset Quantitative Engine (Phase 17)",
             "git_commit": get_git_commit(),
             "generated_at": pd.Timestamp.utcnow().isoformat(),
             "data_hashes": data_hashes,
+            "lag_policy": get_lag_policy(),
             "assumptions": {
-                "execution": "Continuous intrabar High/Low stops with conservative gap fill",
+                "execution_timing": "Causal signal confirmed at bar t close -> orders filled at bar t+1 open",
+                "stop_model": "Continuous intrabar High/Low stops with conservative gap fill",
                 "funding": "Event-based 8h settlement (00:00, 08:00, 16:00 UTC)",
                 "fees": "0.04% taker fee + 0.04% regular slippage + 0.10% stop slippage + 0.15% gap slippage",
                 "stop_losses": {"ETHUSDT": 0.025, "SOLUSDT": 0.050},
                 "deadband": 0.20,
+                "portfolio_risk": "Synchronized MTM drawdown throttling and max gross 1.50x / net 1.00x leverage constraints",
             },
             "disclaimer": "Research backtest result under stated continuous simulation assumptions. Not an independently verified live-trading result.",
         },

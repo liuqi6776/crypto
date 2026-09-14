@@ -1,0 +1,70 @@
+{
+  "cost_stress_results": [
+    {
+      "name": "5 bps (VIP/Tier-1)",
+      "one_way_friction_bps": 5,
+      "val_return_pct": 33.66,
+      "val_sharpe": 1.06,
+      "val_max_dd_pct": -18.17,
+      "val_calmar": 0.86,
+      "full_return_pct": 26.94,
+      "full_sharpe": 0.75,
+      "full_max_dd_pct": -24.31
+    },
+    {
+      "name": "8 bps (Baseline Tier)",
+      "one_way_friction_bps": 8,
+      "val_return_pct": 23.76,
+      "val_sharpe": 0.82,
+      "val_max_dd_pct": -18.93,
+      "val_calmar": 0.59,
+      "full_return_pct": 16.2,
+      "full_sharpe": 0.51,
+      "full_max_dd_pct": -26.52
+    },
+    {
+      "name": "10 bps (Retail Default)",
+      "one_way_friction_bps": 10,
+      "val_return_pct": 13.53,
+      "val_sharpe": 0.56,
+      "val_max_dd_pct": -19.2,
+      "val_calmar": 0.34,
+      "full_return_pct": 5.58,
+      "full_sharpe": 0.26,
+      "full_max_dd_pct": -27.76
+    },
+    {
+      "name": "15 bps (Moderate Stress)",
+      "one_way_friction_bps": 15,
+      "val_return_pct": 1.25,
+      "val_sharpe": 0.16,
+      "val_max_dd_pct": -20.2,
+      "val_calmar": 0.03,
+      "full_return_pct": -7.55,
+      "full_sharpe": -0.13,
+      "full_max_dd_pct": -29.87
+    },
+    {
+      "name": "20 bps (High Stress)",
+      "one_way_friction_bps": 20,
+      "val_return_pct": -15.05,
+      "val_sharpe": -0.56,
+      "val_max_dd_pct": -22.54,
+      "val_calmar": -0.35,
+      "full_return_pct": -24.23,
+      "full_sharpe": -0.84,
+      "full_max_dd_pct": -33.4
+    },
+    {
+      "name": "30 bps (Severe Illiquid)",
+      "one_way_friction_bps": 30,
+      "val_return_pct": -28.65,
+      "val_sharpe": -1.49,
+      "val_max_dd_pct": -28.65,
+      "val_calmar": -0.54,
+      "full_return_pct": -38.48,
+      "full_sharpe": -1.76,
+      "full_max_dd_pct": -40.54
+    }
+  ]
+}

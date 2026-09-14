@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "system": "Crypto Transformer Multi-Asset Quantitative Engine (Phase 16)",
-    "git_commit": "10ed1a617a27348420655bf23571f30532e321ba",
-    "generated_at": "2026-09-14T02:47:08.049874+00:00",
+    "system": "Crypto Transformer Multi-Asset Quantitative Engine (Phase 17)",
+    "git_commit": "8e1a679bee6e7568aeedafeec1ba2e9c99bcc600",
+    "generated_at": "2026-09-14T05:47:19.288216+00:00",
     "data_hashes": {
       "test_predictions": "39c92d54ad123a5c",
       "eth_market": "246cf4910e242c80",
@@ -10,15 +10,23 @@
       "funding_rates": "689c17f14054ad2a",
       "fng_sentiment": "5faaa20c7cc437e1"
     },
+    "lag_policy": {
+      "fng": "1d_lag_ffill",
+      "macro": "1d_lag_ffill",
+      "onchain": "1d_lag_ffill",
+      "funding": "1_bar_lag_ffill"
+    },
     "assumptions": {
-      "execution": "Continuous intrabar High/Low stops with conservative gap fill",
+      "execution_timing": "Causal signal confirmed at bar t close -> orders filled at bar t+1 open",
+      "stop_model": "Continuous intrabar High/Low stops with conservative gap fill",
       "funding": "Event-based 8h settlement (00:00, 08:00, 16:00 UTC)",
       "fees": "0.04% taker fee + 0.04% regular slippage + 0.10% stop slippage + 0.15% gap slippage",
       "stop_losses": {
         "ETHUSDT": 0.025,
         "SOLUSDT": 0.05
       },
-      "deadband": 0.2
+      "deadband": 0.2,
+      "portfolio_risk": "Synchronized MTM drawdown throttling and max gross 1.50x / net 1.00x leverage constraints"
     },
     "disclaimer": "Research backtest result under stated continuous simulation assumptions. Not an independently verified live-trading result."
   },
@@ -26,33 +34,38 @@
     "val_2024_2025": {
       "start_date": "2024-01-01",
       "end_date": "2025-12-31",
-      "portfolio_return_pct": 22.62,
-      "portfolio_max_drawdown_pct": -16.95,
-      "portfolio_daily_sharpe": 0.83,
-      "portfolio_calmar_ratio": 0.63,
+      "portfolio_return_pct": 23.76,
+      "portfolio_max_drawdown_pct": -18.93,
+      "portfolio_daily_sharpe": 0.82,
+      "portfolio_calmar_ratio": 0.59,
       "asset_metrics": {
         "ETHUSDT": {
           "start_date": "2024-01-01",
           "end_date": "2025-12-31",
-          "total_return_pct": 4.97,
-          "max_drawdown_pct": -19.13,
-          "daily_sharpe": 0.25,
-          "calmar_ratio": 0.13,
-          "win_rate_pct": 45.08,
-          "profit_factor": 1.06,
-          "total_trades": 366,
-          "carryover_position": null
+          "total_return_pct": 11.86,
+          "max_drawdown_pct": -11.4,
+          "daily_sharpe": 0.78,
+          "calmar_ratio": 0.51,
+          "win_rate_pct": 44.77,
+          "profit_factor": 1.05,
+          "total_trades": 373,
+          "carryover_position": {
+            "position": 0.55,
+            "entry_time": "2023-12-31 16:00:00",
+            "entry_price": 2299.9195999999997,
+            "unrealized_pnl": -0.006259150217216402
+          }
         },
         "SOLUSDT": {
           "start_date": "2024-01-01",
           "end_date": "2025-12-31",
-          "total_return_pct": 40.28,
-          "max_drawdown_pct": -17.06,
-          "daily_sharpe": 1.09,
-          "calmar_ratio": 1.08,
-          "win_rate_pct": 52.89,
-          "profit_factor": 1.29,
-          "total_trades": 329,
+          "total_return_pct": 11.86,
+          "max_drawdown_pct": -11.4,
+          "daily_sharpe": 0.78,
+          "calmar_ratio": 0.51,
+          "win_rate_pct": 51.96,
+          "profit_factor": 1.25,
+          "total_trades": 331,
           "carryover_position": null
         }
       }
@@ -60,38 +73,37 @@
     "stress_2026": {
       "start_date": "2026-01-01",
       "end_date": "2026-09-13",
-      "portfolio_return_pct": -4.82,
-      "portfolio_max_drawdown_pct": -7.95,
-      "portfolio_daily_sharpe": -1.3,
-      "portfolio_calmar_ratio": -0.86,
+      "portfolio_return_pct": -6.09,
+      "portfolio_max_drawdown_pct": -9.8,
+      "portfolio_daily_sharpe": -1.34,
+      "portfolio_calmar_ratio": -0.88,
       "asset_metrics": {
         "ETHUSDT": {
           "start_date": "2026-01-01",
           "end_date": "2026-09-13",
-          "total_return_pct": -4.99,
-          "max_drawdown_pct": -7.34,
+          "total_return_pct": -3.36,
+          "max_drawdown_pct": -5.41,
           "daily_sharpe": -1.36,
-          "calmar_ratio": -0.96,
-          "win_rate_pct": 42.7,
-          "profit_factor": 0.73,
-          "total_trades": 89,
+          "calmar_ratio": -0.88,
+          "win_rate_pct": 40.23,
+          "profit_factor": 0.7,
+          "total_trades": 87,
           "carryover_position": {
-            "symbol": "ETHUSDT",
-            "position": -0.17875000000000002,
-            "entry_time": "2025-12-31 16:00:00",
-            "entry_price": 2969.9615400000002,
-            "unrealized_pnl_pct": -0.06
+            "position": -0.1,
+            "entry_time": "2025-12-31 20:00:00",
+            "entry_price": 2969.971536,
+            "unrealized_pnl": -0.0004163361316874671
           }
         },
         "SOLUSDT": {
           "start_date": "2026-01-01",
           "end_date": "2026-09-13",
-          "total_return_pct": -4.7,
-          "max_drawdown_pct": -8.89,
-          "daily_sharpe": -1.08,
-          "calmar_ratio": -0.75,
+          "total_return_pct": -3.36,
+          "max_drawdown_pct": -5.41,
+          "daily_sharpe": -1.36,
+          "calmar_ratio": -0.88,
           "win_rate_pct": 43.04,
-          "profit_factor": 0.78,
+          "profit_factor": 0.8,
           "total_trades": 79,
           "carryover_position": null
         }
@@ -100,33 +112,33 @@
     "october_2025": {
       "start_date": "2025-10-01",
       "end_date": "2025-10-31",
-      "portfolio_return_pct": -0.95,
-      "portfolio_max_drawdown_pct": -2.46,
-      "portfolio_daily_sharpe": -1.37,
-      "portfolio_calmar_ratio": -4.43,
+      "portfolio_return_pct": -0.84,
+      "portfolio_max_drawdown_pct": -2.91,
+      "portfolio_daily_sharpe": -1.11,
+      "portfolio_calmar_ratio": -3.35,
       "asset_metrics": {
         "ETHUSDT": {
           "start_date": "2025-10-01",
           "end_date": "2025-10-31",
-          "total_return_pct": -0.42,
-          "max_drawdown_pct": -2.11,
-          "daily_sharpe": -0.61,
-          "calmar_ratio": -2.37,
-          "win_rate_pct": 50.0,
-          "profit_factor": 0.94,
-          "total_trades": 22,
+          "total_return_pct": -0.47,
+          "max_drawdown_pct": -1.64,
+          "daily_sharpe": -1.13,
+          "calmar_ratio": -3.4,
+          "win_rate_pct": 47.37,
+          "profit_factor": 1.09,
+          "total_trades": 19,
           "carryover_position": null
         },
         "SOLUSDT": {
           "start_date": "2025-10-01",
           "end_date": "2025-10-31",
-          "total_return_pct": -1.32,
-          "max_drawdown_pct": -2.87,
-          "daily_sharpe": -1.64,
-          "calmar_ratio": -5.19,
-          "win_rate_pct": 53.33,
-          "profit_factor": 0.75,
-          "total_trades": 15,
+          "total_return_pct": -0.47,
+          "max_drawdown_pct": -1.64,
+          "daily_sharpe": -1.13,
+          "calmar_ratio": -3.4,
+          "win_rate_pct": 38.46,
+          "profit_factor": 0.63,
+          "total_trades": 13,
           "carryover_position": null
         }
       }
@@ -134,33 +146,38 @@
     "full_history": {
       "start_date": "2024-01-01",
       "end_date": "2026-09-13",
-      "portfolio_return_pct": 16.68,
-      "portfolio_max_drawdown_pct": -23.5,
-      "portfolio_daily_sharpe": 0.54,
-      "portfolio_calmar_ratio": 0.25,
+      "portfolio_return_pct": 16.2,
+      "portfolio_max_drawdown_pct": -26.52,
+      "portfolio_daily_sharpe": 0.51,
+      "portfolio_calmar_ratio": 0.22,
       "asset_metrics": {
         "ETHUSDT": {
           "start_date": "2024-01-01",
           "end_date": "2026-09-13",
-          "total_return_pct": -0.32,
-          "max_drawdown_pct": -23.1,
-          "daily_sharpe": 0.05,
-          "calmar_ratio": -0.01,
-          "win_rate_pct": 44.62,
-          "profit_factor": 1.01,
-          "total_trades": 455,
-          "carryover_position": null
+          "total_return_pct": 8.08,
+          "max_drawdown_pct": -15.97,
+          "daily_sharpe": 0.47,
+          "calmar_ratio": 0.18,
+          "win_rate_pct": 43.91,
+          "profit_factor": 1.0,
+          "total_trades": 460,
+          "carryover_position": {
+            "position": 0.55,
+            "entry_time": "2023-12-31 16:00:00",
+            "entry_price": 2299.9195999999997,
+            "unrealized_pnl": -0.006259150217216402
+          }
         },
         "SOLUSDT": {
           "start_date": "2024-01-01",
           "end_date": "2026-09-13",
-          "total_return_pct": 33.68,
-          "max_drawdown_pct": -24.13,
-          "daily_sharpe": 0.8,
-          "calmar_ratio": 0.47,
-          "win_rate_pct": 50.86,
-          "profit_factor": 1.21,
-          "total_trades": 409,
+          "total_return_pct": 8.08,
+          "max_drawdown_pct": -15.97,
+          "daily_sharpe": 0.47,
+          "calmar_ratio": 0.18,
+          "win_rate_pct": 50.12,
+          "profit_factor": 1.18,
+          "total_trades": 411,
           "carryover_position": null
         }
       }
@@ -170,33 +187,38 @@
     "val_2024_2025": {
       "start_date": "2024-01-01",
       "end_date": "2025-12-31",
-      "portfolio_return_pct": 12.36,
-      "portfolio_max_drawdown_pct": -44.69,
-      "portfolio_daily_sharpe": 0.35,
-      "portfolio_calmar_ratio": 0.13,
+      "portfolio_return_pct": -11.81,
+      "portfolio_max_drawdown_pct": -11.88,
+      "portfolio_daily_sharpe": -0.65,
+      "portfolio_calmar_ratio": -0.51,
       "asset_metrics": {
         "ETHUSDT": {
           "start_date": "2024-01-01",
           "end_date": "2025-12-31",
-          "total_return_pct": 6.74,
-          "max_drawdown_pct": -47.69,
-          "daily_sharpe": 0.28,
-          "calmar_ratio": 0.07,
-          "win_rate_pct": 44.81,
-          "profit_factor": 1.06,
-          "total_trades": 366,
-          "carryover_position": null
+          "total_return_pct": -5.9,
+          "max_drawdown_pct": -5.94,
+          "daily_sharpe": -0.67,
+          "calmar_ratio": -0.5,
+          "win_rate_pct": 37.5,
+          "profit_factor": 0.77,
+          "total_trades": 56,
+          "carryover_position": {
+            "position": 0.5,
+            "entry_time": "2023-12-31 16:00:00",
+            "entry_price": 2299.9195999999997,
+            "unrealized_pnl": -0.005705058967145801
+          }
         },
         "SOLUSDT": {
           "start_date": "2024-01-01",
           "end_date": "2025-12-31",
-          "total_return_pct": 17.98,
-          "max_drawdown_pct": -49.36,
-          "daily_sharpe": 0.42,
-          "calmar_ratio": 0.17,
-          "win_rate_pct": 52.89,
-          "profit_factor": 1.1,
-          "total_trades": 329,
+          "total_return_pct": -5.9,
+          "max_drawdown_pct": -5.94,
+          "daily_sharpe": -0.67,
+          "calmar_ratio": -0.5,
+          "win_rate_pct": 50.0,
+          "profit_factor": 0.7,
+          "total_trades": 50,
           "carryover_position": null
         }
       }
@@ -204,39 +226,33 @@
     "stress_2026": {
       "start_date": "2026-01-01",
       "end_date": "2026-09-13",
-      "portfolio_return_pct": -30.02,
-      "portfolio_max_drawdown_pct": -39.4,
-      "portfolio_daily_sharpe": -1.47,
-      "portfolio_calmar_ratio": -1.02,
+      "portfolio_return_pct": 0.0,
+      "portfolio_max_drawdown_pct": 0.0,
+      "portfolio_daily_sharpe": 0.0,
+      "portfolio_calmar_ratio": 0.0,
       "asset_metrics": {
         "ETHUSDT": {
           "start_date": "2026-01-01",
           "end_date": "2026-09-13",
-          "total_return_pct": -28.08,
-          "max_drawdown_pct": -37.32,
-          "daily_sharpe": -1.35,
-          "calmar_ratio": -1.01,
-          "win_rate_pct": 42.7,
-          "profit_factor": 0.73,
-          "total_trades": 89,
-          "carryover_position": {
-            "symbol": "ETHUSDT",
-            "position": -1.0,
-            "entry_time": "2025-12-31 16:00:00",
-            "entry_price": 2969.9615400000002,
-            "unrealized_pnl_pct": -0.34
-          }
+          "total_return_pct": 0.0,
+          "max_drawdown_pct": 0.0,
+          "daily_sharpe": 0.0,
+          "calmar_ratio": 0.0,
+          "win_rate_pct": 0.0,
+          "profit_factor": 0.0,
+          "total_trades": 0,
+          "carryover_position": null
         },
         "SOLUSDT": {
           "start_date": "2026-01-01",
           "end_date": "2026-09-13",
-          "total_return_pct": -31.78,
-          "max_drawdown_pct": -43.89,
-          "daily_sharpe": -1.28,
-          "calmar_ratio": -0.96,
-          "win_rate_pct": 44.3,
-          "profit_factor": 0.74,
-          "total_trades": 79,
+          "total_return_pct": 0.0,
+          "max_drawdown_pct": 0.0,
+          "daily_sharpe": 0.0,
+          "calmar_ratio": 0.0,
+          "win_rate_pct": 0.0,
+          "profit_factor": 0.0,
+          "total_trades": 0,
           "carryover_position": null
         }
       }
@@ -244,33 +260,33 @@
     "october_2025": {
       "start_date": "2025-10-01",
       "end_date": "2025-10-31",
-      "portfolio_return_pct": -4.6,
-      "portfolio_max_drawdown_pct": -11.29,
-      "portfolio_daily_sharpe": -1.2,
-      "portfolio_calmar_ratio": -3.86,
+      "portfolio_return_pct": 0.0,
+      "portfolio_max_drawdown_pct": 0.0,
+      "portfolio_daily_sharpe": 0.0,
+      "portfolio_calmar_ratio": 0.0,
       "asset_metrics": {
         "ETHUSDT": {
           "start_date": "2025-10-01",
           "end_date": "2025-10-31",
-          "total_return_pct": -3.44,
-          "max_drawdown_pct": -11.28,
-          "daily_sharpe": -0.8,
-          "calmar_ratio": -3.08,
-          "win_rate_pct": 50.0,
-          "profit_factor": 0.91,
-          "total_trades": 22,
+          "total_return_pct": 0.0,
+          "max_drawdown_pct": 0.0,
+          "daily_sharpe": 0.0,
+          "calmar_ratio": 0.0,
+          "win_rate_pct": 0.0,
+          "profit_factor": 0.0,
+          "total_trades": 0,
           "carryover_position": null
         },
         "SOLUSDT": {
           "start_date": "2025-10-01",
           "end_date": "2025-10-31",
-          "total_return_pct": -5.41,
-          "max_drawdown_pct": -12.5,
-          "daily_sharpe": -1.24,
-          "calmar_ratio": -3.93,
-          "win_rate_pct": 53.33,
-          "profit_factor": 0.81,
-          "total_trades": 15,
+          "total_return_pct": 0.0,
+          "max_drawdown_pct": 0.0,
+          "daily_sharpe": 0.0,
+          "calmar_ratio": 0.0,
+          "win_rate_pct": 0.0,
+          "profit_factor": 0.0,
+          "total_trades": 0,
           "carryover_position": null
         }
       }
@@ -278,33 +294,38 @@
     "full_history": {
       "start_date": "2024-01-01",
       "end_date": "2026-09-13",
-      "portfolio_return_pct": -21.48,
-      "portfolio_max_drawdown_pct": -66.13,
-      "portfolio_daily_sharpe": -0.02,
-      "portfolio_calmar_ratio": -0.13,
+      "portfolio_return_pct": -11.81,
+      "portfolio_max_drawdown_pct": -11.88,
+      "portfolio_daily_sharpe": -0.56,
+      "portfolio_calmar_ratio": -0.38,
       "asset_metrics": {
         "ETHUSDT": {
           "start_date": "2024-01-01",
           "end_date": "2026-09-13",
-          "total_return_pct": -23.44,
-          "max_drawdown_pct": -59.5,
-          "daily_sharpe": -0.05,
-          "calmar_ratio": -0.16,
-          "win_rate_pct": 44.4,
-          "profit_factor": 0.99,
-          "total_trades": 455,
-          "carryover_position": null
+          "total_return_pct": -5.9,
+          "max_drawdown_pct": -5.94,
+          "daily_sharpe": -0.58,
+          "calmar_ratio": -0.38,
+          "win_rate_pct": 37.5,
+          "profit_factor": 0.77,
+          "total_trades": 56,
+          "carryover_position": {
+            "position": 0.5,
+            "entry_time": "2023-12-31 16:00:00",
+            "entry_price": 2299.9195999999997,
+            "unrealized_pnl": -0.005705058967145801
+          }
         },
         "SOLUSDT": {
           "start_date": "2024-01-01",
           "end_date": "2026-09-13",
-          "total_return_pct": -19.52,
-          "max_drawdown_pct": -71.23,
-          "daily_sharpe": 0.08,
-          "calmar_ratio": -0.11,
-          "win_rate_pct": 51.1,
-          "profit_factor": 1.02,
-          "total_trades": 409,
+          "total_return_pct": -5.9,
+          "max_drawdown_pct": -5.94,
+          "daily_sharpe": -0.58,
+          "calmar_ratio": -0.38,
+          "win_rate_pct": 50.0,
+          "profit_factor": 0.7,
+          "total_trades": 50,
           "carryover_position": null
         }
       }
