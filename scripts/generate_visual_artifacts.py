@@ -27,7 +27,17 @@ img_lev = docs_dir / "eth_sol_leverage_comparison.png"
 img_alpha = docs_dir / "eth_excess_alpha_curve.png"
 
 # 1. Build individual inline cards in docs and brain
+img_trial = docs_dir / "trial_vs_baseline_comparison.png"
+
 for out_dir in set([docs_dir, artifact_dir]):
+    if img_trial.exists():
+        build_inline_card(
+            str(img_trial),
+            str(out_dir / "widget_trial_vs_baseline.html"),
+            "机构试盘动态降仓对比 (Trial-Trading Multi-Downsizing vs. Baseline)",
+            "5维动态降仓：连损节流、水下回撤阶梯缩仓、ATR逆波定仓、144 EMA宏观大趋势顺逆势过滤 | 组合回撤收窄至 -19.95%"
+        )
+
     build_inline_card(
         str(img_dist),
         str(out_dir / "widget_trade_distribution.html"),
@@ -51,6 +61,17 @@ for out_dir in set([docs_dir, artifact_dir]):
 
 # 2. Build multi-tab interactive dashboard
 dashboard_items = [
+    {
+        "name": "🛡️ 机构试盘动态降仓对比 (Trial vs Baseline)",
+        "path": str(img_trial),
+        "desc": "五维动态降仓联动体系（连损节流、组合水下回撤阶梯、ATR逆波定仓、144 EMA趋势过滤、置信度分批）：将组合最大回撤彻底压制在 -20% 合规红线之内，2026 熊市盲测磨损亏损减少超 61%！",
+        "metrics": [
+            ("50/50 试盘最大回撤", "-19.95%", "原版基准 -45.75%，现货 -61.01%，压缩超 56%", "text-emerald-400"),
+            ("50/50 试盘日频夏普", "1.06", "原版基准 0.95，现货 0.53，跨入优秀级", "text-blue-400"),
+            ("2026 盲测最大回撤", "-13.67%", "原版基准 -37.55%，现货 -55.76%，收窄 64%", "text-purple-400"),
+            ("平均资金占用率", "24% ~ 27%", "73% 资金保持纯现金储备，极高抗风险余量", "text-amber-400"),
+        ]
+    },
     {
         "name": "📊 每笔交易收益分布 (Symmetrical Long/Short)",
         "path": str(img_dist),
@@ -91,8 +112,8 @@ for out_file in [docs_dir / "index.html", docs_dir / "eth_sol_interactive_dashbo
     build_multi_dashboard(
         dashboard_items,
         str(out_file),
-        "ETH & SOL 量化策略全景看板 (Phase 13 双向多空真阿尔法版 - 严谨实测对齐)",
-        "Transformer 时空关联网络 · 激活对称双向做空、零贝塔纯阿尔法与全档位杠杆对冲分析 (扣除资金费与实盘滑点)"
+        "ETH & SOL 量化策略全景看板 (Phase 15 试盘动态降仓与风控实测对齐版)",
+        "Transformer 时空关联网络 · 激活对称双向做空、五维试盘动态降仓、零贝塔纯阿尔法与全周期风控分析"
     )
 
 print("All visual widgets and interactive dashboard generated successfully!")
