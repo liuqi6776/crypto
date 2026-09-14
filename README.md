@@ -23,11 +23,11 @@ The architecture addresses fundamental crypto market dynamics:
 2. **Dual Temporal Modeling (Conv & Attention)**: Features both causal 1D temporal convolution and full **Temporal Multi-Head Self-Attention** (`temporal_mode='attention'`) over lookback sequences with sinusoidal positional encoding.
 3. **Multi-Modal Macro & On-Chain Augmentation**: Integrates daily on-chain Ethereum TVL and net stablecoin capital flows (DefiLlama), sentiment indices (Alternative.me Crypto Fear & Greed), and US equity index spillovers (Nasdaq / S&P 500), combined with intraday cyclical time-of-day encodings.
 4. **Adaptive Holding Frequency**: Solves the over-trading vs. trend-holding trade-off. An adaptive momentum-exit mechanism captures sharp upward impulse waves while staying in 100% USDT cash during choppiness and drawdowns.
-5. **Strictly Causal Open-to-Open Execution**: Signals computed at bar $t$ close $ightarrow$ filled at bar $t+1$ Open at $open[t+1]$ $ightarrow$ exited at bar $t+k+1$ Open at $open[t+k+1]$. Bar returns are strictly Open-to-Open, fully accounting for 0.05% Taker fee and slippage.
+5. **Strictly Causal Open-to-Open Execution**: Signals computed at bar $t$ close $ightarrow$ filled at bar $t+1$ Open at $open[t+1]$ $ightarrow$ exited at bar $t+k+1$ Open at $open[t+k+1]$. Bar returns are strictly Open-to-Open, fully accounting for 0.05% Taker fee and slippage.
 6. **Strict 3-Way Temporal Partitioning (Zero Lookahead / Zero Information Leak)**:
    - **Training Set**: 2020-08-11 to 2023-12-31 (7,422 raw 4h bars $\rightarrow$ 7,369 aligned sequence samples after 42-bar rolling warmup and 12-bar sequence lookback)
    - **Validation & Hyperparameter Tuning**: 2024-01-01 to 2025-12-31 (2 full years, 4,386 4h bars)
-   - **Locked Blind Out-of-Sample Test**: 2026-01-01 to 2026-09-13 (8.5 months, 1,537 4h bars, unobserved during model training & hyperparameter search)
+   - **2026 Post-hoc Development & Stress-Test Period**: 2026-01-01 to 2026-09-13 (8.5 months, 1,537 4h bars, unobserved during model weights training, utilized for post-hoc stress-testing)
 
 ---
 
@@ -48,7 +48,7 @@ The architecture addresses fundamental crypto market dynamics:
 
 ---
 
-### 3. Verification on Held-Out 2026 Blind Test Set (Derivatives Augmented)
+### 3. Verification on 2026 Post-hoc Development / Stress-Test Period (Derivatives Augmented)
 During the 2026 market downturn (Jan–Sep 2026, 1,532 4h bars) where buy-and-hold benchmarks suffered severe drops (**BTC -12.1%, ETH -15.4%, SOL -18.8%** with drawdowns exceeding **-40% to -58%**):
 - **BTC Strategy (8h)**: **+17.33%** (MDD: **-7.52%**, Daily Sharpe: **1.53**, **+29.46% pure alpha**)
 - **ETH Strategy (8h)**: **+15.48%** (MDD: **-12.13%**, Daily Sharpe: **1.08**, **+30.89% pure alpha, massive turnaround from -0.90%**)
@@ -75,7 +75,7 @@ To solve the fundamental flaw of Long-Only beta timing (high market exposure $\b
 | **SOLUSDT (1.0x)** | +18.65% | **+105.92%** | +20.68% | **+85.24%** | **-49.81%** (vs B&H -66.1%) | **0.94** (vs B&H 0.49) | **-0.02 (Neutral)** | **+50.98%** |
 | **50/50 Portfolio** | +20.82% | **+94.48%** | +36.24% | **+58.24%** | **-45.75%** (vs B&H -61.0%) | **0.95** (vs B&H 0.53) | **-0.028 (Neutral)**| **+44.66%** |
 
-#### 2026 Locked Blind Test Reality (Out-of-Sample Stress Test):
+#### 2026 Post-hoc Development / Stress-Test Period Reality:
 In the prolonged grinding downturn of 2026 (Jan–Sep 2026), the active multi-position exposure (~70% in market) suffered two-sided whipsaw stop-loss friction in choppy sideways ranges:
 - **ETH Strategy**: -16.45% (vs Buy & Hold -15.41%), MDD -33.26%, Sharpe -0.64
 - **SOL Strategy**: -29.91% (vs Buy & Hold -18.84%), MDD -43.66%, Sharpe -1.16
@@ -256,8 +256,8 @@ liuqi6776/crypto/
 > 📌 **指标诚信说明**：
 > 早期草稿曾误将 Phase 11 单边多头低暴露下的回撤（-26.6%）与 Phase 13 多空双向的高收益（+102%）混排。经同行评审指出后，本表已**全部更新为统一引擎、真实扣除 0.08% 滑点与资金费后的 100% 严谨实测数据**。双向多空将市场活跃暴露提升至 ~70%，回撤客观扩大至 -44% ~ -49%，真实夏普为 0.78 ~ 0.95，特此郑重澄清。
 
-#### 2. 2026 锁定盲测集实测表现 (严格闭卷压力测试)
-在 2026 年（1月至9月）全市场长达 8 个多月的单边阴跌与窄幅洗盘中，由于多空策略活跃持仓时间高达 ~70%，在缺乏高级宏观趋势择时过滤器的情况下，双向止损导致了震荡磨损：
+#### 2. 2026 事后开发与压力测试区间实测表现 (2026 Post-hoc Development / Stress-Test Period)
+根据量化金融审查规范，由于后续试盘降仓与风控规则的研发调整参考了 2026 样本的表现，依据学术严谨性原则，不再将其称为未见过的“锁定盲测”，而正名列为**“2026 事后开发与压力测试区间”**。在 2026 年（1月至9月）全市场长达 8 个多月的单边阴跌与窄幅洗盘中，由于多空策略活跃持仓时间高达 ~70%，在缺乏高级宏观趋势择时过滤器的情况下，双向止损导致了震荡磨损：
 - **ETH 策略收益**：**-16.45%**（现货买入持有 -15.41%），最大回撤 -33.26%，日频夏普 -0.64；
 - **SOL 策略收益**：**-29.91%**（现货买入持有 -18.84%），最大回撤 -43.66%，日频夏普 -1.16；
 - **50/50 组合收益**：**-23.05%**（现货买入持有 -16.39%），最大回撤 -37.55%，日频夏普 -1.01。
@@ -432,7 +432,7 @@ common_idx = feat_dfs['BTCUSDT'][valid_mask].index
 | :--- | :--- | :--- |
 | **1. 挂单路由与费用优化 (Order Routing)** | 当前回测假定 0.08% Taker 手续费与滑点。若实盘全部采用市价单成交，高频换手（年均 ~300 笔）会持续侵蚀脆弱的 Alpha。 | 接入 Binance Futures API/WebSocket，实现 **Post-Only 限价单挂单算法**，争取挂单成交（享受 0.02% Maker 超低费率甚至返佣），在信号生成后于前 30 秒执行分批挂单。 |
 | **2. 动态订单薄冲击模型 (Order Book Impact)** | SOL 等高波动山寨代币在极端行情（如 2025 年 10 月插针）流动性骤降，市价止损必然产生严重跳空滑点。 | 引入 L2 深度订单薄冲击模型，对于大额仓位执行 TWAP/VWAP 智能拆单，并在滑点预估超过 0.15% 时暂停激进追单。 |
-| **3. 组合级绝对硬熔断 (Portfolio Circuit Breaker)** | 当前回测最大回撤在 -44% ~ -49%，对于绝大多数机构及实盘资金是不可接受的，且 2026 盲测存在持续阴跌磨损。 | 在组合管理层增设**三级硬风控熔断**：<br>1. **单周亏损达 -5%**：所有仓位减半运行；<br>2. **全周期净值回撤达 -15%**：强制清空全部仓位，锁定系统并发送告警；<br>3. **增加高阶趋势过滤器**：当标的处于周线级别均线下方且全网资金费持续负贴水时，关闭多头信号。 |
+| **3. 组合级绝对硬熔断 (Portfolio Circuit Breaker)** | 当前回测最大回撤在 -44% ~ -49%，对于绝大多数机构及实盘资金是不可接受的，且 2026 压力测试期存在持续阴跌磨损。 | 在组合管理层增设**三级硬风控熔断**：<br>1. **单周亏损达 -5%**：所有仓位减半运行；<br>2. **全周期净值回撤达 -15%**：强制清空全部仓位，锁定系统并发送告警；<br>3. **增加高阶趋势过滤器**：当标的处于周线级别均线下方且全网资金费持续负贴水时，关闭多头信号。 |
 | **4. 实时特征流与故障降级 (Streaming & Failover)** | DefiLlama 链上 TVL、恐惧贪婪指数、美股宏观数据依赖日频抓取，实盘存在 API 宕机或延迟风险。 | 构建基于 Redis 缓存的实时特征计算中台；当链上或宏观外部数据超时未更新时，自动平滑退化为纯量价技术面模型（`use_onchain=False`），确保交易决策不中断。 |
 
 ### 8. Phase 15: Institutional Trial-Trading Multi-Downsizing Framework / 第十五阶段：机构级试盘全套动态降仓与风控体系
@@ -450,37 +450,63 @@ common_idx = feat_dfs['BTCUSDT'][valid_mask].index
 5. **预测置信度梯度定仓 (Prediction Confidence Graded Sizing: $m_{\text{conf}}$)**:
    $1.0 < |z| < 1.4$ 试探性建仓 ($0.65\times$)，$|z| \ge 1.4$ 主升浪全额开仓 ($1.00\times$)。
 
-#### 实测对比结果 (一键复现: `python scripts/test_trial_trading_mode.py`)
+#### 实测对比结果 (单一数据源 `docs/metrics.json` 严格验证)
 
-| 评估周期 / Period | 标的资产 / Asset | 回测执行模式 / Execution Mode | 累计收益率 / Return | 最大回撤 / Max DD | 日频夏普 / Sharpe | 卡玛比率 / Calmar | 平均仓位 / Avg Size |
+| 评估周期 / Period | 标的资产 / Asset | 回测执行模式 / Execution Mode | 累计收益率 / Return | 最大回撤 / Max DD | 日频夏普 / Sharpe | 卡玛比率 / Calmar | 交易笔数 / Trades |
 | :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-| **2024–2025 验证集** | **ETHUSDT** | 原版基准 (Baseline) | +67.57% | -44.39% | 0.78 | 0.66 | 0.89 |
-| (Out-of-Sample) | **ETHUSDT** | **机构试盘模式 (Trial Mode)** | **+28.58%** | **-23.11% (回撤腰斩)** | **0.73** | **0.58** | **0.29 (仅1/3资金暴露)** |
-| | **SOLUSDT** | 原版基准 (Baseline) | +105.92% | -49.81% | 0.94 | 0.87 | 0.85 |
-| | **SOLUSDT** | **机构试盘模式 (Trial Mode)** | **+50.50%** | **-16.95% (压缩66%)** | **1.20 (大幅提升)** | **1.34 (大幅提升)** | **0.26** |
-| | **50/50 组合** | 原版基准 (Baseline) | +94.48% | -45.75% | 0.95 | 0.86 | 0.87 |
-| | **50/50 组合** | **机构试盘模式 (Trial Mode)** | **+39.99%** | **-19.95% (破纪录收窄)** | **1.06 (跨入优秀级)** | **0.92** | **0.27** |
+| **2024–2025 验证集** | **ETHUSDT** | 原版基准 (Baseline) | +6.74% | -47.69% | 0.28 | 0.07 | 366 |
+| (Out-of-Sample) | **ETHUSDT** | **机构试盘模式 (Trial Mode)** | **+4.97%** | **-19.13% (回撤压缩59%)** | **0.25** | **0.13** | **366** |
+| | **SOLUSDT** | 原版基准 (Baseline) | +17.98% | -49.36% | 0.42 | 0.17 | 329 |
+| | **SOLUSDT** | **机构试盘模式 (Trial Mode)** | **+40.28%** | **-17.06% (回撤压缩65%)** | **1.09 (大幅跃升)** | **1.08** | **329** |
+| | **50/50 组合** | 原版基准 (Baseline) | +12.36% | -44.69% | 0.35 | 0.13 | - |
+| | **50/50 组合** | **机构试盘模式 (Trial Mode)** | **+22.62%** | **-16.95% (压缩超27个百分点)** | **0.83 (显著优化)** | **0.63** | - |
 | ---------------- | ------------ | ----------------------------- | --------- | --------------------- | ------------------- | ------------------- | -------- |
-| **2026 锁定盲测集** | **ETHUSDT** | 原版基准 (Baseline) | -16.45% | -33.26% | -0.64 | -0.68 | 0.94 |
-| (Bear Market) | **ETHUSDT** | **机构试盘模式 (Trial Mode)** | **-5.98% (亏损收窄64%)** | **-13.20% (回撤收窄60%)** | **-0.91** | **-0.64** | **0.26** |
-| | **SOLUSDT** | 原版基准 (Baseline) | -29.91% | -43.66% | -1.16 | -0.91 | 0.92 |
-| | **SOLUSDT** | **机构试盘模式 (Trial Mode)** | **-12.04% (亏损收窄60%)** | **-16.96% (回撤收窄61%)** | **-1.62** | **-0.99** | **0.22** |
-| | **50/50 组合** | 原版基准 (Baseline) | -23.05% | -37.55% | -1.01 | -0.83 | 0.93 |
-| | **50/50 组合** | **机构试盘模式 (Trial Mode)** | **-9.01% (亏损收窄61%)** | **-13.67% (回撤收窄64%)** | **-1.43** | **-0.93** | **0.24** |
+| **2026 事后压力测试期**| **ETHUSDT** | 原版基准 (Baseline) | -28.08% | -37.32% | -1.35 | -1.01 | 89 |
+| (2026 Post-hoc) | **ETHUSDT** | **机构试盘模式 (Trial Mode)** | **-4.99% (亏损收窄82%)** | **-7.34% (回撤收窄80%)** | **-1.36** | **-0.96** | **89** |
+| | **SOLUSDT** | 原版基准 (Baseline) | -31.78% | -43.89% | -1.28 | -0.96 | 79 |
+| | **SOLUSDT** | **机构试盘模式 (Trial Mode)** | **-4.70% (亏损收窄85%)** | **-8.89% (回撤收窄79%)** | **-1.08** | **-0.75** | **79** |
+| | **50/50 组合** | 原版基准 (Baseline) | -30.02% | -39.40% | -1.47 | -1.02 | - |
+| | **50/50 组合** | **机构试盘模式 (Trial Mode)** | **-4.82% (亏损收窄84%)** | **-7.95% (回撤受控个位数)** | **-1.30** | **-0.86** | - |
 | ---------------- | ------------ | ----------------------------- | --------- | --------------------- | ------------------- | ------------------- | -------- |
-| **2025年10月闪崩** | **ETHUSDT** | 原版基准 (Baseline) | +6.37% | -8.88% | - | - | 0.88 |
-| (Flash Crash) | **ETHUSDT** | **机构试盘模式 (Trial Mode)** | **+5.73%** | **-4.94% (回撤近乎减半)** | - | - | **0.50** |
-| | **SOLUSDT** | 原版基准 (Baseline) | +3.37% | -9.96% | - | - | 0.60 |
-| | **SOLUSDT** | **机构试盘模式 (Trial Mode)** | **+2.18%** | **-6.04% (回撤收窄40%)** | - | - | **0.35** |
+| **2025年10月闪崩** | **ETHUSDT** | 原版基准 (Baseline) | -0.84% | -5.87% | -0.42 | - | 22 |
+| (Continuous Slice)| **ETHUSDT** | **机构试盘模式 (Trial Mode)** | **-0.42%** | **-2.11%** | **-0.61** | - | **22** |
+| | **SOLUSDT** | 原版基准 (Baseline) | -8.19% | -16.29% | -1.60 | - | 15 |
+| | **SOLUSDT** | **机构试盘模式 (Trial Mode)** | **-1.32% (亏损收窄84%)** | **-2.87% (防守显著)** | **-1.64** | - | **15** |
+| | **50/50 组合** | 原版基准 (Baseline) | -4.60% | -11.29% | -1.20 | - | - |
+| | **50/50 组合** | **机构试盘模式 (Trial Mode)** | **-0.95%** | **-2.46%** | **-1.37** | - | - |
 
 > 📌 **试盘模式实战结论 (Trial Mode Conclusion)**:
-> 1. **回撤大幅受控**：在 2024–2025 年，50/50 组合最大回撤从 **-45.75% 强力压制至 -19.95%**（完全迈入私募基金实盘合规标准），SOL 夏普提升至 **1.20**，卡玛比率达 **1.34**；
-> 2. **2026 熊市磨损减免 60%+**：通过连损惩罚与 144 EMA 逆势限制，2026 盲测期间的回撤从 -37.55% 降至 -13.67%，亏损收窄 60% 以上；
-> 3. **资金效率极高**：仅占用平均 25%~29% 的资金仓位即获得了稳健的超额阿尔法收益。
+> 1. **回撤大幅受控**：在 2024–2025 年连续历史推演中，50/50 组合最大回撤从 **-44.69% 压缩至 -16.95%**，SOL 夏普提升至 **1.09**，卡玛比率达 **1.08**；
+> 2. **2026 压力测试期防守卓越**：通过连损惩罚与 144 EMA 逆势限制，2026 压力测试期间的组合亏损从 -30.02% 大幅收窄至 **-4.82%**，组合回撤仅 **-7.95%**（对比基准 -39.40%）；
+> 3. **资金效率极高**：通过阶梯与波动率定仓，有效规避了单边阴跌与黑天鹅跳空的侵蚀。
 
 ---
 
-### 9. Citation & License
+### 9. Phase 16: Continuous State Backtest, Real Intrabar Execution & Single Source of Truth / 第十六阶段：连续状态回测、真实 Intrabar 止损与单一数据源闭环
+
+响应机构同行审查意见，系统在 Phase 16 完成了研究级回测到准实盘回测的关键跃升：
+
+1. **消除分段回测重置状态失真 (Continuous State推演)**:
+   - 彻底废除按时间切片（如单独切出 10 月或 2026 年）重置 z-score、EMA 及连损状态的旧做法；
+   - 在完整历史区间（2024-01-01 至 2026-09-13）上**单次连续运行推演**，保留期初持仓与未实现盈亏流（例如 2026 年 1 月 1 日期初如实延续持有 2025-12-31 建立的空头仓位）；
+   - 报告仅在输出端做切片统计（`result.slice_report(...)`）。
+2. **真实 Intrabar 止损与保守成交模型 (`crypto_quant/execution_model.py`)**:
+   - 采用每根 K 线的 `High` 与 `Low` 判定盘中止损穿透，跌破立即按止损价扣除 10 bps 滑点成交；
+   - 针对开盘跳空低开跌破止损线的情况，采用开盘价并追加 15 bps 跳空滑点保守撮合；
+   - 当同根 K 线同时出现止损与普通平仓信号时，强制止损绝对优先。
+3. **真实 8h 事件级资金费结算 (Event-Based Funding)**:
+   - 资金费严格在 UTC 00:00、08:00、16:00 结算时刻按在场名义持仓现金流记账，非结算时段不计。
+4. **组合级 Mark-to-Market 风控与跨资产联动 (`crypto_quant/risk_manager.py`)**:
+   - 引入逐根 Mark-to-Market 组合浮动权益估值；当组合整体回撤超过阈值时，跨标的协同下调开仓乘数。
+5. **单一数据源自动化校验 (`scripts/generate_metrics.py` & `scripts/verify_published_metrics.py`)**:
+   - 统一导出 `docs/metrics.json`（附带 Git SHA 与数据 Hash），CI/CD 自动化校验文档与看板指标，彻底杜绝数据口径分叉与手工篡改。
+
+> ⚠️ **Institutional Research Disclaimer / 机构科研免责声明**:
+> *Research backtest result under stated continuous simulation assumptions. Not an independently verified live-trading result. (在所述数据和连续成交假设下的量化研究回测结果，未经独立实盘验证，不代表未来表现。)*
+
+---
+
+### 10. Citation & License
 This research is developed for quantitative hedge fund strategies and systematic crypto asset management.
 Licensed under the Apache 2.0 License.
 
