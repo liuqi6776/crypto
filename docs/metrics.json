@@ -1,8 +1,8 @@
 {
   "metadata": {
     "system": "Crypto Transformer Multi-Asset Quantitative Engine (Phase 17)",
-    "git_commit": "9ffe66099107ac8e4a252e9c750ecbe9ffb25e9f",
-    "generated_at": "2026-09-14T05:53:36.422404+00:00",
+    "git_commit": "5a200ab132b71317cb1aa197b8e9b3b3959331d0",
+    "generated_at": "2026-09-14T06:33:23.195252+00:00",
     "data_hashes": {
       "test_predictions": "39c92d54ad123a5c",
       "eth_market": "246cf4910e242c80",
