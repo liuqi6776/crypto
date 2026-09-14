@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Dual-Sleeve Portfolio Engine for Spatio-Temporal Transformer Quantitative System (Phase 12)
+Dual-Sleeve Portfolio Engine for Spatio-Temporal Transformer Quantitative System (Phase 13)
 Features:
-- Multi-Factor Top-Exhaustion Radar (Price Extension, Perpetual Funding Crowding, FNG Euphoria)
-- Dynamic Continuous Position Sizing w_t in [0.35, 1.0] (Automatic High-Point Downsizing)
-- State-Driven Re-entry: Zero Clock Freezes! Re-entry unlocked on stabilization candle.
-- Sleeve 1 (70%): Adaptive Momentum with Dynamic High-Point Sizing & Hard Stop-Loss
-- Sleeve 2 (30%): 8h Micro-Momentum Basis Arbitrage (3x / Day)
+- Symmetrical Long/Short True Alpha Execution (Decoupled from Market Beta)
+- Multi-Factor Top/Bottom Risk Radar (EMA Stretch, Perpetual Funding Crowding, FNG Sentiment)
+- Symmetrical Dynamic Position Sizing (w_long and w_short in [0.35, 1.0])
+- Symmetrical Hard Stop-Loss (Long stop-loss and Short stop-loss)
+- Sleeve 1 (70%): Symmetrical Adaptive Momentum with Dynamic Sizing & Stop-Loss
+- Sleeve 2 (30%): 8h Symmetrical Micro-Momentum Basis Arbitrage (3x / Day)
 """
 
 import os
@@ -15,32 +16,48 @@ import numpy as np
 import pandas as pd
 
 
-def compute_top_exhaustion_risk(closes, funding_rate, fng_score):
+def compute_top_and_bottom_risk(closes, funding_rate, fng_score):
     """
-    Computes a composite Top-Exhaustion Risk Index in [0.0, 1.0] based on:
+    Computes both Top-Exhaustion Risk and Bottom-Exhaustion Risk indices in [0.0, 1.0]:
     1. 72-bar (12-day) EMA Price Extension / Stretch
-    2. Binance 8h perpetual funding rate
+    2. Binance 8h perpetual funding rate crowding
     3. Alternative.me Fear & Greed Index
+    Returns:
+    - size_long: Position size for Long trades [0.35, 1.0] (downsized at overheated peaks)
+    - size_short: Position size for Short trades [0.35, 1.0] (downsized at capitulation bottoms)
     """
     ema72 = closes.shift(1).ewm(span=72).mean()
-    stretch72 = ((closes.shift(1) - ema72) / (ema72 + 1e-8)).fillna(0.0).values
+    stretch = ((closes.shift(1) - ema72) / (ema72 + 1e-8)).fillna(0.0).values
 
-    stretch_risk = np.clip(stretch72 / 0.05, 0.0, 1.0) # 0 to 1 as stretch goes 0% -> +5%
-    funding_risk = np.clip((funding_rate * 100.0) / 0.02, 0.0, 1.0) # 0 to 1 as funding goes 0 -> 0.02%
-    fng_risk = np.clip((fng_score - 60.0) / 25.0, 0.0, 1.0) # 0 to 1 as FNG goes 60 -> 85
+    stretch_risk = np.clip(stretch / 0.05, -1.0, 1.0)
+    fund_risk = np.clip((funding_rate * 100.0) / 0.02, -1.0, 1.0)
+    fng_risk = np.clip((fng_score - 50.0) / 30.0, -1.0, 1.0)
 
-    composite_risk = 0.45 * stretch_risk + 0.35 * funding_risk + 0.20 * fng_risk
-    # Continuous Position Sizing: 1.0 at low risk, scales down to 0.35 at peak overheat
-    pos_size = np.clip(1.0 - 0.65 * np.maximum(0.0, composite_risk - 0.25) / 0.75, 0.35, 1.0)
-    return composite_risk, pos_size
+    top_risk = 0.45 * np.maximum(0.0, stretch_risk) + 0.35 * np.maximum(0.0, fund_risk) + 0.20 * np.maximum(0.0, fng_risk)
+    bot_risk = 0.45 * np.maximum(0.0, -stretch_risk) + 0.35 * np.maximum(0.0, -fund_risk) + 0.20 * np.maximum(0.0, -fng_risk)
+
+    size_long = np.clip(1.0 - 0.65 * np.maximum(0.0, top_risk - 0.25) / 0.75, 0.35, 1.0)
+    size_short = np.clip(1.0 - 0.65 * np.maximum(0.0, bot_risk - 0.25) / 0.75, 0.35, 1.0)
+
+    return top_risk, bot_risk, size_long, size_short
 
 
-def compute_sleeve_adaptive(preds, opens, closes, lows, fng, stb,
-                            funding=None, basis=None,
-                            stop_loss=0.035, use_dyn=True, use_top_derisking=True):
+def compute_top_exhaustion_risk(closes, funding_rate, fng_score):
+    """Backward compatibility wrapper for top exhaustion risk"""
+    top_risk, _, size_long, _ = compute_top_and_bottom_risk(closes, funding_rate, fng_score)
+    return top_risk, size_long
+
+
+def compute_sleeve_adaptive(preds, opens, closes, lows=None, highs=None,
+                            fng=None, stb=None, funding=None, basis=None,
+                            stop_loss=0.035, deadband=0.20,
+                            use_dyn=True, use_top_derisking=True, use_short=True):
     """
-    Sleeve 1: Adaptive Momentum Exit with Dynamic Entry Threshold, High-Point Sizing & Stop-Loss
-    Zero Clock Cooldown: Re-entry unlocked immediately on green candle (Close >= Open).
+    Sleeve 1: Symmetrical Adaptive Momentum with Dynamic Sizing & Hard Stop-Loss
+    Supports both Long and Short positions:
+    - Long: z > 1.0 and fng < 85
+    - Short: z < -1.0 and fng > 15 (if use_short=True)
+    - Exit: |z| < deadband or Stop-Loss
     """
     p_series = pd.Series(preds.values, index=preds.index)
     prior_mean = p_series.shift(1).rolling(72).mean()
@@ -48,85 +65,130 @@ def compute_sleeve_adaptive(preds, opens, closes, lows, fng, stb,
     z_vals = ((p_series - prior_mean) / prior_std).values
 
     funding_vals = funding.values if funding is not None else np.zeros(len(preds))
-
-    if use_dyn and (funding is not None) and (basis is not None):
-        basis_mean = basis.shift(1).rolling(72).mean()
-        basis_std = basis.shift(1).rolling(72).std() + 1e-8
-        basis_z = np.clip(((basis - basis_mean) / basis_std).fillna(0.0).values, -2.0, 2.0)
-        z_threshold = 1.0 - 0.20 * np.tanh(50.0 * funding_vals) - 0.10 * basis_z
-    else:
-        z_threshold = np.ones(len(preds)) * 1.0
-
-    raw_sig = (z_vals > z_threshold) & (stb > 0.0) & (fng < 85)
+    fng_vals = fng if fng is not None else np.ones(len(preds)) * 50.0
 
     if use_top_derisking:
-        _, target_size = compute_top_exhaustion_risk(closes, funding_vals, fng)
+        _, _, size_long, size_short = compute_top_and_bottom_risk(closes, funding_vals, fng_vals)
     else:
-        target_size = np.ones(len(preds))
+        size_long = np.ones(len(preds))
+        size_short = np.ones(len(preds))
 
     n = len(preds)
     pos = np.zeros(n)
-    in_pos = False
+    in_pos = 0  # +1 Long, -1 Short, 0 Cash
     entry_bar = 0
-    in_waterfall = False
+    in_waterfall = False  # Long stop-loss cooldown flag
+    in_short_squeeze = False  # Short stop-loss cooldown flag
     trades = []
 
-    # ZERO 16-HOUR CLOCK FREEZE!
     for i in range(n - 2):
+        # State-driven re-entry unlocking (zero clock freeze)
         if in_waterfall:
-            if closes.iloc[i] >= opens.iloc[i]: # stabilization confirmation
+            if closes.iloc[i] >= opens.iloc[i]:  # Green candle stabilization
                 in_waterfall = False
             else:
                 pos[i] = 0.0
                 continue
 
-        if not in_pos:
-            if raw_sig[i]:
-                in_pos = True
-                entry_bar = i
-                pos[i] = target_size[i]
+        if in_short_squeeze:
+            if closes.iloc[i] <= opens.iloc[i]:  # Red candle top rejection
+                in_short_squeeze = False
             else:
                 pos[i] = 0.0
-        else:
-            entry_p = opens.iloc[entry_bar + 1]
-            curr_c = closes.iloc[i]
-            is_stop = False
+                continue
 
-            if stop_loss is not None and (curr_c / entry_p - 1.0 <= -stop_loss):
+        curr_z = z_vals[i]
+        curr_c = closes.iloc[i]
+
+        if in_pos == 0:
+            if curr_z > 1.0 and fng_vals[i] < 85:
+                in_pos = 1
+                entry_bar = i
+                pos[i] = size_long[i]
+            elif use_short and curr_z < -1.0 and fng_vals[i] > 15:
+                in_pos = -1
+                entry_bar = i
+                pos[i] = -size_short[i]
+            else:
+                pos[i] = 0.0
+        elif in_pos == 1:  # Currently in Long
+            entry_p = opens.iloc[entry_bar + 1]
+            gross_ret = curr_c / entry_p - 1.0
+            is_stop = False
+            if stop_loss is not None and (gross_ret <= -stop_loss):
                 is_stop = True
 
-            should_exit = (not raw_sig[i]) or is_stop
-
+            should_exit = (curr_z < deadband) or is_stop
             if should_exit:
-                in_pos = False
+                in_pos = 0
                 pos[i] = 0.0
                 entry_idx = entry_bar + 1
                 exit_idx = i + 1
                 exit_p = opens.iloc[exit_idx]
-                gross_ret = exit_p / entry_p - 1.0
+                actual_gross = exit_p / entry_p - 1.0
                 duration_bars = exit_idx - entry_idx
                 duration_hours = duration_bars * 4
                 taker_fee = 2 * 0.0005
                 funding_fee = duration_bars * 0.00005
-                net_ret = gross_ret - taker_fee - funding_fee
+                net_ret = actual_gross - taker_fee - funding_fee
 
                 trades.append({
+                    'type': 'LONG',
                     'entry_time': opens.index[entry_idx],
                     'exit_time': opens.index[exit_idx],
                     'entry_price': entry_p,
                     'exit_price': exit_p,
-                    'size': target_size[entry_bar],
+                    'size': size_long[entry_bar],
                     'duration_hours': duration_hours,
-                    'gross_ret': gross_ret,
+                    'gross_ret': actual_gross,
                     'net_ret': net_ret,
-                    'weighted_pnl': net_ret * target_size[entry_bar],
+                    'weighted_pnl': net_ret * size_long[entry_bar],
                     'is_stop_loss': is_stop
                 })
 
                 if is_stop:
-                    in_waterfall = True # Cleared as soon as market stabilizes
+                    in_waterfall = True
             else:
-                pos[i] = target_size[entry_bar]
+                pos[i] = size_long[entry_bar]
+        elif in_pos == -1:  # Currently in Short
+            entry_p = opens.iloc[entry_bar + 1]
+            gross_ret = 1.0 - curr_c / entry_p
+            is_stop = False
+            if stop_loss is not None and (gross_ret <= -stop_loss):
+                is_stop = True
+
+            should_exit = (curr_z > -deadband) or is_stop
+            if should_exit:
+                in_pos = 0
+                pos[i] = 0.0
+                entry_idx = entry_bar + 1
+                exit_idx = i + 1
+                exit_p = opens.iloc[exit_idx]
+                actual_gross = 1.0 - exit_p / entry_p
+                duration_bars = exit_idx - entry_idx
+                duration_hours = duration_bars * 4
+                taker_fee = 2 * 0.0005
+                funding_fee = duration_bars * 0.00005
+                net_ret = actual_gross - taker_fee - funding_fee
+
+                trades.append({
+                    'type': 'SHORT',
+                    'entry_time': opens.index[entry_idx],
+                    'exit_time': opens.index[exit_idx],
+                    'entry_price': entry_p,
+                    'exit_price': exit_p,
+                    'size': size_short[entry_bar],
+                    'duration_hours': duration_hours,
+                    'gross_ret': actual_gross,
+                    'net_ret': net_ret,
+                    'weighted_pnl': net_ret * size_short[entry_bar],
+                    'is_stop_loss': is_stop
+                })
+
+                if is_stop:
+                    in_short_squeeze = True
+            else:
+                pos[i] = -size_short[entry_bar]
 
     o_series = pd.Series(opens.values, index=opens.index)
     rets_oto = (o_series.shift(-2) / o_series.shift(-1) - 1).values
@@ -137,25 +199,31 @@ def compute_sleeve_adaptive(preds, opens, closes, lows, fng, stb,
     return pd.Series(sleeve_rets, index=opens.index[:-2]), pd.DataFrame(trades), pd.Series(pos[:-2], index=opens.index[:-2])
 
 
-def compute_sleeve_8h(preds, opens, fng, stb):
+def compute_sleeve_8h(preds, opens, fng=None, stb=None, use_short=True):
     """
-    Sleeve 2: 8h Fixed Horizon (3x / Day) Basis Momentum
+    Sleeve 2: 8h Symmetrical Fixed Horizon (3x / Day) Basis Momentum
     """
     p_series = pd.Series(preds.values, index=preds.index)
     prior_mean = p_series.shift(1).rolling(72).mean()
     prior_std = p_series.shift(1).rolling(72).std() + 1e-8
     z_vals = ((p_series - prior_mean) / prior_std).values
 
-    raw_sig = (z_vals > 1.0) & (stb > 0.0) & (fng < 85)
+    fng_vals = fng if fng is not None else np.ones(len(preds)) * 50.0
 
     n = len(preds)
     pos = np.zeros(n)
     i = 0
     while i < n - 2:
-        if raw_sig[i]:
+        zi = z_vals[i]
+        if zi > 1.0 and fng_vals[i] < 85:
             pos[i] = 1.0
             if i + 1 < n - 2:
                 pos[i + 1] = 1.0
+            i += 2
+        elif use_short and zi < -1.0 and fng_vals[i] > 15:
+            pos[i] = -1.0
+            if i + 1 < n - 2:
+                pos[i + 1] = -1.0
             i += 2
         else:
             pos[i] = 0.0

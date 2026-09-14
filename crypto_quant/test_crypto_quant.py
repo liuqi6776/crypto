@@ -212,6 +212,32 @@ class TestCryptoQuantOffline(unittest.TestCase):
         self.assertGreater(risk_peak[-1], 0.70)
         self.assertAlmostEqual(size_peak[-1], 0.35, places=2)
 
+    def test_symmetrical_long_short_mechanics(self):
+        """测试双向对称多空真阿尔法交易机制 (Phase 13)"""
+        from crypto_quant.dual_sleeve_portfolio import compute_sleeve_adaptive
+        dates = pd.date_range('2024-01-01', periods=200, freq='4h')
+        opens = pd.Series([3000.0] * 200, index=dates)
+        closes = pd.Series([3000.0] * 200, index=dates)
+
+        # 模拟正负预测值脉冲（在 rolling(72) 充分预热之后触发）
+        preds = pd.Series([0.0] * 200, index=dates)
+        preds.iloc[85:95] = 0.05    # 正向大涨预测 -> 触发多头并平仓
+        preds.iloc[130:140] = -0.05 # 负向大跌预测 -> 触发空头并平仓
+
+        rets, trades, pos = compute_sleeve_adaptive(
+            preds=preds, opens=opens, closes=closes,
+            stop_loss=0.03, deadband=0.20, use_short=True
+        )
+
+        # 验证产生了多头与空头两类交易
+        self.assertFalse(trades.empty, "Expected trades to be executed")
+        trade_types = set(trades['type'].tolist())
+        self.assertIn('LONG', trade_types)
+        self.assertIn('SHORT', trade_types)
+        # 验证仓位序列包含正负值
+        self.assertTrue((pos > 0.5).any(), "Expected positive (Long) position")
+        self.assertTrue((pos < -0.5).any(), "Expected negative (Short) position")
+
 
 if __name__ == '__main__':
     unittest.main()
