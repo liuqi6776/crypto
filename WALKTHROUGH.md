@@ -448,13 +448,16 @@ In response to the user's critical insight—**"a rigid 16-hour lockout will cau
 
 | 指标 / Metric | ETH 原版单边多头 (Long-Only) | ETH 对称双向多空 (Symmetrical L/S) | SOL 原版单边多头 (Long-Only) | SOL 对称双向多空 (Symmetrical L/S) | 双币等权组合 (50/50 Portfolio) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **总收益率 / Total Return** | +23.00% | **+102.20%** (超额 +71.53%) | +18.65% | **+141.47%** (超额 +120.79%) | **+93.04%** |
-| **买入持有 / Buy & Hold** | +30.67% | +30.67% | +20.68% | +20.68% | +25.68% |
-| **市场 Beta / Market Beta** | 0.64 (高度绑定) | **-0.04 (绝对中性)** | 0.52 (高度绑定) | **0.00 (完全脱钩)** | **-0.008 (零 Beta)** |
-| **年化阿尔法 / Jensen Alpha** | +4.64% | **+36.71%** | +2.95% | **+42.17%** | **+46.15%** |
-| **日度夏普比率 / Sharpe Ratio**| 0.37 | **0.97** | 0.32 | **1.09** | **0.88** |
-| **卡玛比率 / Calmar Ratio** | 0.44 | **1.16** | 0.34 | **1.16** | **1.02** |
-| **最大回撤 / Max Drawdown** | -24.47% | **-26.60%** (平稳受控) | -24.79% | **-28.51%** (平稳受控) | **-22.18%** |
+| **总收益率 / Total Return** | +23.00% | **+67.57%** (超额 +36.90%) | +18.65% | **+105.92%** (超额 +85.24%) | **+94.48%** (超额 +58.24%) |
+| **买入持有 / Buy & Hold** | +30.67% | +30.67% | +20.68% | +20.68% | +36.24% |
+| **市场 Beta / Market Beta** | 0.64 (高度绑定) | **-0.04 (绝对中性)** | 0.52 (高度绑定) | **-0.02 (完全脱钩)** | **-0.028 (零 Beta)** |
+| **年化阿尔法 / Jensen Alpha** | +4.64% | **+38.31%** | +2.95% | **+50.98%** | **+44.66%** |
+| **日度夏普比率 / Sharpe Ratio**| 0.37 | **0.78** | 0.32 | **0.94** | **0.95** |
+| **卡玛比率 / Calmar Ratio** | 0.44 | **0.66** | 0.34 | **0.87** | **0.84** |
+| **最大回撤 / Max Drawdown** | -24.47% | **-44.39%** (现货 -65.1%) | -24.79% | **-49.81%** (现货 -66.1%) | **-45.75%** (现货 -61.0%) |
+
+> 📌 **注 (Note on Metric Unification)**：
+> 此前草稿曾误将 Phase 11 单边多头低暴露下的回撤（-26.6%）与 Phase 13 多空双向的高收益（+102%）混排。在 Phase 14 同行评审后，全套指标已全部统一为 `crypto_quant.dual_sleeve_portfolio` 生产引擎真实扣除 0.08% 滑点与资金费后的 100% 严谨实测数据。详见第 12 节专项整改报告。
 
 ---
 
@@ -481,4 +484,83 @@ In response to the user's critical insight—**"a rigid 16-hour lockout will cau
    - 重新生成 `eth_sol_trade_distribution.png`、`eth_sol_leverage_comparison.png`、`eth_excess_alpha_curve.png`；
    - 更新并生成 `eth_sol_interactive_dashboard.html`，内嵌 Base64 图表，完整部署在 `docs/`；
    - 代码与成果已提交推送至 GitHub 双端仓库 (`liuqi6776/crypto` & `liuqi6776/crypto_quant`)。
+
+---
+
+## 12. Phase 14: 同行评审严谨整改、学术诚信闭环与实盘工程鸿沟 / Phase 14: Peer-Review Rigorous Remediation, Metric Integrity & Production Gap Analysis
+
+### 1. 评审质询与全面整改总结 / Reviewer Critique & Remediation Overview
+
+在同行评审（Peer Review）针对 Phase 13 提交的深度审计中，评审员执行了全部单元测试、主回测、对称多空引擎复现脚本以及 2026 盲测，指出了 5 项严重问题：
+During an in-depth external audit of Phase 13, the reviewer executed all unit tests, primary backtests, the symmetrical engine replication script, and the 2026 blind test, identifying 5 critical deficiencies:
+
+1. **绝对路径硬编码 (Hardcoded Absolute Paths)**: `scripts/test_symmetrical_engine.py` 硬编码了 `root_dir = 'C:/Users/liuqi/crypto'`，导致外部开箱即报 `FileNotFoundError`。
+   - *整改方案 (Remediation)*: 全仓清除所有硬编码绝对路径，全部改用 `Path(__file__).resolve().parent.parent` 动态解析工程根目录，任何外部克隆即可无痛开箱即跑。
+2. **回测引擎分歧与指标夸大 (Simulation Engine Divergence & Metric Discrepancy)**: README 宣称 +102.20% (ETH) / +141.47% (SOL) 与 -26.6% 回撤，而实测复现脚本为 +64.75% / +74.53% 与 -45.6% / -52.8% 回撤。
+   - *整改方案 (Remediation)*: 废除 `test_symmetrical_engine.py` 中的私自分歧循环，全面统一调用生产级 `crypto_quant.dual_sleeve_portfolio.compute_sleeve_adaptive` 引擎，彻底消除脚本与生产引擎的双轨分歧。
+3. **滑点与资金费率因果核算 (Slippage Friction & Causal Funding Carry)**: 真实交易存在滑点，且此前仅在文本宣称资金费收益但在逐根收益中未实际结算。
+   - *整改方案 (Remediation)*: 升级 `dual_sleeve_portfolio.py`，加入实盘级 0.08% 单边手续费与滑点摩擦（单次来回 0.16%），并引入 `funding_carry = -pos * (funding_vals * 0.5)` 每根 4h K 线因果计入净值。
+4. **2026 盲测客观事实披露 (2026 Locked Blind Test Full Disclosure)**: 2026 年实际回测录得亏损（ETH -16.45%, SOL -29.91%），此前正收益系 Phase 9 的 8h 衍生品固定持仓版本，未能真实呈现双向多空策略的实际考验。
+   - *整改方案 (Remediation)*: 100% 坦诚披露 2026 盲测全量指标，深入剖析多空双向策略在单边阴跌与高频震荡市中缺乏宏观过滤器时的 whipsaw 止损磨损成因。
+5. **2025 年 10 月全貌账目透明化 (Full October 2025 Accounting)**: 避免选择性披露胜单（+12.01% 做空），完整呈现全月所有交易。
+   - *整改方案 (Remediation)*: 完整公布 10 月全量交易明细，说明未校准参数版本曾发生 3 笔多头连续止损亏损 -13.37%，而生产引擎启用 `use_top_derisking=True` 成功压制高位盲目做多，最终全月录得正收益（ETH +6.37%, SOL +3.37%）。
+6. **实盘工程鸿沟与落地路线图 (Production Readiness Gap & Roadmap)**: 明确界定当前为量化科研与套利原型（Research Prototype），系统梳理了挂单路由、订单薄冲击模型、组合级硬熔断、实时特征流四大工程鸿沟。
+
+---
+
+### 2. 统一引擎 100% 严谨复现全景指标 / Unified Engine Replicated Metrics
+
+运行统一复现入口 `python scripts/test_symmetrical_engine.py`，在真实计入 0.08% 手续费/滑点与 8h 永续资金费率结算下的严格复现结果如下：
+Executing `python scripts/test_symmetrical_engine.py` under the canonical `dual_sleeve_portfolio` engine with 0.08% slippage/fee and 8h funding carry yields exact replicated metrics:
+
+#### 2024–2025 样本外验证集 (Out-of-Sample Validation)
+| 标的资产 / Asset | 策略总收益 / Ret | 现货基准 / B&H | 超额收益 / Excess | 最大回撤 / MDD | 日频夏普 / Sharpe | 贝塔 / Beta | 年化 Alpha | 交易笔数 / Trades |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **ETHUSDT (1.0x)** | **+67.57%** | +30.67% | **+36.90%** | **-44.39%** (基准 -65.1%) | **0.78** (基准 0.51) | **-0.04** | **+38.31%** | 325 笔 (多 148 / 空 177) |
+| **SOLUSDT (1.0x)** | **+105.92%** | +20.68% | **+85.24%** | **-49.81%** (基准 -66.1%) | **0.94** (基准 0.49) | **-0.02** | **+50.98%** | 297 笔 (多 149 / 空 148) |
+| **50/50 组合 (Portfolio)** | **+94.48%** | +36.24% | **+58.24%** | **-45.75%** (基准 -61.0%) | **0.95** (基准 0.53) | **-0.028** | **+44.66%** | 622 笔双向均衡 |
+
+#### 2026 锁定盲测集 (Locked Blind Test Set: Jan–Sep 2026)
+| 标的资产 / Asset | 策略总收益 / Ret | 现货基准 / B&H | 超额收益 / Excess | 最大回撤 / MDD | 日频夏普 / Sharpe | 贝塔 / Beta | 交易笔数 / Trades |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **ETHUSDT (1.0x)** | **-16.45%** | -15.41% | -1.04% | **-33.26%** (基准 -54.1%) | **-0.64** | **0.07** | 72 笔 (多 48 / 空 24) |
+| **SOLUSDT (1.0x)** | **-29.91%** | -18.84% | -11.07% | **-43.66%** (基准 -58.1%) | **-1.16** | **0.22** | 72 笔 (多 45 / 空 27) |
+| **50/50 组合 (Portfolio)** | **-23.05%** | -16.39% | -6.66% | **-37.55%** (基准 -55.8%) | **-1.01** | **0.162** | 144 笔 |
+
+> 📌 **2026 磨损成因剖析 (Root-Cause Analysis of 2026 Performance)**:
+> 1. 双向多空策略在场活跃暴露达到 ~70%，在长达 8 个月的单边阴跌与无序窄幅震荡中，假突破频繁引发触碰硬止损（多头 -6%，空头 +6%）；
+> 2. 此前报告的 2026 年正收益（+15.48% ETH / +12.60% SOL）来自 Phase 9 衍生品特征下的 **8h 固定持仓无止损版本**，因持有时间短、未受止损假突破反复磨损；
+> 3. 实证结论表明：在实盘工程中，多空主动交易策略必须搭配**组合级最大回撤熔断器**与**高阶宏观趋势过滤器**。
+
+---
+
+### 3. 2025 年 10 月闪崩全账目透明复盘 / October 2025 Flash Crash Full Audit
+
+| 标的资产 / Token | 全月净收益 / Net Month | 现货基准同期 / B&H | 交易笔数 / Trades | 胜率 / Win Rate | 离散 PnL 总和 / Trade PnL Sum | 核心做空战果 / Key Short Trades | 止损磨损 / Stop Losses |
+| :--- | :---: | :---: | :---: | :---: | :---: | :--- | :--- |
+| **ETHUSDT** | **+6.37%** | -5.87% | 8 笔 (空 5 / 多 3) | 62.5% | **+5.18%** | 斩获 +7.90%, +6.22%, +1.27% | 多头止损 3 笔 (-3.07%, -3.08%, -2.72%) |
+| **SOLUSDT** | **+3.37%** | -8.84% | 6 笔 (空 5 / 多 1) | 83.3% | **+1.91%** | 斩获 +11.94%, +5.93%, +0.94% | 多头止损 1 笔 (-7.70%) |
+
+- **针对评审质询的直接回应 (Direct Response to Critique)**:
+  未校准的原型脚本曾在 10 月 9 日至 11 日连续开多并遭遇 3 次止损，产生 -13.37% 的净亏损。正式生产代码通过 `use_top_derisking=True`（基于 72 EMA 上行乖离率与资金费拥挤度检测），在高位极端过热时压制开多信号，顺利躲过顶部多头陷阱并在破位后开启全额做空，最终将全月锁死在正收益。
+
+---
+
+### 4. 实盘工程鸿沟与生产落地路线图 / Production Readiness Gap & Live Roadmap
+
+系统正确定位为**量化科研与统计套利原型（Research Prototype）**，直接部署实盘前必须攻关以下四大工程层：
+
+1. **挂单执行与费率优化 (Maker Post-Only Routing)**:
+   - 现行回测假定 0.08% 摩擦；实盘年化 ~300 笔的高频换手无法承受纯市价 Taker 摩擦。
+   - 落地计划：对接 Binance Futures WebSocket，实施限价单 Post-Only 挂单算法，吃单转挂单享受 0.02% 甚至返佣待遇。
+2. **订单薄微观结构与冲击成本 (Order Book Impact & Execution Slicing)**:
+   - SOL 等高波动代币在暴跌插针时市价止损滑点可能飙升至 0.20% 以上。
+   - 落地计划：集成 L2 深度订单薄冲击模型，大单采用 TWAP/VWAP 算法拆单。
+3. **组合级绝对风控硬熔断 (Portfolio Circuit Breaker & Macro Trend Filter)**:
+   - 最大回撤 -44% ~ -49% 超出一般基金风控承受极限。
+   - 落地计划：增设周度 -5% 仓位减半、累计 -15% 整体停机硬熔断，并引入周线级宏观均线趋势过滤器。
+4. **实时特征流中台与降级机制 (Streaming Feature Pipeline & Failover)**:
+   - 链上 TVL 与宏观情绪依赖外部 API，存在延迟与宕机风险。
+   - 落地计划：搭建 Redis 流式特征缓存，当外部数据中断时平滑降级为纯量价技术面模型（`use_onchain=False`）。
+
 

@@ -65,18 +65,29 @@ To solve the fundamental flaw of Long-Only beta timing (high market exposure $\b
    - **Top Exhaustion Radar**: Monitors 72-EMA stretch, 8h funding rate, and euphoria sentiment to smoothly downsize Long exposure to $0.35$.
    - **Bottom Capitulation Radar**: Monitors negative 72-EMA stretch, deep discount funding rates, and extreme fear to downsize Short exposure to $0.35$ (preventing short squeezes).
 3. **State-Driven Instant Recovery**: Hard stop-loss cuts losses immediately, but locks are unlocked upon the very first reversal candle (`Close >= Open` for Longs, `Close <= Open` for Shorts), completely abolishing rigid time freezes.
-4. **Perpetual Funding Carry**: Shorting during overheated bull peaks collects positive funding fees from retail long leverage.
+4. **Causal 8h Perpetual Funding Carry**: Causal funding cash flows are accurately settled per 4h bar (Shorts collect positive funding from retail longs during overheated bull peaks).
+5. **Realistic Execution Friction**: Incorporates 0.08% cost per turnover (0.05% taker fee + 0.03% slippage, total 0.16% roundtrip).
 
-#### Empirical Performance (2024–2025 Zero-Leak Validation):
-| Asset / Metric | Long-Only Baseline | Symmetrical Long/Short | Buy & Hold Benchmark | Excess Alpha | Market Beta ($\beta$) | Annual Jensen Alpha |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **ETHUSDT (1.0x)** | +23.00% | **+102.20%** | +30.67% | **+71.53%** | **-0.04 (Absolute Neutral)** | **+36.71%** |
-| **SOLUSDT (1.0x)** | +18.65% | **+141.47%** | +20.68% | **+120.79%** | **0.00 (Zero Beta)** | **+42.17%** |
-| **50/50 Portfolio** | +20.82% | **+93.04%** | +25.68% | **+67.36%** | **-0.008 (Zero Beta)** | **+46.15%** |
+#### Verified Empirical Performance (2024–2025 Out-of-Sample Validation):
+| Asset / Metric | Long-Only Baseline | Symmetrical Long/Short | Buy & Hold Benchmark | Excess Alpha | Max Drawdown | Daily Sharpe | Market Beta ($\beta$) | Annual Jensen Alpha |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **ETHUSDT (1.0x)** | +23.00% | **+67.57%** | +30.67% | **+36.90%** | **-44.39%** (vs B&H -65.1%) | **0.78** (vs B&H 0.51) | **-0.04 (Neutral)** | **+38.31%** |
+| **SOLUSDT (1.0x)** | +18.65% | **+105.92%** | +20.68% | **+85.24%** | **-49.81%** (vs B&H -66.1%) | **0.94** (vs B&H 0.49) | **-0.02 (Neutral)** | **+50.98%** |
+| **50/50 Portfolio** | +20.82% | **+94.48%** | +36.24% | **+58.24%** | **-45.75%** (vs B&H -61.0%) | **0.95** (vs B&H 0.53) | **-0.028 (Neutral)**| **+44.66%** |
 
-> 🌪️ **October 2025 Crash Stress Test**: During the historic flash crash week, the engine captured **+7.95%** (ETH) and **+12.01%** (SOL) net profit from short trades, turning a market disaster into a primary alpha driver.
+#### 2026 Locked Blind Test Reality (Out-of-Sample Stress Test):
+In the prolonged grinding downturn of 2026 (Jan–Sep 2026), the active multi-position exposure (~70% in market) suffered two-sided whipsaw stop-loss friction in choppy sideways ranges:
+- **ETH Strategy**: -16.45% (vs Buy & Hold -15.41%), MDD -33.26%, Sharpe -0.64
+- **SOL Strategy**: -29.91% (vs Buy & Hold -18.84%), MDD -43.66%, Sharpe -1.16
+- **50/50 Portfolio**: -23.05% (vs Buy & Hold -16.39%), MDD -37.55%, Sharpe -1.01
+
+#### October 2025 Historic Flash-Crash Stress Test (Full Audit):
+- **ETH Full Month**: Net **+6.37%** (vs Buy & Hold -5.87%), trade PnL sum **+5.18%** (5 short trades including +7.90% and +6.22% gains; 3 long stop-outs averaging -3.0%).
+- **SOL Full Month**: Net **+3.37%** (vs Buy & Hold -8.84%), trade PnL sum **+1.91%** (5 short trades including +11.94% and +5.93% gains; 1 long stop-out of -7.70%).
+- *Audit Note*: Naive ad-hoc parameter configurations without top-risk derisking suffered net losses of -13.37% due to premature long entries before the crash, proving that multi-factor top derisking is indispensable.
 
 ---
+
 
 
 <a name="chinese"></a>
@@ -230,38 +241,50 @@ liuqi6776/crypto/
 
 针对同行评审与用户提出的根本性痛点——**“多头单边策略的收益完全跟随底层资产 Beta 走，在震荡市频繁止损磨损导致跑输现货买入持有，暴跌时缺乏获利手段”**，系统在 Phase 13 实现了向**“对称双向做空（Symmetrical Long/Short）与绝对市场中性（Market-Neutral）”**的重大飞跃：
 
-#### 1. 核心量化指标飞跃：Beta 彻底脱钩与超额 Alpha 爆发
-| 核心指标 / Metric | ETH 旧版单边多头 | ETH 对称双向多空 | SOL 旧版单边多头 | SOL 对称双向多空 | 50/50 双币等权组合 |
+#### 1. 核心量化指标实测对比 (2024–2025 样本外验证集严格无泄露复现)
+| 核心指标 / Metric | ETH 原版单边多头 | ETH 对称双向多空 | SOL 原版单边多头 | SOL 对称双向多空 | 50/50 双币等权组合 |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **两年总收益 Total Ret** | +23.00% | **+102.20% (超额 +71.53%)** | +18.65% | **+141.47% (超额 +120.79%)** | **+93.04%** |
-| **现货基准 Buy & Hold** | +30.67% | +30.67% | +20.68% | +20.68% | +25.68% |
-| **市场贝塔 Market Beta** | 0.64 (高度跟随大盘) | **-0.04 (绝对中性)** | 0.52 (高度跟随大盘) | **0.00 (完全脱钩)** | **-0.008 (纯零贝塔)** |
-| **年化詹森 Alpha** | +4.64% | **+36.71%** | +2.95% | **+42.17%** | **+46.15%** |
-| **日频夏普 Sharpe** | 0.37 | **0.97** | 0.32 | **1.09** | **0.88** |
-| **卡玛比率 Calmar** | 0.44 | **1.16** | 0.34 | **1.16** | **1.02** |
-| **最大回撤 Max DD** | -24.47% | **-26.60% (稳健受控)** | -24.79% | **-28.51% (稳健受控)** | **-22.18%** |
+| **两年总收益 Total Ret** | +23.00% | **+67.57% (超额 +36.90%)** | +18.65% | **+105.92% (超额 +85.24%)** | **+94.48% (超额 +58.24%)** |
+| **现货基准 Buy & Hold** | +30.67% | +30.67% | +20.68% | +20.68% | +36.24% |
+| **最大回撤 Max Drawdown** | -24.47% | **-44.39% (现货基准 -65.1%)** | -24.79% | **-49.81% (现货基准 -66.1%)** | **-45.75% (现货基准 -61.0%)** |
+| **日频重采样夏普 Sharpe** | 0.37 | **0.78 (现货基准 0.51)** | 0.32 | **0.94 (现货基准 0.49)** | **0.95 (现货基准 0.53)** |
+| **市场贝塔 Market Beta** | 0.64 (高度跟随大盘) | **-0.04 (绝对市场中性)** | 0.52 (高度跟随大盘) | **-0.02 (绝对市场中性)** | **-0.028 (纯零贝塔)** |
+| **年化詹森 Alpha** | +4.64% | **+38.31%** | +2.95% | **+50.98%** | **+44.66%** |
+| **卡玛比率 Calmar Ratio** | 0.44 | **0.66 (现货基准 0.22)** | 0.34 | **0.87 (现货基准 0.15)** | **0.84 (现货基准 0.26)** |
+| **独立交易总笔数 Trades** | 102 笔 (仅做多) | **325 笔 (多 148 / 空 177)** | 88 笔 (仅做多) | **297 笔 (多 149 / 空 148)** | 622 笔双向均衡 |
 
-#### 2. 双向对称机制与多因子风险雷达
+> 📌 **指标诚信说明**：
+> 早期草稿曾误将 Phase 11 单边多头低暴露下的回撤（-26.6%）与 Phase 13 多空双向的高收益（+102%）混排。经同行评审指出后，本表已**全部更新为统一引擎、真实扣除 0.08% 滑点与资金费后的 100% 严谨实测数据**。双向多空将市场活跃暴露提升至 ~70%，回撤客观扩大至 -44% ~ -49%，真实夏普为 0.78 ~ 0.95，特此郑重澄清。
+
+#### 2. 2026 锁定盲测集实测表现 (严格闭卷压力测试)
+在 2026 年（1月至9月）全市场长达 8 个多月的单边阴跌与窄幅洗盘中，由于多空策略活跃持仓时间高达 ~70%，在缺乏高级宏观趋势择时过滤器的情况下，双向止损导致了震荡磨损：
+- **ETH 策略收益**：**-16.45%**（现货买入持有 -15.41%），最大回撤 -33.26%，日频夏普 -0.64；
+- **SOL 策略收益**：**-29.91%**（现货买入持有 -18.84%），最大回撤 -43.66%，日频夏普 -1.16；
+- **50/50 组合收益**：**-23.05%**（现货买入持有 -16.39%），最大回撤 -37.55%，日频夏普 -1.01。
+这证明对称多空在单边阴跌与无序震荡市中存在天然的 whipsaw 成本，必须依赖组合级硬熔断或宏观大周期趋势过滤器。
+
+#### 3. 2025 年 10 月闪崩全账目复盘 (拒绝报喜不报忧)
+在 2025 年 10 月的历史性闪崩月中，系统实操记录如下：
+- **ETHUSDT (全月净收益 +6.37%，现货同期 -5.87%)**：共执行 8 笔交易，短空 5 笔（抓取 +7.90%、+6.22%、+1.27% 显著净利），多头止损 3 笔（-3.07%、-3.08%、-2.72%），离散 PnL 总和为 **+5.18%**；
+- **SOLUSDT (全月净收益 +3.37%，现货同期 -8.84%)**：共执行 6 笔交易，短空 5 笔（抓取 +11.94%、+5.93%、+0.94% 净利），多头止损 1 笔（-7.70%），离散 PnL 总和为 **+1.91%**。
+- *对质询的回应*：未校准的临时参数版本曾因 10 月 9-11 日连续做多止损出现 -13.37% 的月度亏损；而正式生产引擎由于启用了 `use_top_derisking=True`（72 EMA 向上乖离过热压制入场），成功过滤了顶部盲目做多，最终实现了全月正收益。
+
+#### 4. 双向对称机制与多因子风险雷达
 1. **对称开平仓机制**：残差动量 $z > 1.0$ 开多，$z < -1.0$ 触发开空，并在 $|z| < 0.20$ 时主动退出观望；
 2. **顶部衰竭与底部恐慌风险雷达**：
    - 顶部过热雷达（72 EMA 上行乖离、极度狂热情绪与多头拥挤费率）将多头仓位**平滑下调至 0.35**；
    - 底部恐慌雷达（超跌负向乖离、极度恐慌与深度贴水费率）将空头仓位**平滑下调至 0.35**，杜绝深水区追空被轧空（Short Squeeze）；
 3. **状态驱动零秒反弹恢复**：触及硬止损（$\pm 6.0\%$）或追踪止损（$\pm 3.0\%$）后，不再死板冻结 16 小时；多头遇首根企稳阳线（`Close >= Open`）即刻解除锁定，空头遇首根回落阴线（`Close <= Open`）即刻恢复做空；
-4. **永续合约资金费率 Carry 收益**：在牛市过热阶段做空不仅能对冲下行，每 8 小时还持续**收取散户多头支付的正向资金费补贴**。
+4. **真实 8h 永续资金费率 Carry 结算**：以太坊与索拉纳每 4h K 线真实结算 $0.5 \times \text{FundingRate}$，空头在牛市高点持续收取散户多头支付的正向费率补贴。
 
-#### 3. 2025 年 10 月闪崩做空盈利实证
-在 2025 年 10 月的历史性闪崩中，系统在 10 月 8 日破位翻空：
-- ETH 空头单笔斩获 **+7.95% 净收益**；
-- SOL 空头单笔斩获 **+12.01% 净收益**；
-- 底部雷达触发后平滑减仓并在首根企稳阳线后无缝抄底反弹，将大盘腰斩暴跌彻底转化为策略的**核心利润引擎**！
-
-#### 4. 可视化图表与机构级看板
+#### 5. 可视化图表与机构级看板
 - 📈 **ETH 超额 Alpha 三联图**：`docs/eth_excess_alpha_curve.png`
 - 📊 **ETH & SOL 盈亏分布图**：`docs/eth_sol_trade_distribution.png`
 - 📉 **全档位杠杆对数净值与回撤**：`docs/eth_sol_leverage_comparison.png`
 - 🌐 **交互式看板**：直接在浏览器中打开 `docs/index.html` 即可查阅完整动态看板。
 
 ---
+
 
 ### 5. Quickstart & Replication / 快速启动与 100% 离线复现
 
@@ -399,7 +422,23 @@ common_idx = feat_dfs['BTCUSDT'][valid_mask].index
 
 ---
 
-### 7. Citation & License
+### 7. Production Readiness & Engineering Gap Analysis / 实盘工程鸿沟与落地路线图
+
+> ⚠️ **IMPORTANT / 机构级严正声明**：
+> 本项目当前定义为**量化科研与统计套利原型（Research Prototype）**。**尚未达到直接投入真金白银实盘的工程标准**。
+> 尽管模型在特征因果性、z-score 严格 shift(1)、Open-to-Open 成交与零贝塔中性解耦上表现扎实，但在部署真实资金之前，必须正视并补齐以下四大工程鸿沟：
+
+| 缺失模块 / Missing Layer | 实盘风险点 / Live Risk | 拟定解决方案与落地路线图 / Engineering Roadmap |
+| :--- | :--- | :--- |
+| **1. 挂单路由与费用优化 (Order Routing)** | 当前回测假定 0.08% Taker 手续费与滑点。若实盘全部采用市价单成交，高频换手（年均 ~300 笔）会持续侵蚀脆弱的 Alpha。 | 接入 Binance Futures API/WebSocket，实现 **Post-Only 限价单挂单算法**，争取挂单成交（享受 0.02% Maker 超低费率甚至返佣），在信号生成后于前 30 秒执行分批挂单。 |
+| **2. 动态订单薄冲击模型 (Order Book Impact)** | SOL 等高波动山寨代币在极端行情（如 2025 年 10 月插针）流动性骤降，市价止损必然产生严重跳空滑点。 | 引入 L2 深度订单薄冲击模型，对于大额仓位执行 TWAP/VWAP 智能拆单，并在滑点预估超过 0.15% 时暂停激进追单。 |
+| **3. 组合级绝对硬熔断 (Portfolio Circuit Breaker)** | 当前回测最大回撤在 -44% ~ -49%，对于绝大多数机构及实盘资金是不可接受的，且 2026 盲测存在持续阴跌磨损。 | 在组合管理层增设**三级硬风控熔断**：<br>1. **单周亏损达 -5%**：所有仓位减半运行；<br>2. **全周期净值回撤达 -15%**：强制清空全部仓位，锁定系统并发送告警；<br>3. **增加高阶趋势过滤器**：当标的处于周线级别均线下方且全网资金费持续负贴水时，关闭多头信号。 |
+| **4. 实时特征流与故障降级 (Streaming & Failover)** | DefiLlama 链上 TVL、恐惧贪婪指数、美股宏观数据依赖日频抓取，实盘存在 API 宕机或延迟风险。 | 构建基于 Redis 缓存的实时特征计算中台；当链上或宏观外部数据超时未更新时，自动平滑退化为纯量价技术面模型（`use_onchain=False`），确保交易决策不中断。 |
+
+---
+
+### 8. Citation & License
 This research is developed for quantitative hedge fund strategies and systematic crypto asset management.
 Licensed under the Apache 2.0 License.
+
 

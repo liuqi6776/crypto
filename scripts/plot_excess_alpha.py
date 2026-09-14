@@ -14,12 +14,15 @@ import matplotlib.dates as mdates
 plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Arial', 'SimHei', 'Microsoft YaHei']
 plt.rcParams['axes.unicode_minus'] = False
 
-root_dir = 'C:/Users/liuqi/crypto'
-sys.path.insert(0, root_dir)
-docs_dir = os.path.join(root_dir, 'docs')
-os.makedirs(docs_dir, exist_ok=True)
+from pathlib import Path
 
-artifact_dir = 'C:/Users/liuqi/.gemini/antigravity/brain/16cb006d-026f-4685-aa82-3db788cd48f6'
+root_dir = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(root_dir))
+docs_dir = root_dir / 'docs'
+docs_dir.mkdir(parents=True, exist_ok=True)
+
+artifact_dir = Path(os.environ.get('ANTIGRAVITY_ARTIFACTS_DIR', str(docs_dir)))
+
 
 # 1. Load Data
 df_pred = pd.read_parquet(os.path.join(root_dir, 'predictions', 'test_predictions.parquet'))

@@ -16,13 +16,16 @@ from scipy import stats
 plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Arial', 'SimHei', 'Microsoft YaHei']
 plt.rcParams['axes.unicode_minus'] = False
 
-root_dir = 'C:/Users/liuqi/crypto'
-sys.path.insert(0, root_dir)
+from pathlib import Path
+
+root_dir = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(root_dir))
 
 # Output paths
-artifacts_dir = 'C:/Users/liuqi/.gemini/antigravity/brain/16cb006d-026f-4685-aa82-3db788cd48f6'
-docs_dir = os.path.join(root_dir, 'docs')
-os.makedirs(docs_dir, exist_ok=True)
+docs_dir = root_dir / 'docs'
+docs_dir.mkdir(parents=True, exist_ok=True)
+artifacts_dir = Path(os.environ.get('ANTIGRAVITY_ARTIFACTS_DIR', str(docs_dir)))
+
 
 # 1. Load Data
 df_pred = pd.read_parquet(os.path.join(root_dir, 'predictions', 'test_predictions.parquet'))
@@ -99,12 +102,15 @@ def extract_discrete_trades_and_leverage(token, leverage_list=[1.0, 1.5, 2.0, 3.
     funding_s_aligned = funding_s[:-2]
 
     for lev in leverage_list:
-        cost_bar = trade_signals * 0.0005 * lev
-        # Funding carry: Short earns positive funding from crowded retail longs!
-        funding_carry = -pos * funding_s_aligned * lev
-        # Margin interest on borrowed leverage capital:
-        borrow_interest = np.abs(pos) * 0.00005 * max(0.0, lev - 1.0)
-        strat_rets = pos * rets_oto_aligned * lev - cost_bar + funding_carry - borrow_interest
+        if lev == 1.0:
+            strat_rets = sleeve_rets_1x.values
+        else:
+            cost_bar = trade_signals * 0.0008 * lev
+            # Funding carry: Short earns positive funding from crowded retail longs (half of 8h rate per 4h bar)
+            funding_carry = -pos * (funding_s_aligned * 0.5) * lev
+            # Margin interest on borrowed leverage capital:
+            borrow_interest = np.abs(pos) * 0.00005 * max(0.0, lev - 1.0)
+            strat_rets = pos * rets_oto_aligned * lev - cost_bar + funding_carry - borrow_interest
 
         cum = pd.Series((1 + strat_rets).cumprod(), index=dates_series)
         total_ret = cum.iloc[-1] - 1.0

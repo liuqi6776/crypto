@@ -3,12 +3,19 @@
 Test True Alpha: Symmetrical Long/Short Trading vs Long-Only
 Analyzes Market Beta, Jensen Alpha, and Drawdowns across ETH and SOL.
 """
+import os
+import sys
+from pathlib import Path
 import pandas as pd
 import numpy as np
-import os
 
-df = pd.read_parquet('C:/Users/liuqi/crypto/predictions/test_predictions.parquet').loc['2024-01-01':'2025-12-31']
+root_dir = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(root_dir))
+
+pred_path = root_dir / 'predictions' / 'test_predictions.parquet'
+df = pd.read_parquet(pred_path).loc['2024-01-01':'2025-12-31']
 val_idx = df.index
+
 
 for token, sl in [('ETHUSDT', 0.025), ('SOLUSDT', 0.050)]:
     pred = df[f'{token}_pred_4h']
