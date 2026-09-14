@@ -1,0 +1,186 @@
+{
+  "cost_aware_evaluation": [
+    {
+      "name": "Baseline (No Filter, 0 Latency)",
+      "cost_filter_mult": 0.0,
+      "latency_penalty_bps": 0,
+      "val_2024_2025": {
+        "return_pct": 23.76,
+        "sharpe": 0.82,
+        "max_dd_pct": -18.93,
+        "calmar": 0.59
+      },
+      "stress_2026": {
+        "return_pct": -6.09,
+        "sharpe": -1.34,
+        "max_dd_pct": -9.8
+      },
+      "full_history": {
+        "return_pct": 16.2,
+        "sharpe": 0.51,
+        "max_dd_pct": -26.52
+      },
+      "execution_metrics": {
+        "total_completed_trades": 872,
+        "turnover_reduction_pct": 0.0,
+        "avg_holding_duration_hours": 27.5
+      }
+    },
+    {
+      "name": "Cost Filter Moderate (k=1.5)",
+      "cost_filter_mult": 1.5,
+      "latency_penalty_bps": 0,
+      "val_2024_2025": {
+        "return_pct": 23.24,
+        "sharpe": 0.78,
+        "max_dd_pct": -18.63,
+        "calmar": 0.59
+      },
+      "stress_2026": {
+        "return_pct": -5.51,
+        "sharpe": -1.21,
+        "max_dd_pct": -9.25
+      },
+      "full_history": {
+        "return_pct": 16.41,
+        "sharpe": 0.5,
+        "max_dd_pct": -26.17
+      },
+      "execution_metrics": {
+        "total_completed_trades": 845,
+        "turnover_reduction_pct": 3.1,
+        "avg_holding_duration_hours": 27.4
+      }
+    },
+    {
+      "name": "Cost Filter Standard (k=2.0)",
+      "cost_filter_mult": 2.0,
+      "latency_penalty_bps": 0,
+      "val_2024_2025": {
+        "return_pct": 25.93,
+        "sharpe": 0.84,
+        "max_dd_pct": -16.49,
+        "calmar": 0.74
+      },
+      "stress_2026": {
+        "return_pct": -5.34,
+        "sharpe": -1.17,
+        "max_dd_pct": -9.05
+      },
+      "full_history": {
+        "return_pct": 19.18,
+        "sharpe": 0.55,
+        "max_dd_pct": -24.07
+      },
+      "execution_metrics": {
+        "total_completed_trades": 825,
+        "turnover_reduction_pct": 5.39,
+        "avg_holding_duration_hours": 27.2
+      }
+    },
+    {
+      "name": "Cost Filter Aggressive (k=2.5)",
+      "cost_filter_mult": 2.5,
+      "latency_penalty_bps": 0,
+      "val_2024_2025": {
+        "return_pct": 40.26,
+        "sharpe": 1.15,
+        "max_dd_pct": -15.11,
+        "calmar": 1.22
+      },
+      "stress_2026": {
+        "return_pct": -4.84,
+        "sharpe": -1.07,
+        "max_dd_pct": -8.92
+      },
+      "full_history": {
+        "return_pct": 33.4,
+        "sharpe": 0.83,
+        "max_dd_pct": -19.95
+      },
+      "execution_metrics": {
+        "total_completed_trades": 798,
+        "turnover_reduction_pct": 8.49,
+        "avg_holding_duration_hours": 27.4
+      }
+    },
+    {
+      "name": "Baseline + 2 bps Latency",
+      "cost_filter_mult": 0.0,
+      "latency_penalty_bps": 2,
+      "val_2024_2025": {
+        "return_pct": 17.89,
+        "sharpe": 0.66,
+        "max_dd_pct": -19.04,
+        "calmar": 0.45
+      },
+      "stress_2026": {
+        "return_pct": -6.87,
+        "sharpe": -1.52,
+        "max_dd_pct": -10.51
+      },
+      "full_history": {
+        "return_pct": 9.75,
+        "sharpe": 0.36,
+        "max_dd_pct": -27.41
+      },
+      "execution_metrics": {
+        "total_completed_trades": 874,
+        "turnover_reduction_pct": -0.23,
+        "avg_holding_duration_hours": 27.4
+      }
+    },
+    {
+      "name": "Cost Filter (k=2.0) + 2 bps Latency",
+      "cost_filter_mult": 2.0,
+      "latency_penalty_bps": 2,
+      "val_2024_2025": {
+        "return_pct": 25.08,
+        "sharpe": 0.81,
+        "max_dd_pct": -15.32,
+        "calmar": 0.77
+      },
+      "stress_2026": {
+        "return_pct": -5.49,
+        "sharpe": -1.22,
+        "max_dd_pct": -9.49
+      },
+      "full_history": {
+        "return_pct": 18.18,
+        "sharpe": 0.53,
+        "max_dd_pct": -23.25
+      },
+      "execution_metrics": {
+        "total_completed_trades": 801,
+        "turnover_reduction_pct": 8.14,
+        "avg_holding_duration_hours": 27.3
+      }
+    },
+    {
+      "name": "Cost Filter (k=2.0) + 5 bps Stress",
+      "cost_filter_mult": 2.0,
+      "latency_penalty_bps": 5,
+      "val_2024_2025": {
+        "return_pct": 28.1,
+        "sharpe": 0.91,
+        "max_dd_pct": -16.09,
+        "calmar": 0.82
+      },
+      "stress_2026": {
+        "return_pct": -5.41,
+        "sharpe": -1.23,
+        "max_dd_pct": -9.51
+      },
+      "full_history": {
+        "return_pct": 21.17,
+        "sharpe": 0.61,
+        "max_dd_pct": -19.42
+      },
+      "execution_metrics": {
+        "total_completed_trades": 747,
+        "turnover_reduction_pct": 14.33,
+        "avg_holding_duration_hours": 27.3
+      }
+    }
+  ]
+}
