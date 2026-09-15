@@ -102,14 +102,16 @@ def main():
     equity_curves = {}
     bar_rets = {}
 
+    fixed_thresholds = {'ETHUSDT': 0.4135, 'SOLUSDT': 0.4367}
+
     for token in ['ETHUSDT', 'SOLUSDT']:
         print(f"\nEvaluating ST-ChanTransformer Engine on {token}...")
         engine = ChanTransformerHybridEngine(
             token=token,
             atr_trailing_mult=3.0,
-            exp_pct=50.0,
             pred_12d_threshold=-0.01,
             use_transformer_gate=True,
+            fixed_exp_thresh=fixed_thresholds[token],
         )
         res = engine.backtest(candles[token], chan_features[token], df_preds, df_funding)
         results[token] = res['metrics']
@@ -148,7 +150,7 @@ def main():
           f"Daily Sharpe: {port_metrics['daily_sharpe']:.2f} | CAGR: {port_metrics['cagr_pct']:+.2f}% | Calmar: {port_metrics['calmar_ratio']:.2f}")
 
     # Load Phase 19 Baselines for direct comparison
-    baseline_file = docs_dir / 'trend_vs_transformer_benchmark.json'
+    baseline_file = docs_dir / 'structural_trend_clean_benchmark.json'
     baselines = {}
     if baseline_file.exists():
         with open(baseline_file, 'r', encoding='utf-8') as f:
@@ -156,10 +158,18 @@ def main():
 
     # Save benchmark artifact
     output_benchmark = {
-        'phase': 'Phase 20 - Spatio-Temporal Chan-Lun Wave Transformer',
-        'evaluation_period': '2024-01-01 to 2026-03-31 (Out-of-Sample)',
+        'phase': 'Phase 20 / Phase 21 - ST-ChanTransformer Clean Benchmark',
+        'status': 'EXPERIMENTAL_RESEARCH_FILTER_ONLY',
+        'evaluation_period': '2024-01-01 00:00:00 to 2026-09-01 12:00:00 (Development Backtest)',
+        'debiasing_protocols_enforced': {
+            'zero_bfill': True,
+            'zero_full_sample_percentile': True,
+            'train_only_fixed_threshold': True,
+            'purge_bars': 72,
+            'embargo_bars': 18,
+        },
         'st_chan_transformer': results,
-        'baselines_reference': baselines,
+        'baselines_reference': baselines.get('clean_headline_results', {}),
     }
 
     out_file = docs_dir / 'chan_transformer_benchmark.json'
