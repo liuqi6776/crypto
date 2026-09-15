@@ -12,6 +12,9 @@ Verifies:
 import numpy as np
 import pandas as pd
 import pytest
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import torch
 
 from crypto_quant.chan_features import compute_chan_features
