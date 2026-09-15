@@ -384,6 +384,15 @@ def prepare_chan_wave_datasets(
     print("Loading 2020-2026 4h crypto data for Chan-Lun Wave Transformer...")
     root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     data_dir = os.path.join(root_dir, 'data')
+    if not os.path.exists(os.path.join(data_dir, 'BTCUSDT_4h_2020_2026.parquet')) and not os.path.exists(os.path.join(data_dir, 'BTCUSDT_4h_2021_2026.parquet')):
+        for alt in [
+            os.path.join(root_dir, 'data', 'crypto_cache'),
+            os.path.join(os.path.expanduser('~'), 'crypto', 'data'),
+            r'C:\Users\liuqi\crypto\data',
+        ]:
+            if os.path.exists(os.path.join(alt, 'BTCUSDT_4h_2020_2026.parquet')) or os.path.exists(os.path.join(alt, 'BTCUSDT_4h_2021_2026.parquet')):
+                data_dir = alt
+                break
 
     raw_dfs = {}
     for t in TOKENS:
