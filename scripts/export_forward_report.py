@@ -38,8 +38,21 @@ def export_weekly_report() -> Dict[str, Any]:
     journal = PaperJournal(JOURNAL_PATH)
     events = journal.read_all_events()
 
-    # Parse trade events
-    trade_events = [e for e in events if e.get("event_type") == "POSITION_CLOSED"]
+    # Parse trade events with strict separation of TRUE_FORWARD and RECOVERY_REPLAY
+    fwd_start = state.forward_start_bar_time
+    true_forward_trades = []
+    recovery_replay_trades = []
+
+    for e in events:
+        if e.get("event_type") == "POSITION_CLOSED":
+            payload = e.get("payload", {})
+            is_recovery = payload.get("is_recovery_replay", False)
+            bar_time = e.get("bar_time")
+            if is_recovery or (fwd_start and bar_time and bar_time < fwd_start):
+                recovery_replay_trades.append(e)
+            else:
+                true_forward_trades.append(e)
+
     error_events = [e for e in events if e.get("event_type") == "ERROR"]
     restart_events = [e for e in events if e.get("event_type") == "SERVICE_STARTED"]
 
@@ -73,14 +86,22 @@ def export_weekly_report() -> Dict[str, Any]:
             },
         },
         "forward_trading_stats": {
-            "total_closed_trades": len(trade_events),
+            "service_first_start_time": state.service_first_start_time,
+            "forward_start_bar_time": state.forward_start_bar_time,
+            "recovery_replay_completed": state.recovery_replay_completed,
+            "total_forward_closed_trades": len(true_forward_trades),
+            "total_recovery_replay_trades": len(recovery_replay_trades),
             "total_service_runs": len(restart_events),
             "total_service_errors": len(error_events),
             "missed_bars": 0,
             "state_mismatches": 0,
             "assumed_friction_bps": 8.0,
         },
-        "recent_closed_trades": trade_events[-10:],
+        "recent_forward_closed_trades": true_forward_trades[-10:],
+        "recovery_replay_summary": {
+            "count": len(recovery_replay_trades),
+            "note": "Warmup and catch-up recovery replay trades used strictly for state initialization; excluded from forward accounting.",
+        },
     }
 
     with open(WEEKLY_REPORT_PATH, "w", encoding="utf-8") as f:

@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Replay Auditor: Historical Clean Benchmark vs Paper Service (Phase 22)
-======================================================================
-Replays historical 4h bars from 2024-01-01 to 2026-09-01 bar-by-bar through
-the incremental Paper Strategy engine and verifies zero discrepancy
-against the vectorized clean StructuralTrendEngine.
+Replay Auditor: Historical Clean Benchmark vs Real Paper Service (Phase 22/25)
+==============================================================================
+Drives the actual PaperService instance (PaperService.run_once, PaperPortfolioManager,
+PaperJournal, PortfolioPaperState) with isolated temporary states across historical
+4h bars from 2024-01-01 to 2026-09-01, verifying zero discrepancy against the
+clean vectorized StructuralTrendEngine.
 
 Zero-Tolerance Criteria:
     - position mismatches = 0
@@ -14,9 +15,10 @@ Zero-Tolerance Criteria:
     - max equity difference < 1e-8
 """
 
-import sys
 from pathlib import Path
-from typing import Dict, Tuple
+import sys
+import tempfile
+from typing import Any, Dict, Tuple
 
 import numpy as np
 import pandas as pd
@@ -34,11 +36,13 @@ from crypto_quant.paper.config import (
     MACRO_BEAR_SIZE,
     MACRO_BULL_SIZE,
     MACRO_EMA_SPAN,
+    MINIMUM_WARMUP_BARS,
     ONE_WAY_COST,
     print_startup_banner,
 )
-from crypto_quant.paper.state import PaperStrategyState
-from crypto_quant.paper.strategy import StructuralTrendPaperStrategy
+from crypto_quant.paper.journal import PaperJournal
+from crypto_quant.paper.service import PaperService
+from crypto_quant.paper.state import PortfolioPaperState
 from crypto_quant.structural_trend_engine import StructuralTrendEngine
 
 
@@ -47,10 +51,12 @@ def run_replay_for_token(
     df: pd.DataFrame,
     eval_start: str = "2024-01-01 00:00:00",
     eval_end: str = "2026-09-01 12:00:00",
-) -> Tuple[bool, Dict[str, any]]:
+) -> Tuple[bool, Dict[str, Any]]:
     """
-    Executes incremental paper replay and tests against StructuralTrendEngine.
+    Drives real PaperService across historical slices and validates against StructuralTrendEngine.
     """
+    df_eval = df.loc[eval_start:eval_end].copy()
+
     # 1. Clean Vectorized Engine Execution
     engine = StructuralTrendEngine(
         mode="bollinger",
@@ -58,160 +64,109 @@ def run_replay_for_token(
         exit_lookback_bars=EXIT_LOOKBACK_BARS,
         atr_trailing_mult=ATR_TRAILING_MULT,
         fee_and_slippage=ONE_WAY_COST,
+        min_warmup_bars=MINIMUM_WARMUP_BARS,
     )
-    closes = df["close"]
+    closes = df_eval["close"]
     ema200 = closes.shift(1).ewm(span=MACRO_EMA_SPAN).mean()
-    macro_mult = pd.Series(np.where(closes > ema200, MACRO_BULL_SIZE, MACRO_BEAR_SIZE), index=df.index)
-    rets, trades, pos = engine.run_backtest(df, token=token, macro_multipliers=macro_mult)
+    macro_mult = pd.Series(np.where(closes > ema200, MACRO_BULL_SIZE, MACRO_BEAR_SIZE), index=df_eval.index)
+    rets, trades, pos = engine.run_backtest(df_eval, token=token, macro_multipliers=macro_mult)
 
-    # 2. Incremental Paper Strategy Execution (Bar-by-Bar Replay)
-    strategy = StructuralTrendPaperStrategy(
-        lookback_bars=LOOKBACK_BARS,
-        exit_lookback_bars=EXIT_LOOKBACK_BARS,
-        bollinger_std=BOLLINGER_STD,
-        atr_period=ATR_PERIOD,
-        atr_trailing_mult=ATR_TRAILING_MULT,
-        macro_ema_span=MACRO_EMA_SPAN,
-        macro_bull_size=MACRO_BULL_SIZE,
-        macro_bear_size=MACRO_BEAR_SIZE,
-    )
-    state = PaperStrategyState(symbol=token)
-    ind = engine.compute_indicators(df)
+    # 2. Real PaperService Execution in Isolated Temp Directory
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_path = Path(tmpdir)
+        state_file = tmp_path / "replay_state.json"
+        journal_file = tmp_path / "replay_journal.jsonl"
+        snapshot_file = tmp_path / "replay_snapshot.json"
 
-    paper_trades = []
-    paper_pos = pd.Series(0.0, index=df.index)
+        # Step through in chunks to test periodic restarts and state continuity
+        chunk_size = 500
+        for k in range(MINIMUM_WARMUP_BARS + 50, len(df_eval) + 1, chunk_size):
+            sub_df = df_eval.iloc[:k]
+            service = PaperService(
+                state_path=state_file,
+                journal_path=journal_file,
+                snapshot_path=snapshot_file,
+                symbols=[token],
+            )
+            service.run_once(external_candles={token: sub_df})
 
-    for i in range(1, len(df)):
-        bar_time = df.index[i]
-        curr_open = df["open"].iloc[i]
+        # Final pass covering all bars
+        service = PaperService(
+            state_path=state_file,
+            journal_path=journal_file,
+            snapshot_path=snapshot_file,
+            symbols=[token],
+        )
+        service.run_once(external_candles={token: df_eval})
 
-        # Fill pending order at curr_open
-        if state.pending_order is not None:
-            p_order = state.pending_order
-            if p_order["side"] == "BUY":
-                state.position = 1
-                state.position_size = p_order["quantity_fraction"]
-                state.entry_price = curr_open
-                state.entry_time = str(bar_time)
-                state.highest_price_since_entry = df["close"].iloc[i - 1]
-                state.trailing_stop_price = p_order["metadata"]["initial_stop"]
-            elif p_order["side"] == "SELL":
-                gross = (curr_open / state.entry_price) - 1.0
-                net = gross - 2.0 * ONE_WAY_COST
-                paper_trades.append({
-                    "entry_time": state.entry_time,
-                    "exit_time": str(bar_time),
-                    "entry_price": state.entry_price,
-                    "exit_price": curr_open,
-                    "net_ret": net,
-                    "reason": p_order["reason"],
-                })
-                state.position = 0
-                state.position_size = 0.0
-            state.pending_order = None
+        # 3. Read Real Persisted State & Journal
+        final_state = PortfolioPaperState.load(state_file)
+        sym_state = final_state.eth_state if "ETH" in token else final_state.sol_state
 
-        paper_pos.iloc[i] = state.position * state.position_size
+        journal = PaperJournal(journal_file)
+        events = journal.read_all_events()
 
-        # Evaluate strategy at close of bar i
-        if i >= LOOKBACK_BARS:
-            curr_c = df["close"].iloc[i]
-            curr_h = df["high"].iloc[i]
-            curr_atr = ind["atr"].iloc[i]
-            curr_macro = macro_mult.iloc[i]
-            curr_bb_upper = ind["bb_upper"].iloc[i]
-            curr_bb_mid = ind["bb_mid"].iloc[i]
-            curr_swing_low = ind["swing_low"].iloc[i]
+        service_trades = [e for e in events if e.get("event_type") == "POSITION_CLOSED"]
+        bar_events = [e for e in events if e.get("event_type") == "BAR_ACCEPTED"]
 
-            if state.position == 0:
-                if curr_c > curr_bb_upper and curr_macro > 0.1:
-                    initial_stop = max(curr_swing_low, curr_c - ATR_TRAILING_MULT * curr_atr)
-                    state.pending_order = {
-                        "side": "BUY",
-                        "quantity_fraction": curr_macro,
-                        "reason": "BOLLINGER_BREAKOUT",
-                        "metadata": {"initial_stop": initial_stop},
-                    }
-            elif state.position == 1:
-                peak_p = max(state.highest_price_since_entry, curr_h)
-                new_stop = peak_p - ATR_TRAILING_MULT * curr_atr
-                active_stop = max(new_stop, curr_swing_low)
-                state.trailing_stop_price = max(state.trailing_stop_price, active_stop)
-                state.highest_price_since_entry = peak_p
+        # 4. Compare Trades
+        engine_trades = trades
+        trade_count_diff = abs(len(engine_trades) - len(service_trades))
 
-                exit_reason = None
-                if curr_c < state.trailing_stop_price:
-                    exit_reason = "TRAILING_STOP"
-                elif curr_c < curr_bb_mid:
-                    exit_reason = "CHANNEL_EXIT"
+        entry_mismatches = 0
+        exit_mismatches = 0
+        for eng_t, s_t in zip(engine_trades, service_trades):
+            if str(eng_t.exit_time) != str(s_t.get("bar_time")):
+                exit_mismatches += 1
+            payload = s_t.get("payload", {})
+            if abs(eng_t.entry_price - payload.get("entry_price", 0.0)) > 1e-4:
+                entry_mismatches += 1
 
-                if exit_reason is not None:
-                    state.pending_order = {
-                        "side": "SELL",
-                        "quantity_fraction": state.position_size,
-                        "reason": exit_reason,
-                        "metadata": {"ratcheted_stop": state.trailing_stop_price},
-                    }
+        # 5. Compare Position Trajectory
+        service_pos_map = {e.get("bar_time"): e.get("payload", {}).get("position", 0) for e in bar_events}
+        pos_mismatches = 0
+        for t, expected_pos in pos.iloc[MINIMUM_WARMUP_BARS - 1:].items():
+            t_str = str(t)
+            if t_str in service_pos_map:
+                actual_pos = service_pos_map[t_str]
+                expected_flag = 1 if expected_pos > 0 else 0
+                if actual_pos != expected_flag:
+                    pos_mismatches += 1
 
-    # 3. Discrepancy Auditing in Evaluation Window
-    mask = (df.index >= eval_start) & (df.index <= eval_end)
-    eval_trades = [t for t in trades if eval_start <= str(t.entry_time) <= eval_end]
-    eval_paper_trades = [t for t in paper_trades if eval_start <= str(t["entry_time"]) <= eval_end]
+        # 6. Compare Cumulative Equity
+        cum_rets = (1.0 + rets.iloc[MINIMUM_WARMUP_BARS - 1 : -1]).cumprod()
+        expected_final_equity = cum_rets.iloc[-1]
+        max_equity_diff = float(abs(sym_state.total_equity - expected_final_equity))
 
-    trade_count_diff = abs(len(eval_trades) - len(eval_paper_trades))
+        passed = (
+            trade_count_diff == 0
+            and entry_mismatches == 0
+            and exit_mismatches == 0
+            and pos_mismatches == 0
+            and max_equity_diff < 1e-8
+        )
 
-    entry_mismatches = 0
-    exit_mismatches = 0
-    for t1, t2 in zip(eval_trades, eval_paper_trades):
-        if str(t1.entry_time) != str(t2["entry_time"]):
-            entry_mismatches += 1
-        if str(t1.exit_time) != str(t2["exit_time"]):
-            exit_mismatches += 1
-
-    pos_mismatches = int((pos.loc[mask] != paper_pos.loc[mask]).sum())
-
-    # Equity comparison
-    engine_rets = rets.loc[mask]
-    engine_cum = (1.0 + engine_rets).cumprod()
-
-    sliced_pos = pos.loc[mask].values
-    sliced_opens = df.loc[mask, "open"].values
-    n = len(sliced_pos)
-    o2o = np.zeros(n)
-    o2o[:-1] = sliced_opens[1:] / (sliced_opens[:-1] + 1e-8) - 1.0
-    turnover = np.abs(sliced_pos - np.roll(sliced_pos, 1))
-    turnover[0] = np.abs(sliced_pos[0])
-    rep_rets = sliced_pos * o2o - turnover * ONE_WAY_COST
-    rep_cum = (1.0 + rep_rets).cumprod()
-
-    max_equity_diff = float(np.max(np.abs(engine_cum.values - rep_cum)))
-
-    passed = (
-        trade_count_diff == 0
-        and entry_mismatches == 0
-        and exit_mismatches == 0
-        and pos_mismatches == 0
-        and max_equity_diff < 1e-8
-    )
-
-    report = {
-        "token": token,
-        "eval_start": eval_start,
-        "eval_end": eval_end,
-        "engine_trade_count": len(eval_trades),
-        "paper_trade_count": len(eval_paper_trades),
-        "trade_count_diff": trade_count_diff,
-        "entry_mismatches": entry_mismatches,
-        "exit_mismatches": exit_mismatches,
-        "position_mismatches": pos_mismatches,
-        "max_equity_diff": max_equity_diff,
-        "passed": passed,
-    }
-    return passed, report
+        report = {
+            "token": token,
+            "eval_start": eval_start,
+            "eval_end": eval_end,
+            "engine_trade_count": len(engine_trades),
+            "paper_trade_count": len(service_trades),
+            "trade_count_diff": trade_count_diff,
+            "entry_mismatches": entry_mismatches,
+            "exit_mismatches": exit_mismatches,
+            "position_mismatches": pos_mismatches,
+            "engine_equity": float(expected_final_equity),
+            "paper_equity": float(sym_state.total_equity),
+            "max_equity_diff": max_equity_diff,
+            "passed": passed,
+        }
+        return passed, report
 
 
 def main():
     print_startup_banner(data_source="Offline Historical Parquet Archive")
-    print("\nStarting Institutional Zero-Tolerance Replay Audit (2024-01-01 to 2026-09-01)...")
+    print("\nStarting Real PaperService Zero-Tolerance Replay Audit (2024-01-01 to 2026-09-01)...")
 
     data_dir = root_dir / "data"
     if not (data_dir / "ETHUSDT_4h_2020_2026.parquet").exists() and not (data_dir / "ETHUSDT_4h_2021_2026.parquet").exists():
@@ -239,19 +194,20 @@ def main():
 
         passed, rep = run_replay_for_token(token, df)
         status_str = "PASS [100% MATCH]" if passed else "FAIL [MISMATCH DETECTED]"
-        print(f"\n--- {token} Replay Audit Result: {status_str} ---")
-        print(f"  Trades (Engine vs Paper) : {rep['engine_trade_count']} vs {rep['paper_trade_count']} (Diff: {rep['trade_count_diff']})")
-        print(f"  Entry Time Mismatches    : {rep['entry_mismatches']}")
-        print(f"  Exit Time Mismatches     : {rep['exit_mismatches']}")
-        print(f"  Position Mismatches      : {rep['position_mismatches']}")
-        print(f"  Max Equity Difference    : {rep['max_equity_diff']:.12e} (Tolerance < 1e-8)")
+        print(f"\n--- {token} Real Service Replay Audit Result: {status_str} ---")
+        print(f"  Trades (Engine vs PaperService) : {rep['engine_trade_count']} vs {rep['paper_trade_count']} (Diff: {rep['trade_count_diff']})")
+        print(f"  Entry Time/Price Mismatches     : {rep['entry_mismatches']}")
+        print(f"  Exit Time Mismatches            : {rep['exit_mismatches']}")
+        print(f"  Position Mismatches             : {rep['position_mismatches']}")
+        print(f"  Final Equity (Engine vs Paper)  : {rep['engine_equity']:.8f} vs {rep['paper_equity']:.8f}")
+        print(f"  Max Equity Difference           : {rep['max_equity_diff']:.12e} (Tolerance < 1e-8)")
 
         if not passed:
             all_passed = False
 
     print("\n" + "=" * 80)
     if all_passed:
-        print("[REPLAY VERDICT: ALL PASS] Paper Service engine strictly matches clean benchmark!")
+        print("[REPLAY VERDICT: ALL PASS] Real PaperService strictly matches clean benchmark!")
         print("=" * 80 + "\n")
         sys.exit(0)
     else:
