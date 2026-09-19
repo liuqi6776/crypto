@@ -103,6 +103,75 @@ def get_effective_public_url() -> str:
 
 
 # ============================================================================
+# CROSS-SECTIONAL MOMENTUM LEADERBOARD
+# ============================================================================
+def compute_live_cross_sectional_leaderboard(service: Optional[PaperService] = None) -> Dict[str, Any]:
+    """Computes live cross-sectional momentum ranking across BTC, ETH, SOL, BNB."""
+    if service is None:
+        service = PaperService()
+    tokens = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"]
+    closes_dict = {}
+    for t in tokens:
+        try:
+            df = service.fetcher.fetch_closed_klines(t, interval=TIMEFRAME, limit=250, check_freshness=False)
+            closes_dict[t] = df["close"]
+        except Exception:
+            pass
+
+    # Fallback to local files if any network latency
+    if len(closes_dict) < 4:
+        for t in tokens:
+            if t not in closes_dict:
+                p = root_dir / f"data/{t}_4h_2020_2026.parquet"
+                if p.exists():
+                    closes_dict[t] = pd.read_parquet(p)["close"].tail(250)
+
+    closes = pd.DataFrame(closes_dict).dropna()
+    closes_prior = closes.shift(1)
+    ema200 = closes_prior.ewm(span=200).mean()
+    bb_mid = closes_prior.rolling(120).mean()
+    bb_std = closes_prior.rolling(120).std()
+    bb_z = (closes_prior - bb_mid) / (bb_std + 1e-8)
+    mom20 = (closes_prior / closes_prior.shift(120)) - 1.0
+    score = bb_z + mom20
+
+    latest_t = score.index[-1]
+    latest_scores = score.loc[latest_t].sort_values(ascending=False)
+    btc_bull = bool(closes_prior.loc[latest_t, "BTCUSDT"] > ema200.loc[latest_t, "BTCUSDT"])
+
+    ranks = []
+    for rank, (tok, sc) in enumerate(latest_scores.items(), 1):
+        c_p = closes_prior.loc[latest_t, tok]
+        e_p = ema200.loc[latest_t, tok]
+        z_p = bb_z.loc[latest_t, tok]
+        m_p = mom20.loc[latest_t, tok]
+        is_ok = bool(c_p > e_p)
+        ranks.append({
+            "rank": rank,
+            "symbol": tok,
+            "score": round(float(sc), 3),
+            "curr_price": round(float(closes.loc[latest_t, tok]), 2),
+            "ema200": round(float(e_p), 2),
+            "bb_z": round(float(z_p), 2),
+            "mom20_pct": round(float(m_p * 100.0), 2),
+            "is_above_ema200": is_ok,
+        })
+
+    top_1 = ranks[0]
+    dual_gate_passed = bool(btc_bull and top_1["is_above_ema200"])
+    recommended_mode = f"100% {top_1['symbol']} 进攻做多" if dual_gate_passed else "100% Delta-Neutral 资金费套利"
+
+    return {
+        "top_symbol": top_1["symbol"],
+        "top_score": top_1["score"],
+        "btc_macro_bull": btc_bull,
+        "dual_gate_passed": dual_gate_passed,
+        "recommended_mode": recommended_mode,
+        "ranks": ranks,
+    }
+
+
+# ============================================================================
 # DATA & STATUS EXTRACTION
 # ============================================================================
 def get_current_dashboard_data() -> Dict[str, Any]:
@@ -203,6 +272,7 @@ def get_current_dashboard_data() -> Dict[str, Any]:
             "bars_in_pos": eth_s.bars_in_position,
         },
         "funding_arbitrage": funding_guide,
+        "leaderboard": compute_live_cross_sectional_leaderboard(service),
         "market": {
             "symbol": "ETHUSDT",
             "curr_price": round(curr_close, 2),
@@ -493,6 +563,87 @@ HTML_TEMPLATE = """
             </div>
             <div style="font-size: 12px;">
                 4h 最新闭合: <span id="bar-time">{{ data.market.last_closed_bar }}</span> | 刷新时间: <span id="sync-time">{{ data.timestamp_bjt }}</span>
+            </div>
+        </div>
+
+        <!-- 全市场截面动量选优与宏观门控看板 -->
+        <div class="card" style="margin-bottom: 20px; border-color: rgba(56, 189, 248, 0.35); background: linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);">
+            <div class="card-header">
+                <div>
+                    <span class="card-title" style="color: #38bdf8; font-size: 15px;">👑 全市场截面动量选优看板 (Top-1 龙头实时监测)</span>
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 3px;">
+                        BTC / ETH / SOL / BNB 截面池 | 布林带 Z-Score + 20日绝对动量综合打分 | 每天 00:00 UTC (08:00 BJT) 自动评定
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <span class="pill {{ 'pill-green' if data.leaderboard.dual_gate_passed else 'pill-amber' }}" style="font-size: 13px;">
+                        {{ data.leaderboard.recommended_mode }}
+                    </span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; background: rgba(15, 23, 42, 0.6); padding: 12px; border-radius: 8px;">
+                <div style="flex: 1; min-width: 200px;">
+                    <span style="font-size: 12px; color: var(--text-secondary);">当前 Top-1 龙头资产:</span>
+                    <div style="font-size: 20px; font-weight: 800; color: #38bdf8; margin-top: 2px;">
+                        {{ data.leaderboard.top_symbol }} <span style="font-size: 13px; color: #22c55e;">(综合得分: {{ '+' if data.leaderboard.top_score >= 0 else '' }}{{ data.leaderboard.top_score }})</span>
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <span style="font-size: 12px; color: var(--text-secondary);">BTC 宏观多头门控 (BTC > 4h EMA200):</span>
+                    <div style="font-size: 16px; font-weight: 700; color: {{ '#22c55e' if data.leaderboard.btc_macro_bull else '#ef4444' }}; margin-top: 4px;">
+                        {{ '🟢 宏观顺势 (多头有效)' if data.leaderboard.btc_macro_bull else '🔴 宏观逆势 (强制避险)' }}
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <span style="font-size: 12px; color: var(--text-secondary);">当前资金部署比重建议:</span>
+                    <div style="font-size: 16px; font-weight: 700; color: #fbbf24; margin-top: 4px;">
+                        {{ '100% 仓位持有 ' + data.leaderboard.top_symbol + ' 龙头' if data.leaderboard.dual_gate_passed else '100% 部署资金费无风险套利 (Delta=0)' }}
+                    </div>
+                </div>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--card-border); color: var(--text-secondary);">
+                            <th style="padding: 8px 10px;">排名</th>
+                            <th style="padding: 8px 10px;">资产代码</th>
+                            <th style="padding: 8px 10px;">综合动量分 (Score)</th>
+                            <th style="padding: 8px 10px;">当前现价</th>
+                            <th style="padding: 8px 10px;">4h EMA200 门控线</th>
+                            <th style="padding: 8px 10px;">布林 Z-Score</th>
+                            <th style="padding: 8px 10px;">20日绝对动量</th>
+                            <th style="padding: 8px 10px;">单币顺势状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in data.leaderboard.ranks %}
+                        <tr style="border-bottom: 1px solid rgba(148, 163, 184, 0.08); {{ 'background: rgba(56, 189, 248, 0.1); font-weight: 700;' if r.rank == 1 else '' }}">
+                            <td style="padding: 8px 10px;">
+                                {% if r.rank == 1 %}🥇 Top-1{% elif r.rank == 2 %}🥈 #2{% elif r.rank == 3 %}🥉 #3{% else %}#4{% endif %}
+                            </td>
+                            <td style="padding: 8px 10px; color: {{ '#38bdf8' if r.rank == 1 else 'var(--text-primary)' }};">
+                                {{ r.symbol }}
+                            </td>
+                            <td style="padding: 8px 10px; color: {{ '#22c55e' if r.score >= 0 else '#ef4444' }};">
+                                {{ '+' if r.score >= 0 else '' }}{{ r.score }}
+                            </td>
+                            <td style="padding: 8px 10px;">${{ "{:,.2f}".format(r.curr_price) }}</td>
+                            <td style="padding: 8px 10px; color: var(--text-secondary);">${{ "{:,.2f}".format(r.ema200) }}</td>
+                            <td style="padding: 8px 10px;">{{ '+' if r.bb_z >= 0 else '' }}{{ r.bb_z }}</td>
+                            <td style="padding: 8px 10px; color: {{ '#22c55e' if r.mom20_pct >= 0 else '#ef4444' }};">
+                                {{ '+' if r.mom20_pct >= 0 else '' }}{{ r.mom20_pct }}%
+                            </td>
+                            <td style="padding: 8px 10px;">
+                                <span class="pill {{ 'pill-green' if r.is_above_ema200 else 'pill-red' }}" style="padding: 2px 8px; font-size: 11px;">
+                                    {{ '站上 EMA200' if r.is_above_ema200 else '破位 EMA200' }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
 
