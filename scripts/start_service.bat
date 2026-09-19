@@ -17,4 +17,4 @@ for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8088" ^| findstr "LISTENING
     taskkill /F /PID %%a >nul 2>&1
 )
 
-"C:\Users\liuqi\anaconda3\python.exe" scripts\run_paper_dashboard.py --port 8088 >> "paper_logs\dashboard_service.log" 2>&1
+"C:\Users\liuqi\anaconda3\python.exe" -m server.main --port 8088 --interval 900 >> "paper_logs\dashboard_service.log" 2>&1
