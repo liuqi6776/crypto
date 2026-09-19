@@ -6,7 +6,22 @@
 [![Data](https://img.shields.io/badge/Data-100%25%20Offline%20Included-brightgreen.svg)]()
 [![Status](https://img.shields.io/badge/Status-100%25%20Reproducible%20%26%20Peer--Reviewed-purple.svg)]()
 
-[English](#english) | [中文说明](#chinese)
+[English](#english) | [中文说明](#chinese) | [20X Leverage Research / 杠杆量化研究](leverage_research/README.md) | [Cross-Sectional Selection & Carry Plan / 截面轮动与资金费套利落地方案](docs/CROSS_SECTIONAL_ROTATION_IMPLEMENTATION_PLAN.md)
+
+> [!IMPORTANT]
+> **🚀 Live Public Dashboard / 实时外部公网监控看板**:
+> - **Dedicated Public URL / 专属固定公网地址**: **[`https://percolate-zipfile-corned.ngrok-free.dev`](https://percolate-zipfile-corned.ngrok-free.dev)**
+> - **Architecture / 核心架构**: Dual-Mode (ETH 3x Leverage Directional Long during Breakouts / 100% Delta-Neutral Funding Rate Carry during Flat/Bear regimes).
+> - **Email Alerts / 实时信号报警**: Active 4h bar listener dispatching instant alerts to `568701293@qq.com`.
+
+> [!TIP]
+> **New Production Strategy & Empirical Research / 新增落地策略与跨周期实证研究**:
+> 1. **[Cross-Sectional Top-1 Selection + Trend Hard Gate + Bear Funding Carry Plan / 截面选优 + 绝对趋势硬门控 + 熊市资金费套利落地方案](docs/CROSS_SECTIONAL_ROTATION_IMPLEMENTATION_PLAN.md)**:
+>    - Full 6-year empirical verification across 2020–2024 training, 2025 validation, and 2026 blind test.
+>    - Solves the crypto correlation trap: achieves **+31,914.64% return (288.70% CAGR) with only -39.20% max drawdown** in 2020–2024, turns 2025 into **+13.79% profit**, and yields **+12.64%** in 2026's blind downturn.
+> 2. **[Crypto Perpetual Leverage Quantitative Research / 永续合约高杠杆量化研究 (20X)](leverage_research/README.md)**:
+>    - Comprehensive 6-year (2020-2026) empirical research on 20X perpetual leverage mechanics, order book microstructure (OFI/OBI), Marcos López de Prado Triple Barrier Method, Delta-Neutral Funding Arbitrage, and Core-Satellite hybrid systems.
+>    - 📌 **Big Data Storage Location / 历史高频数据库持久化路径**: `D:\Convertible_Bond_data\crypto_data\` (14,068,250 continuous 1m/5m bars, L2 100-level depth snapshots, 7,305 8h funding periods).
 
 ---
 

@@ -1,0 +1,48 @@
+{
+  "code_commit": "2c37b4ddd564e59f9a45a154dfe6f4ee113d3299",
+  "config_hash": "99db491d174b6345f8db15af6587d13cab35ea63043e101a32cc7b5b06431f73",
+  "costs": {
+    "ETH_fees": 0.0,
+    "SOL_fees": 0.0004,
+    "total_fees": 0.0004
+  },
+  "data_age_seconds": {},
+  "equity": {
+    "ETH_sleeve": 1.0,
+    "SOL_sleeve": 1.01801,
+    "drawdown_pct": 0.0,
+    "peak": 1.009005,
+    "portfolio_50_50": 1.009005
+  },
+  "experiment_id": "exp_paper_structural_trend_v1",
+  "last_error": null,
+  "last_processed_bar": {
+    "ETH": null,
+    "SOL": "2026-09-19 04:00:00+00:00"
+  },
+  "latest_closed_bar": {
+    "SOLUSDT": "2026-09-19 04:00:00+00:00"
+  },
+  "positions": {
+    "ETH": {
+      "direction": "FLAT",
+      "entry_price": 0.0,
+      "entry_time": null,
+      "highest_price": 0.0,
+      "pending_order": null,
+      "size": 0.0,
+      "trailing_stop": 0.0
+    },
+    "SOL": {
+      "direction": "LONG",
+      "entry_price": 111.15,
+      "entry_time": "2026-09-18 16:00:00+00:00",
+      "highest_price": 114.32,
+      "pending_order": null,
+      "size": 1.0,
+      "trailing_stop": 107.78857142857142
+    }
+  },
+  "service_status": "HEALTHY",
+  "timestamp_utc": "2026-09-19T09:50:40.524166+00:00"
+}

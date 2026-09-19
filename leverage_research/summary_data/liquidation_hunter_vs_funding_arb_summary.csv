@@ -1,0 +1,4 @@
+Model / Strategy,Initial ($),Ending ($),Total Return,CAGR (%),Max Drawdown,Calmar Ratio,Sharpe Ratio,Ulcer Index (溃疡指数)
+20X Liquidation Hunter,"$10,000.00",$0.01,-100.00%,-87.62%,100.00%,-0.88,-4.59,96.21
+Delta-Neutral Funding Arb,"$9,993.87","$16,275.88",+62.86%,7.59%,0.11%,71.03,10.54,0.02
+ETH 1X Buy & Hold,"$10,000.00","$186,900.81","+1,769.01%",55.15%,79.61%,0.69,0.96,46.04

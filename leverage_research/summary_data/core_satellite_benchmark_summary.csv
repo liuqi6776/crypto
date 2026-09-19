@@ -1,0 +1,4 @@
+Portfolio Architecture,Initial ($),Ending ($),Total Return,CAGR (%),Max Drawdown,Calmar Ratio,Sharpe Ratio,Ulcer Index (溃疡指数)
+Hybrid Core-Satellite (85/15),"$9,996.03","$14,366.14",+43.72%,5.59%,8.36%,0.67,1.80,1.92
+Core Only (100% Funding Arb),"$9,995.33","$19,234.84",+92.44%,10.32%,0.18%,58.40,10.65,0.03
+ETH 1X Buy & Hold Benchmark,"$9,811.32","$186,900.81","+1,804.95%",55.59%,79.61%,0.70,0.96,46.05

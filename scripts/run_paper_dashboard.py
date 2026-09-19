@@ -72,9 +72,13 @@ def start_ngrok_tunnel(port: int, max_retries: int = 10) -> tuple:
         return None, existing_url
 
     print(f"[TUNNEL] Starting ngrok tunnel for port {port}...")
+    static_domain = os.getenv("NGROK_DOMAIN", "percolate-zipfile-corned.ngrok-free.dev")
+    cmd = ["ngrok", "http", str(port)]
+    if static_domain:
+        cmd.extend(["--url", static_domain])
     try:
         p = subprocess.Popen(
-            ["ngrok", "http", str(port)],
+            cmd,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
@@ -83,8 +87,16 @@ def start_ngrok_tunnel(port: int, max_retries: int = 10) -> tuple:
         print("[TUNNEL WARNING] 'ngrok' command not found on PATH. Proceeding without public tunnel.")
         return None, ""
     except Exception as e:
-        print(f"[TUNNEL ERROR] Failed to start ngrok: {e}")
-        return None, ""
+        print(f"[TUNNEL ERROR] Failed to start ngrok with domain {static_domain}: {e}")
+        try:
+            p = subprocess.Popen(
+                ["ngrok", "http", str(port)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
+            )
+        except Exception:
+            return None, ""
 
     # Poll ngrok local web inspection API
     for i in range(max_retries):

@@ -1,0 +1,2 @@
+Model,Initial,Ending,Total_Return,CAGR,MaxDD,Sharpe,Calmar,Ulcer_Index,Win_Rate,Profit_Factor,Liquidations
+Microstructure 20X GBDT (OFI + TB),10000.0,-50766.19832512179,-607.66%,-100.00%,607.66%,-0.91,-0.16,302.00,45.42%,0.41,0

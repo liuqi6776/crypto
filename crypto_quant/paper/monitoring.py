@@ -100,7 +100,7 @@ class PaperMonitor:
                 f.flush()
                 os.fsync(f.fileno())
 
-            max_retries = 15
+            max_retries = 35
             for attempt in range(max_retries):
                 try:
                     os.replace(tmp_path, self.snapshot_path)
@@ -108,7 +108,7 @@ class PaperMonitor:
                 except (PermissionError, OSError) as pe:
                     if attempt == max_retries - 1:
                         raise pe
-                    time.sleep(0.008 + 0.004 * attempt)
+                    time.sleep(0.01 + 0.005 * attempt)
         finally:
             if tmp_path.exists():
                 try:
