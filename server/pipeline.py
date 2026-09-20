@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Pipeline Module: Unified Quant Service Pipeline (Phase 23)
-==========================================================
-Packages data fetching, local atomic state persistence, signal detection,
-and alert dispatching into a cohesive, reusable execution pipeline.
+Pipeline Module: Unified Quant Service Pipeline (Phase 23 V1)
+=============================================================
+Unified institutional pipeline executing:
+1. Multi-Asset Data Sync: Binance Public REST 4h candles (BTC, ETH, SOL, BNB).
+2. V1 Top-1 Strategy Step: Cross-sectional ranking & Dual Macro Gate with hysteresis.
+3. Real State Machine: Atomic persistence to paper_state/v1_top1_state.json.
+4. Turnover Accounting: Real 8.0 bps deduction on asset switches.
+5. Email Alert Dispatch: BUY (1x Spot Long), EXIT (100% USDT Cash Defense), ROTATE.
 """
 
 from datetime import datetime, timedelta, timezone
@@ -17,7 +21,6 @@ import pandas as pd
 
 from server.config import (
     DEFAULT_RECIPIENT,
-    ETH_LEVERAGE,
     INITIAL_CAPITAL_USDT,
     JOURNAL_PATH,
     PORT,
@@ -36,27 +39,34 @@ from crypto_quant.paper.config import (
     STRATEGY_NAME,
     get_code_commit,
 )
-from crypto_quant.paper.funding_arb import fetch_binance_funding_info, get_funding_arbitrage_guide
+from crypto_quant.paper.funding_arb import get_funding_arbitrage_guide
 from crypto_quant.paper.journal import PaperJournal
-from crypto_quant.paper.leverage_model import LeverageModel
+from crypto_quant.paper.market_data import MarketDataFetcher
 from crypto_quant.paper.service import PaperService
-from crypto_quant.paper.state import PortfolioPaperState
-from crypto_quant.paper.strategy import StructuralTrendPaperStrategy
+from crypto_quant.paper.top1_rotation_strategy import (
+    Top1RotationStrategy,
+    V1_JOURNAL_PATH,
+    V1_STATE_PATH,
+    V1Top1State,
+)
 
 
 class QuantServerPipeline:
     """
-    Unified Quant Pipeline executing:
-    1. Market Data Fetch: Retrieves closed candles from Binance.
-    2. Local State Update: Atomically updates state.json and journal.jsonl.
-    3. Signal Detection: Evaluates 3x trend breakout, trailing stop, and Top-1 leaderboard.
-    4. Alert Dispatch: Sends instant email upon signal transition.
+    Production-grade V1 Server Pipeline.
+    Ensures:
+    Dashboard State == State Machine Position == Email Alert Content.
     """
 
     def __init__(self):
         self.lock = threading.Lock()
-        self.leverage_model = LeverageModel(default_leverage=ETH_LEVERAGE)
-        self.last_signal: Optional[str] = None
+        self.strategy = Top1RotationStrategy(
+            symbols=["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"],
+            state_path=V1_STATE_PATH,
+            journal_path=V1_JOURNAL_PATH,
+        )
+        self.fetcher = MarketDataFetcher()
+        self.last_active_symbol: Optional[str] = None
         self.last_bar_time: Optional[str] = None
         self.last_cycle_time: Optional[str] = None
         self.public_tunnel_url: Optional[str] = None
@@ -80,172 +90,88 @@ class QuantServerPipeline:
             return f"https://{STATIC_NGROK_DOMAIN}"
         return f"http://127.0.0.1:{PORT}"
 
-    def compute_leaderboard(self, service: Optional[PaperService] = None) -> Dict[str, Any]:
-        """Computes live cross-sectional momentum ranking across BTC, ETH, SOL, BNB."""
-        if service is None:
-            service = PaperService(state_path=STATE_PATH, journal_path=JOURNAL_PATH)
-        tokens = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"]
-        closes_dict = {}
-        for t in tokens:
+    def fetch_all_klines(self) -> Dict[str, pd.DataFrame]:
+        """Fetches latest 4h closed candles for all universe symbols."""
+        klines = {}
+        for sym in self.strategy.symbols:
             try:
-                df = service.fetcher.fetch_closed_klines(t, interval=TIMEFRAME, limit=250, check_freshness=False)
-                closes_dict[t] = df["close"]
-            except Exception:
-                pass
-
-        # Fallback to local files if any network delay
-        if len(closes_dict) < 4:
-            for t in tokens:
-                if t not in closes_dict:
-                    p = ROOT_DIR / f"data/{t}_4h_2020_2026.parquet"
-                    if p.exists():
-                        closes_dict[t] = pd.read_parquet(p)["close"].tail(250)
-
-        closes = pd.DataFrame(closes_dict).dropna()
-        closes_prior = closes.shift(1)
-        ema200 = closes_prior.ewm(span=200).mean()
-        bb_mid = closes_prior.rolling(120).mean()
-        bb_std = closes_prior.rolling(120).std()
-        bb_z = (closes_prior - bb_mid) / (bb_std + 1e-8)
-        mom20 = (closes_prior / closes_prior.shift(120)) - 1.0
-        score = bb_z + mom20
-
-        latest_t = score.index[-1]
-        latest_scores = score.loc[latest_t].sort_values(ascending=False)
-        btc_bull = bool(closes_prior.loc[latest_t, "BTCUSDT"] > ema200.loc[latest_t, "BTCUSDT"])
-
-        ranks = []
-        for rank, (tok, sc) in enumerate(latest_scores.items(), 1):
-            c_p = closes_prior.loc[latest_t, tok]
-            e_p = ema200.loc[latest_t, tok]
-            z_p = bb_z.loc[latest_t, tok]
-            m_p = mom20.loc[latest_t, tok]
-            is_ok = bool(c_p > e_p)
-            ranks.append({
-                "rank": rank,
-                "symbol": tok,
-                "score": round(float(sc), 3),
-                "curr_price": round(float(closes.loc[latest_t, tok]), 2),
-                "ema200": round(float(e_p), 2),
-                "bb_z": round(float(z_p), 2),
-                "mom20_pct": round(float(m_p * 100.0), 2),
-                "is_above_ema200": is_ok,
-            })
-
-        top_1 = ranks[0]
-        dual_gate_passed = bool(btc_bull and top_1["is_above_ema200"])
-        recommended_mode = f"100% {top_1['symbol']} 进攻做多" if dual_gate_passed else "100% Delta-Neutral 资金费套利"
-
-        return {
-            "top_symbol": top_1["symbol"],
-            "top_score": top_1["score"],
-            "btc_macro_bull": btc_bull,
-            "dual_gate_passed": dual_gate_passed,
-            "recommended_mode": recommended_mode,
-            "ranks": ranks,
-        }
+                df = self.fetcher.fetch_closed_klines(sym, interval=TIMEFRAME, limit=250, check_freshness=False)
+                klines[sym] = df
+            except Exception as e:
+                print(f"[PIPELINE WARNING] Failed to fetch {sym} from API: {e}. Falling back to local cache.")
+                p = ROOT_DIR / f"data/{sym}_4h_2020_2026.parquet"
+                if p.exists():
+                    klines[sym] = pd.read_parquet(p).tail(250)
+        return klines
 
     def get_dashboard_data(self) -> Dict[str, Any]:
         """Extracts complete operational state for Web UI and email alerts."""
-        state = PortfolioPaperState.load(STATE_PATH) if STATE_PATH.exists() else PortfolioPaperState.create_initial()
-        eth_s = state.eth_state
+        v1_state = V1Top1State.load(V1_STATE_PATH)
+        klines = self.fetch_all_klines()
+        leaderboard = self.strategy.evaluate_cross_section(klines)
 
-        equity_usdt = eth_s.total_equity * INITIAL_CAPITAL_USDT
-        peak_usdt = eth_s.peak_equity * INITIAL_CAPITAL_USDT
-        is_in_pos = (eth_s.position == 1)
-        pos_direction = "LONG (3x)" if is_in_pos else "FLAT (Core套利)"
+        is_in_pos = (v1_state.active_symbol != "USDT_CASH" and v1_state.position_mode == "OFFENSIVE_SPOT_LONG")
+        pos_direction = f"1.0x 现货做多 ({v1_state.active_symbol.replace('USDT', '')})" if is_in_pos else "100% USDT 现金防御"
 
-        strat = StructuralTrendPaperStrategy()
-        service = PaperService(state_path=STATE_PATH, journal_path=JOURNAL_PATH)
-        df = service.fetcher.fetch_closed_klines("ETHUSDT", interval=TIMEFRAME, limit=250, check_freshness=False)
-        ind = strat.compute_indicators(df)
-
-        curr_close = ind["close"]
-        bb_upper = ind["bb_upper"]
-        bb_mid = ind["bb_mid"]
-        bb_lower = ind["bb_lower"]
-        ema200 = ind["ema200"]
-        atr14 = ind["atr"]
-        swing_low = ind["swing_low"]
-        macro_mult = ind["macro_mult"]
-
-        lev_metrics = self.leverage_model.compute_metrics(
-            base_equity_usdt=equity_usdt,
-            entry_price=eth_s.entry_price if is_in_pos else None,
-            current_price=curr_close,
-            highest_price=eth_s.highest_price_since_entry if is_in_pos else None,
-            trailing_stop_price=eth_s.trailing_stop_price if is_in_pos else None,
-            atr=atr14,
-            is_in_position=is_in_pos,
-            leverage=ETH_LEVERAGE,
-        )
-
-        funding_guide = get_funding_arbitrage_guide(base_capital_usdt=equity_usdt)
-        dist_to_buy_pct = ((bb_upper - curr_close) / curr_close) * 100.0
-
-        journal = PaperJournal(JOURNAL_PATH)
-        events = journal.read_all_events()
-        trade_events = [e for e in events if e.get("event_type") == "POSITION_CLOSED"][-5:]
-        signal_events = [e for e in events if e.get("event_type") == "SIGNAL_CREATED"][-5:]
+        # Funding Carry Guide (Corrected 50% nominal basis + fee deductions)
+        funding_guide = get_funding_arbitrage_guide(base_capital_usdt=v1_state.total_equity_usdt)
 
         now_utc = datetime.now(timezone.utc)
         now_bjt = now_utc + timedelta(hours=8)
-        last_bar_time = eth_s.last_processed_bar_time or str(df.index[-1])
-        active_mode = "ETH_3X_LONG" if is_in_pos else "CORE_FUNDING_ARB"
+        last_bar_time = v1_state.last_processed_bar or leaderboard.get("latest_bar_time", "")
+
+        active_mode = f"V1_SPOT_LONG_{v1_state.active_symbol.replace('USDT', '')}" if is_in_pos else "V1_USDT_CASH_DEFENSE"
+
+        # Journal events
+        journal = PaperJournal(V1_JOURNAL_PATH)
+        events = journal.read_all_events()
+        trade_events = [e for e in events if "ENTER" in e.get("payload", {}).get("action", "") or "EXIT" in e.get("payload", {}).get("action", "")][-5:]
 
         return {
             "timestamp_utc": now_utc.strftime("%Y-%m-%d %H:%M:%S UTC"),
             "timestamp_bjt": now_bjt.strftime("%Y-%m-%d %H:%M:%S BJT"),
             "active_mode": active_mode,
-            "experiment_id": EXPERIMENT_ID,
-            "strategy_name": STRATEGY_NAME,
+            "experiment_id": "exp_v1_top1_dual_gate_cash",
+            "strategy_name": "v1_top1_dual_gate_cash (1.0x Spot + Hysteresis)",
             "public_url": self.get_public_url(),
             "recipient_email": DEFAULT_RECIPIENT,
             "capital": {
                 "initial_usdt": round(INITIAL_CAPITAL_USDT, 2),
-                "current_equity_usdt": round(equity_usdt, 2),
-                "peak_usdt": round(peak_usdt, 2),
-                "pnl_usdt": round((eth_s.total_equity - 1.0) * INITIAL_CAPITAL_USDT, 2),
-                "pnl_pct": round((eth_s.total_equity - 1.0) * 100.0, 2),
-                "drawdown_pct": round(eth_s.drawdown * 100.0, 2),
-                "total_fees_usdt": round(eth_s.total_fees * INITIAL_CAPITAL_USDT, 2),
+                "current_equity_usdt": round(v1_state.total_equity_usdt, 2),
+                "peak_usdt": round(v1_state.peak_equity_usdt, 2),
+                "pnl_usdt": round(v1_state.total_equity_usdt - INITIAL_CAPITAL_USDT, 2),
+                "pnl_pct": round(((v1_state.total_equity_usdt - INITIAL_CAPITAL_USDT) / INITIAL_CAPITAL_USDT) * 100.0, 2),
+                "drawdown_pct": round(v1_state.drawdown_pct, 2),
+                "accumulated_fees_usdt": round(v1_state.accumulated_fees_usdt, 2),
+                "cash_usdt": round(v1_state.cash_usdt, 2),
             },
             "position": {
-                "symbol": "ETHUSDT",
+                "active_symbol": v1_state.active_symbol,
+                "position_mode": v1_state.position_mode,
                 "direction": pos_direction,
                 "is_in_pos": is_in_pos,
-                "leverage": ETH_LEVERAGE,
-                "nominal_usdt": lev_metrics["nominal_position_usdt"],
-                "entry_price": lev_metrics["entry_price"],
-                "entry_time": eth_s.entry_time,
-                "trailing_stop": lev_metrics["trailing_stop_price"],
-                "liquidation_price": lev_metrics["liquidation_price"],
-                "distance_to_liq_pct": lev_metrics["distance_to_liq_pct"],
-                "distance_to_stop_pct": lev_metrics["distance_to_stop_pct"],
-                "safety_buffer_pct": lev_metrics["safety_buffer_pct"],
-                "unrealized_pnl_usdt": lev_metrics["unrealized_pnl_usdt"],
-                "unrealized_roe_pct": lev_metrics["unrealized_roe_pct"],
-                "is_safe": lev_metrics["is_safe"],
-                "highest_price": lev_metrics["highest_price"],
-                "bars_in_pos": eth_s.bars_in_position,
+                "leverage": 1.0,
+                "entry_price": v1_state.entry_price,
+                "entry_time": v1_state.entry_time,
+                "current_price": v1_state.current_price,
+                "nominal_usdt": round(v1_state.nominal_usdt, 2),
+                "asset_units": round(v1_state.asset_units, 4),
+                "unrealized_pnl_usdt": round(v1_state.unrealized_pnl_usdt, 2),
+                "unrealized_pnl_pct": round(v1_state.unrealized_pnl_pct, 2),
+                "bars_held": v1_state.bars_held,
             },
             "funding_arbitrage": funding_guide,
-            "leaderboard": self.compute_leaderboard(service),
+            "leaderboard": leaderboard,
             "market": {
-                "symbol": "ETHUSDT",
-                "curr_price": round(curr_close, 2),
+                "top_symbol": leaderboard["top_symbol"],
+                "curr_price": leaderboard["ranks"][0]["curr_price"],
                 "last_closed_bar": last_bar_time,
-                "bb_upper": round(bb_upper, 2),
-                "bb_mid": round(bb_mid, 2),
-                "bb_lower": round(bb_lower, 2),
-                "ema200": round(ema200, 2),
-                "atr14": round(atr14, 2),
-                "swing_low": round(swing_low, 2),
-                "macro_status": "强多头顺势 (1.0x)" if macro_mult == 1.0 else "弱势防守 (0.5x)",
-                "dist_to_buy_pct": round(dist_to_buy_pct, 2),
+                "btc_macro_bull": leaderboard["btc_macro_bull"],
+                "dual_gate_passed": leaderboard["dual_gate_passed"],
+                "data_source": leaderboard["data_source"],
+                "is_stale": leaderboard["is_stale"],
             },
             "trades_history": trade_events,
-            "signals_history": signal_events,
             "system": {
                 "code_commit": get_code_commit(),
                 "config_hash": CONFIG_HASH,
@@ -258,42 +184,56 @@ class QuantServerPipeline:
     def run_cycle(self, force_notify: bool = False) -> Dict[str, Any]:
         """
         Executes one full 15-minute pipeline cycle:
-        1. Fetch fresh closed klines & run gap replay.
-        2. Atomically persist state.json & journal.jsonl.
-        3. Detect signal transitions (FLAT -> BUY, HOLD -> EXIT).
-        4. Send rich HTML email if transitioned or forced.
+        1. Fetch fresh closed klines for BTC, ETH, SOL, BNB.
+        2. Evaluate V1 Top-1 rotation & Dual Macro Gate with hysteresis.
+        3. Execute asset rotation with 8.0 bps friction accounting.
+        4. Atomically persist state.
+        5. Detect signal transition and fire alert email.
         """
         t0 = time.time()
         with self.lock:
-            # Step 1: Fetch fresh data and update local state
-            service = PaperService(state_path=STATE_PATH, journal_path=JOURNAL_PATH)
-            snapshot = service.run_once()
+            # Step 1: Fetch fresh klines
+            klines = self.fetch_all_klines()
 
-            # Step 2: Extract current dashboard and indicator state
-            data = self.get_dashboard_data()
-            eth_s = snapshot.get("positions", {}).get("ETHUSDT", {})
-            curr_signal = "BUY" if eth_s.get("position", 0) == 1 else "FLAT"
-            curr_bar = snapshot.get("latest_closed_bar", {}).get("ETHUSDT", "")
+            # Step 2 & 3: Run V1 Top-1 strategy step & persist state
+            v1_state, leaderboard = self.strategy.update_portfolio_step(klines)
 
-            # Step 3: Check signal transition
+            curr_active_symbol = v1_state.active_symbol
+            curr_mode = v1_state.position_mode
+            curr_bar = v1_state.last_processed_bar
+
+            # Step 4: Extract dashboard data
+            dash_data = self.get_dashboard_data()
+
+            # Step 5: Check signal transition
             signal_changed = False
-            if self.last_signal is None:
-                self.last_signal = curr_signal
+            event_type = None
+
+            if self.last_active_symbol is None:
+                self.last_active_symbol = curr_active_symbol
                 self.last_bar_time = curr_bar
-                print(f"[PIPELINE INIT] Baseline established: Signal={curr_signal}, Bar={curr_bar}")
-            elif curr_signal != self.last_signal or force_notify:
+                print(f"[V1 PIPELINE INIT] Baseline established: Active={curr_active_symbol} ({curr_mode}) at {curr_bar}")
+            elif curr_active_symbol != self.last_active_symbol or force_notify:
                 signal_changed = True
-                print(f"[PIPELINE ALERT] Signal Transition: {self.last_signal} -> {curr_signal} (Bar: {curr_bar})")
-                # Step 4: Dispatch alert email
+                if self.last_active_symbol == "USDT_CASH" and curr_active_symbol != "USDT_CASH":
+                    event_type = "BUY"
+                elif self.last_active_symbol != "USDT_CASH" and curr_active_symbol == "USDT_CASH":
+                    event_type = "EXIT"
+                else:
+                    event_type = "ROTATE"
+
+                print(f"[V1 PIPELINE ALERT] Signal Transition ({event_type}): {self.last_active_symbol} -> {curr_active_symbol} (Bar: {curr_bar})")
+
+                # Dispatch notification email
                 send_alert_email(
-                    event_type="SIGNAL_TRANSITION",
-                    old_signal=self.last_signal,
-                    new_signal=curr_signal,
+                    event_type=event_type,
+                    old_signal=self.last_active_symbol,
+                    new_signal=curr_active_symbol,
                     to_email=DEFAULT_RECIPIENT,
-                    dashboard_data=data,
+                    dashboard_data=dash_data,
                     test_mode=False,
                 )
-                self.last_signal = curr_signal
+                self.last_active_symbol = curr_active_symbol
                 self.last_bar_time = curr_bar
 
             elapsed = round(time.time() - t0, 3)
@@ -304,8 +244,12 @@ class QuantServerPipeline:
                 "success": True,
                 "elapsed_seconds": elapsed,
                 "timestamp_utc": now_str,
-                "curr_signal": curr_signal,
+                "curr_signal": curr_active_symbol,
+                "active_symbol": curr_active_symbol,
+                "position_mode": curr_mode,
                 "signal_changed": signal_changed,
-                "portfolio_equity": snapshot.get("equity", {}).get("portfolio_equity", 1.0),
+                "portfolio_equity": round(v1_state.total_equity_usdt, 2),
                 "latest_bar": curr_bar,
+                "data_source": leaderboard["data_source"],
+                "is_stale": leaderboard["is_stale"],
             }

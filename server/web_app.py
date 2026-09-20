@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Web App Module: Dual-Mode Dashboard & Flask API (Phase 23)
-==========================================================
+Web App Module: Dual-Mode Dashboard & Flask API (Phase 23 V1)
+=============================================================
 Hosts the institutional web dashboard displaying:
-- ETH 3x Leveraged Structural Trend trading
-- Monotonic 3x ATR trailing stop & liquidation safety buffer
-- Real-time Core Only (100% Delta-Neutral Funding Rate Arbitrage) guide & APY
-- Top-1 Cross-Sectional Leaderboard across BTC, ETH, SOL, BNB
-- 15-Minute Pipeline status, manual trigger, and test email
+- V1 Cross-Sectional Top-1 Spot Strategy (BTC/ETH/SOL/BNB).
+- Dual Macro Trend Gate (BTC EMA200 + Top-1 EMA200 with 0.5% hysteresis).
+- 1.0x Spot Long (zero leverage, zero debt, no liquidation risk).
+- 100% USDT Cash Defense on gate failure.
+- Optional Conditional Carry Plugin (corrected 50% nominal capital & fee frictions).
+- Full Data Source Transparency (Live API vs Stale Fallback warnings).
 """
 
 from typing import Optional
@@ -23,7 +24,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ETH 3x 杠杆波段 & Core 资金费率套利系统 (15分钟自动化流水线)</title>
+    <title>加密量化系统 V1 看板：双重宏观门控 Top-1 现货轮动 & USDT 现金防守</title>
     <style>
         :root {
             --bg-color: #070a13;
@@ -53,7 +54,7 @@ HTML_TEMPLATE = """
         .btn-primary:hover { opacity: 0.9; }
         .mode-banner { padding: 14px 20px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 14px; }
         .banner-long { background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.35); color: #4ade80; }
-        .banner-arb { background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); color: #fbbf24; }
+        .banner-cash { background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); color: #38bdf8; }
         .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 18px; margin-bottom: 20px; }
         .card { background-color: var(--surface-color); border: 1px solid var(--card-border); border-radius: 14px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
@@ -69,7 +70,7 @@ HTML_TEMPLATE = """
         .row-label { color: var(--text-secondary); }
         .row-val { font-weight: 700; color: var(--text-primary); }
         .step-box { background: var(--card-color); border: 1px solid var(--card-border); border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; font-size: 13px; }
-        .step-num { display: inline-block; width: 20px; height: 20px; background: var(--accent-amber); color: #000; border-radius: 50%; text-align: center; font-weight: 800; font-size: 11px; line-height: 20px; margin-right: 8px; }
+        .step-num { display: inline-block; width: 20px; height: 20px; background: var(--accent-blue); color: #000; border-radius: 50%; text-align: center; font-weight: 800; font-size: 11px; line-height: 20px; margin-right: 8px; }
         .footer { margin-top: 30px; text-align: center; font-size: 12px; color: var(--text-secondary); line-height: 1.8; }
     </style>
 </head>
@@ -78,10 +79,10 @@ HTML_TEMPLATE = """
         <!-- 头部 -->
         <div class="header">
             <div class="brand">
-                <div class="brand-icon">Ξ</div>
+                <div class="brand-icon">👑</div>
                 <div class="brand-text">
-                    <h1>ETH 3x 杠杆波段 & Core 资金费率套利系统</h1>
-                    <p>服务端流水线: 15分钟高频拉取与信号侦测 | 10,000 USDT 本金 | 独立 server/ 包</p>
+                    <h1>加密量化系统 V1：双重宏观门控 Top-1 现货轮动 & USDT 现金防守</h1>
+                    <p>策略模式: 1.0x 现货进攻 + 100% USDT 现金防御 (零杠杆/零负债/零清算风险) | 15分钟高频流水线</p>
                 </div>
             </div>
             <div class="btn-group">
@@ -94,13 +95,13 @@ HTML_TEMPLATE = """
             </div>
         </div>
 
-        <!-- 当前运行模式横幅 -->
-        <div class="mode-banner {{ 'banner-long' if data.position.is_in_pos else 'banner-arb' }}">
+        <!-- 当前运行模式横幅 (状态机执行模式 == 看板显示) -->
+        <div class="mode-banner {{ 'banner-long' if data.position.is_in_pos else 'banner-cash' }}">
             <div>
                 {% if data.position.is_in_pos %}
-                    🟢 <b>当前激活模式：ETH 3x 杠杆波段持仓多头 (LONG 3.0x)</b> | 开仓价: ${{ "{:,.2f}".format(data.position.entry_price) }}
+                    🟢 <b>当前激活模式：V1 现货进攻 (1.0x {{ data.position.active_symbol.replace('USDT', '') }})</b> | 开仓均价: ${{ "{:,.2f}".format(data.position.entry_price) }} | 现价: ${{ "{:,.2f}".format(data.position.current_price) }}
                 {% else %}
-                    🟡 <b>当前激活模式：Core Only (100% 资金费率无风险套利)</b> | 现货多+永续空 Delta 对冲生息中
+                    🛡️ <b>当前激活模式：100% USDT 现金防御 (双重宏观门控未通过，零基差/零借贷风险)</b>
                 {% endif %}
             </div>
             <div style="font-size: 12px;">
@@ -108,16 +109,19 @@ HTML_TEMPLATE = """
             </div>
         </div>
 
-        <!-- 全市场截面动量选优看板 -->
+        <!-- 全市场截面动量选优看板 (Top-1 龙头实时监测) -->
         <div class="card" style="margin-bottom: 20px; border-color: rgba(56, 189, 248, 0.35); background: linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);">
             <div class="card-header">
                 <div>
-                    <span class="card-title" style="color: #38bdf8; font-size: 15px;">👑 全市场截面动量选优看板 (Top-1 龙头实时监测)</span>
+                    <span class="card-title" style="color: #38bdf8; font-size: 15px;">👑 全市场截面动量选优与宏观门控看板</span>
                     <div style="font-size: 12px; color: var(--text-secondary); margin-top: 3px;">
-                        BTC / ETH / SOL / BNB 截面池 | 布林带 Z-Score + 20日绝对动量综合打分 | 15分钟同步计算
+                        BTC / ETH / SOL / BNB 截面池 | 布林带 Z-Score + 20日绝对动量综合打分 | 0.5% 门控滞回缓冲
                     </div>
                 </div>
-                <div style="text-align: right;">
+                <div style="text-align: right; display: flex; gap: 8px; align-items: center;">
+                    <span class="pill {{ 'pill-green' if not data.market.is_stale else 'pill-red' }}" style="font-size: 11px;">
+                        {{ '数据源: ' + data.market.data_source }}
+                    </span>
                     <span class="pill {{ 'pill-green' if data.leaderboard.dual_gate_passed else 'pill-amber' }}" style="font-size: 13px;">
                         {{ data.leaderboard.recommended_mode }}
                     </span>
@@ -141,29 +145,29 @@ HTML_TEMPLATE = """
                     </div>
                     <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
                         综合评分: <b style="color: {{ '#38bdf8' if r.rank == 1 else '#ffffff' }};">{{ r.score }}</b><br>
-                        20日动量: <b style="color: {{ '#22c55e' if r.mom20_pct >= 0 else '#ef4444' }};">{{ '+' if r.mom20_pct >= 0 else '' }}{{ r.mom20_pct }}%</b> | 布林Z: <b>{{ r.bb_z }}</b>
+                        20日动量: <b style="color: {{ '#22c55e' if r.mom20_pct >= 0 else '#ef4444' }};">{{ '+' if r.mom20_pct >= 0 else '' }}{{ r.mom20_pct }}%</b> | 距EMA200: <b style="color: {{ '#22c55e' if r.dist_to_ema_pct >= 0 else '#ef4444' }};">{{ '+' if r.dist_to_ema_pct >= 0 else '' }}{{ r.dist_to_ema_pct }}%</b>
                     </div>
                 </div>
                 {% endfor %}
             </div>
             <div style="margin-top: 12px; font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-                <span>BTC 宏观牛熊硬门控 (BTC > EMA200): <b style="color: {{ '#22c55e' if data.leaderboard.btc_macro_bull else '#ef4444' }};">{{ '✅ 顺势多头区 (允许进攻)' if data.leaderboard.btc_macro_bull else '⛔ 宏观防守区 (禁止进攻)' }}</b></span>
-                <span>双重硬门控状态: <b style="color: {{ '#22c55e' if data.leaderboard.dual_gate_passed else '#f59e0b' }};">{{ '✅ 完全放行' if data.leaderboard.dual_gate_passed else '🛡️ 拦截保护中' }}</b></span>
+                <span>BTC 宏观牛熊门控 (BTC > EMA200 +0.5%): <b style="color: {{ '#22c55e' if data.leaderboard.btc_macro_bull else '#ef4444' }};">{{ '✅ 顺势多头区 (允许进攻)' if data.leaderboard.btc_macro_bull else '⛔ 宏观防守区 (禁止进攻)' }}</b></span>
+                <span>双重硬门控状态: <b style="color: {{ '#22c55e' if data.leaderboard.dual_gate_passed else '#f59e0b' }};">{{ '✅ 完全放行 (买入/持有Top-1)' if data.leaderboard.dual_gate_passed else '🛡️ 拦截保护中 (持有USDT现金)' }}</b></span>
             </div>
         </div>
 
         <!-- 核心指标网格 -->
         <div class="grid-cards">
-            <!-- 资金净值卡片 -->
+            <!-- 资金净值卡片 (真实 V1 记账) -->
             <div class="card">
                 <div class="card-header">
-                    <span class="card-title">实盘模拟账户净值</span>
-                    <span class="pill pill-green">实盘同步中</span>
+                    <span class="card-title">实盘模拟账户净值 (V1 记账)</span>
+                    <span class="pill pill-green">真实状态机同步</span>
                 </div>
                 <div class="metric-big">${{ "{:,.2f}".format(data.capital.current_equity_usdt) }}</div>
                 <div style="margin-top: 14px;">
                     <div class="row-item">
-                        <span class="row-label">初始基准本金</span>
+                        <span class="row-label">初始本金</span>
                         <span class="row-val">${{ "{:,.2f}".format(data.capital.initial_usdt) }} USDT</span>
                     </div>
                     <div class="row-item">
@@ -182,115 +186,108 @@ HTML_TEMPLATE = """
                             -{{ data.capital.drawdown_pct }}%
                         </span>
                     </div>
+                    <div class="row-item">
+                        <span class="row-label">累计换手摩擦手续费 (8 bps/次)</span>
+                        <span class="row-val" style="color: #f59e0b;">-${{ "{:,.2f}".format(data.capital.accumulated_fees_usdt) }} USDT</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- 3x 杠杆风控卡片 -->
+            <!-- 1.0x 现货持仓与门控卡片 (取代 3x 杠杆) -->
             <div class="card">
                 <div class="card-header">
-                    <span class="card-title">ETH 3x 杠杆风控与清算防线</span>
-                    <span class="pill {{ 'pill-green' if data.position.is_safe else 'pill-red' }}">
-                        {{ '安全缓冲区充足' if data.position.is_safe else '风控警报' }}
+                    <span class="card-title">V1 现货持仓与门控风控 (零杠杆)</span>
+                    <span class="pill {{ 'pill-green' if data.position.is_in_pos else 'pill-blue' }}">
+                        {{ '现货做多中' if data.position.is_in_pos else '现金防守中' }}
                     </span>
                 </div>
                 <div class="metric-big" style="color: {{ '#38bdf8' if data.position.is_in_pos else '#94a3b8' }};">
                     {{ data.position.direction }}
                 </div>
                 <div style="margin-top: 14px;">
-                    <div class="row-item">
-                        <span class="row-label">3x 杠杆名义敞口</span>
-                        <span class="row-val">${{ "{:,.2f}".format(data.position.nominal_usdt) }} USDT</span>
-                    </div>
                     {% if data.position.is_in_pos %}
                     <div class="row-item">
-                        <span class="row-label">持仓均价</span>
+                        <span class="row-label">持仓代币</span>
+                        <span class="row-val">{{ data.position.active_symbol }}</span>
+                    </div>
+                    <div class="row-item">
+                        <span class="row-label">持仓现货数量</span>
+                        <span class="row-val">{{ data.position.asset_units }} 枚</span>
+                    </div>
+                    <div class="row-item">
+                        <span class="row-label">入场开仓均价</span>
                         <span class="row-val">${{ "{:,.2f}".format(data.position.entry_price) }}</span>
                     </div>
                     <div class="row-item">
-                        <span class="row-label">动态单调移动止损 (3x ATR)</span>
-                        <span class="row-val" style="color: #ef4444;">${{ "{:,.2f}".format(data.position.trailing_stop) }} (距现价 {{ data.position.distance_to_stop_pct }}%)</span>
+                        <span class="row-label">浮动盈亏 (ROE)</span>
+                        <span class="row-val" style="color: {{ '#22c55e' if data.position.unrealized_pnl_usdt >= 0 else '#ef4444' }};">
+                            {{ '+' if data.position.unrealized_pnl_usdt >= 0 else '' }}${{ "{:,.2f}".format(data.position.unrealized_pnl_usdt) }} ({{ '+' if data.position.unrealized_pnl_pct >= 0 else '' }}{{ data.position.unrealized_pnl_pct }}%)
+                        </span>
                     </div>
                     <div class="row-item">
-                        <span class="row-label">⚠️ 预估强制平仓线 (爆仓线)</span>
-                        <span class="row-val" style="color: #f59e0b;">${{ "{:,.2f}".format(data.position.liquidation_price) }} (距现价 {{ data.position.distance_to_liq_pct }}%)</span>
-                    </div>
-                    <div class="row-item">
-                        <span class="row-label">止损与强平安全缓冲垫</span>
-                        <span class="row-val" style="color: #22c55e;">{{ data.position.safety_buffer_pct }}% (市价止损远早于强平)</span>
+                        <span class="row-label">杠杆属性与清算风险</span>
+                        <span class="row-val" style="color: #22c55e;">1.0x 现货持仓 (零杠杆/无爆仓线)</span>
                     </div>
                     {% else %}
                     <div class="row-item">
-                        <span class="row-label">当前持仓状态</span>
-                        <span class="row-val" style="color: #f59e0b;">空仓防御 (100% 部署资金费套利)</span>
+                        <span class="row-label">持仓资产</span>
+                        <span class="row-val" style="color: #38bdf8;">100% USDT 现金 (极度安全)</span>
                     </div>
                     <div class="row-item">
-                        <span class="row-label">距突破买入线 (120布林上轨)</span>
-                        <span class="row-val" style="color: #38bdf8;">+{{ data.market.dist_to_buy_pct }}% (目标: ${{ "{:,.2f}".format(data.market.bb_upper) }})</span>
+                        <span class="row-label">现金资产余额</span>
+                        <span class="row-val">${{ "{:,.2f}".format(data.capital.cash_usdt) }} USDT</span>
+                    </div>
+                    <div class="row-item">
+                        <span class="row-label">防守原因</span>
+                        <span class="row-val" style="color: #f59e0b;">BTC 或 Top-1 未越过 EMA200 (+0.5% 滞回门控)</span>
+                    </div>
+                    <div class="row-item">
+                        <span class="row-label">安全属性</span>
+                        <span class="row-val" style="color: #22c55e;">零基差波动风险 / 零清算风险</span>
                     </div>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- Core 资金费率套利卡片 -->
+            <!-- 可选条件性资金费率套利卡片 (修正为 50% 名义空单本金与四腿扣费) -->
             <div class="card">
                 <div class="card-header">
-                    <span class="card-title">Core Only (100% 资金费率无风险套利)</span>
-                    <span class="pill pill-amber">Delta 零风险中性</span>
+                    <span class="card-title">可选附加：资金费率 Carry 模块</span>
+                    <span class="pill pill-amber">条件性附加 (非默认)</span>
                 </div>
                 <div class="metric-big" style="color: #fbbf24;">
-                    {{ data.funding_arbitrage.funding_info.annualized_apy_pct }}%
-                    <span style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">年化 APY</span>
+                    {{ data.funding_arbitrage.effective_net_annual_apy_pct }}%
+                    <span style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">净年化 (50%本金)</span>
                 </div>
                 <div style="margin-top: 14px;">
                     <div class="row-item">
-                        <span class="row-label">币安当前 8h 费率</span>
-                        <span class="row-val">{{ data.funding_arbitrage.funding_info.funding_rate_8h_pct }}% (下次结算: {{ data.funding_arbitrage.funding_info.countdown }})</span>
+                        <span class="row-label">币安 ETH 8h 费率</span>
+                        <span class="row-val">{{ data.funding_arbitrage.funding_info.funding_rate_8h_pct }}% (毛年化: {{ data.funding_arbitrage.funding_info.annualized_apy_pct }}%)</span>
                     </div>
                     <div class="row-item">
-                        <span class="row-label">单日预估现金流生息</span>
+                        <span class="row-label">单日预计毛利息 (仅空单本金)</span>
                         <span class="row-val" style="color: #22c55e;">+${{ "{:,.2f}".format(data.funding_arbitrage.est_daily_income_usdt) }} USDT / 天</span>
                     </div>
                     <div class="row-item">
-                        <span class="row-label">30 天累计预期收益</span>
-                        <span class="row-val" style="color: #22c55e;">+${{ "{:,.2f}".format(data.funding_arbitrage.est_monthly_income_usdt) }} USDT</span>
+                        <span class="row-label">四腿开平总手续费 (0.20%)</span>
+                        <span class="row-val" style="color: #ef4444;">-${{ "{:,.2f}".format(data.funding_arbitrage.estimated_roundtrip_friction_usdt) }} USDT</span>
                     </div>
                     <div class="row-item">
-                        <span class="row-label">操作状态</span>
-                        <span class="row-val" style="color: {{ '#22c55e' if not data.position.is_in_pos else '#94a3b8' }};">
-                            {{ '🟢 激活套利生息中' if not data.position.is_in_pos else '⚪ 多头进攻中 (套利待命)' }}
-                        </span>
+                        <span class="row-label">覆盖摩擦所需持仓天数</span>
+                        <span class="row-val" style="color: #f59e0b;">约 {{ data.funding_arbitrage.breakeven_days }} 天 (短周期不建议开启)</span>
+                    </div>
+                    <div class="row-item">
+                        <span class="row-label">当前模块建议</span>
+                        <span class="row-val" style="color: #94a3b8;">默认优先持有 USDT 纯现金</span>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- 套利保姆级实操指引 -->
-        <div class="card" style="margin-bottom: 20px;">
-            <div class="card-header">
-                <span class="card-title" style="color: #fbbf24;">🛠️ Core 资金费率套利 4 步保姆级实操指南 (基于本金 ${{ "{:,.0f}".format(data.capital.current_equity_usdt) }} USDT)</span>
-            </div>
-            <div class="step-box">
-                <span class="step-num">1</span>
-                <b>资金拆分对半</b>：将账户中的 <b>${{ "{:,.0f}".format(data.funding_arbitrage.half_capital_usdt) }} USDT</b> 留在现货账户买入现货，另外 <b>${{ "{:,.0f}".format(data.funding_arbitrage.half_capital_usdt) }} USDT</b> 划转入 USDT 永续合约账户作为保证金。
-            </div>
-            <div class="step-box">
-                <span class="step-num">2</span>
-                <b>现货买入 + 合约等额开空</b>：以市价买入 ${{ "{:,.0f}".format(data.funding_arbitrage.half_capital_usdt) }} 的现货，同时在币安永续合约开立价值 ${{ "{:,.0f}".format(data.funding_arbitrage.half_capital_usdt) }} 的 <b>1x 杠杆空单</b>。
-            </div>
-            <div class="step-box">
-                <span class="step-num">3</span>
-                <b>Delta 归零坐收利息</b>：现货涨多少，空单亏多少；现货跌多少，空单赚多少，净值绝对无视行情暴跌。每天 08:00 / 16:00 / 24:00 (BJT) 稳收资金费。
-            </div>
-            <div class="step-box">
-                <span class="step-num">4</span>
-                <b>牛市信号一键平仓切多</b>：当收到系统发送的【🚨 买入信号邮件】时，平掉合约空单，全额资金切换为 3x 杠杆波段顺势进攻！
             </div>
         </div>
 
         <!-- 页脚 -->
         <div class="footer">
             <p>公网直达地址: <a href="{{ data.public_url }}" style="color: #38bdf8;">{{ data.public_url }}</a> | 本地访问: http://127.0.0.1:8088</p>
-            <p>15分钟流水线服务 | Commit: {{ data.system.code_commit[:8] }} | 报警邮箱: {{ data.recipient_email }}</p>
+            <p>15分钟流水线服务 (V1 架构) | Commit: {{ data.system.code_commit[:8] }} | 报警邮箱: {{ data.recipient_email }}</p>
         </div>
     </div>
 

@@ -50,7 +50,8 @@ class ServerScheduler:
         try:
             print("[SCHEDULER] Executing initial startup pipeline pass...")
             res = self.pipeline.run_cycle()
-            print(f"[SCHEDULER] Initial pass completed in {res['elapsed_seconds']}s. Signal: {res['curr_signal']}")
+            sym = res.get('active_symbol', res.get('curr_signal', 'CASH'))
+            print(f"[SCHEDULER] Initial pass completed in {res['elapsed_seconds']}s. Active: {sym} ({res.get('position_mode', '')})")
         except Exception as e:
             print(f"[SCHEDULER ERROR] Initial pass error: {e}")
 
@@ -71,10 +72,11 @@ class ServerScheduler:
                         print(f"[SCHEDULER] Morning 08:02 BJT summary report triggered at {now_bjt.strftime('%Y-%m-%d %H:%M:%S')} BJT!")
                         try:
                             dash_data = self.pipeline.get_dashboard_data()
+                            act_sym = self.pipeline.last_active_symbol or "USDT_CASH"
                             send_alert_email(
                                 event_type="DAILY_SUMMARY",
-                                old_signal=self.pipeline.last_signal,
-                                new_signal=self.pipeline.last_signal,
+                                old_signal=act_sym,
+                                new_signal=act_sym,
                                 to_email=DEFAULT_RECIPIENT,
                                 dashboard_data=dash_data,
                                 test_mode=False,
@@ -89,6 +91,7 @@ class ServerScheduler:
             try:
                 res = self.pipeline.run_cycle()
                 self.last_run_time = datetime.now(timezone.utc)
-                print(f"[15M SCHEDULER] Finished in {res['elapsed_seconds']}s | Signal: {res['curr_signal']} | Bar: {res['latest_bar']} | Equity: {res['portfolio_equity']:.4f}")
+                sym = res.get('active_symbol', res.get('curr_signal', 'CASH'))
+                print(f"[15M SCHEDULER] Finished in {res['elapsed_seconds']}s | Active: {sym} ({res.get('position_mode', '')}) | Bar: {res['latest_bar']} | Equity: ${res['portfolio_equity']:,.2f}")
             except Exception as e:
                 print(f"[15M SCHEDULER ERROR] Cycle failed: {e}")
