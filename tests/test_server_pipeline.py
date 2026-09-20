@@ -112,3 +112,29 @@ def test_flask_web_app_endpoints():
     assert "position" in data
     assert "leaderboard" in data
     assert data["capital"]["current_equity_usdt"] > 0
+
+    # Verify Take-Profit and Stop-Loss fields in position
+    pos = data["position"]
+    assert "stop_loss_price" in pos
+    assert "distance_to_stop_pct" in pos
+    assert "take_profit_tp1" in pos
+    assert "distance_to_tp1_pct" in pos
+    assert "take_profit_tp2" in pos
+    assert "distance_to_tp2_pct" in pos
+    assert "highest_price_since_entry" in pos
+
+    # Verify HTML template renders TP & SL elements
+    html_resp = client.get("/")
+    assert html_resp.status_code == 200
+    html_text = html_resp.get_data(as_text=True)
+    if pos["is_in_pos"]:
+        assert "🛑 动态硬门控/移动止损价" in html_text
+        assert "🎯 第一阶段止盈目标 (TP1, +10%)" in html_text
+        assert "🚀 第二阶段止盈目标 (TP2, +20%)" in html_text
+        assert pos["take_profit_tp1"] > pos["current_price"]
+        assert pos["take_profit_tp2"] > pos["take_profit_tp1"]
+        assert pos["stop_loss_price"] < pos["current_price"]
+    else:
+        assert "止损/止盈状态" in html_text
+        assert "空仓防守中" in html_text
+

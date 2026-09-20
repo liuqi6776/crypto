@@ -127,6 +127,27 @@ class QuantServerPipeline:
         events = journal.read_all_events()
         trade_events = [e for e in events if "ENTER" in e.get("payload", {}).get("action", "") or "EXIT" in e.get("payload", {}).get("action", "")][-5:]
 
+        curr_p = v1_state.current_price
+        stop_p = v1_state.stop_loss_price
+        tp1 = v1_state.take_profit_tp1
+        tp2 = v1_state.take_profit_tp2
+        highest_p = v1_state.highest_price_since_entry
+
+        # Fallback defaults if state file was saved by legacy version
+        if is_in_pos and curr_p > 0:
+            if stop_p <= 0.0:
+                stop_p = round(curr_p * 0.95, 2)
+            if tp1 <= 0.0:
+                tp1 = round(curr_p * 1.10, 2)
+            if tp2 <= 0.0:
+                tp2 = round(curr_p * 1.20, 2)
+            if highest_p <= 0.0:
+                highest_p = curr_p
+
+        dist_to_stop_pct = round(((curr_p - stop_p) / curr_p) * 100.0, 2) if (stop_p > 0 and curr_p > 0) else 0.0
+        dist_to_tp1_pct = round(((tp1 - curr_p) / curr_p) * 100.0, 2) if (tp1 > 0 and curr_p > 0) else 0.0
+        dist_to_tp2_pct = round(((tp2 - curr_p) / curr_p) * 100.0, 2) if (tp2 > 0 and curr_p > 0) else 0.0
+
         return {
             "timestamp_utc": now_utc.strftime("%Y-%m-%d %H:%M:%S UTC"),
             "timestamp_bjt": now_bjt.strftime("%Y-%m-%d %H:%M:%S BJT"),
@@ -154,6 +175,13 @@ class QuantServerPipeline:
                 "entry_price": v1_state.entry_price,
                 "entry_time": v1_state.entry_time,
                 "current_price": v1_state.current_price,
+                "stop_loss_price": stop_p,
+                "distance_to_stop_pct": dist_to_stop_pct,
+                "take_profit_tp1": tp1,
+                "distance_to_tp1_pct": dist_to_tp1_pct,
+                "take_profit_tp2": tp2,
+                "distance_to_tp2_pct": dist_to_tp2_pct,
+                "highest_price_since_entry": highest_p,
                 "nominal_usdt": round(v1_state.nominal_usdt, 2),
                 "asset_units": round(v1_state.asset_units, 4),
                 "unrealized_pnl_usdt": round(v1_state.unrealized_pnl_usdt, 2),

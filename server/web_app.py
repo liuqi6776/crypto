@@ -99,7 +99,7 @@ HTML_TEMPLATE = """
         <div class="mode-banner {{ 'banner-long' if data.position.is_in_pos else 'banner-cash' }}">
             <div>
                 {% if data.position.is_in_pos %}
-                    🟢 <b>当前激活模式：V1 现货进攻 (1.0x {{ data.position.active_symbol.replace('USDT', '') }})</b> | 开仓均价: ${{ "{:,.2f}".format(data.position.entry_price) }} | 现价: ${{ "{:,.2f}".format(data.position.current_price) }}
+                    🟢 <b>当前激活模式：V1 现货进攻 (1.0x {{ data.position.active_symbol.replace('USDT', '') }})</b> | 开仓: ${{ "{:,.2f}".format(data.position.entry_price) }} | 现价: ${{ "{:,.2f}".format(data.position.current_price) }} | 🛑 动态止损: <b style="color: #ef4444;">${{ "{:,.2f}".format(data.position.stop_loss_price) }} (-{{ data.position.distance_to_stop_pct }}%)</b> | 🎯 止盈TP1: <b style="color: #22c55e;">${{ "{:,.2f}".format(data.position.take_profit_tp1) }} (+{{ data.position.distance_to_tp1_pct }}%)</b>
                 {% else %}
                     🛡️ <b>当前激活模式：100% USDT 现金防御 (双重宏观门控未通过，零基差/零借贷风险)</b>
                 {% endif %}
@@ -219,9 +219,41 @@ HTML_TEMPLATE = """
                         <span class="row-val">${{ "{:,.2f}".format(data.position.entry_price) }}</span>
                     </div>
                     <div class="row-item">
+                        <span class="row-label">当前最新市价</span>
+                        <span class="row-val">${{ "{:,.2f}".format(data.position.current_price) }}</span>
+                    </div>
+                    <div class="row-item">
                         <span class="row-label">浮动盈亏 (ROE)</span>
                         <span class="row-val" style="color: {{ '#22c55e' if data.position.unrealized_pnl_usdt >= 0 else '#ef4444' }};">
                             {{ '+' if data.position.unrealized_pnl_usdt >= 0 else '' }}${{ "{:,.2f}".format(data.position.unrealized_pnl_usdt) }} ({{ '+' if data.position.unrealized_pnl_pct >= 0 else '' }}{{ data.position.unrealized_pnl_pct }}%)
+                        </span>
+                    </div>
+                    <div class="row-item" style="background: rgba(239, 68, 68, 0.08); padding-left: 6px; padding-right: 6px; border-radius: 6px; margin: 2px 0;">
+                        <span class="row-label" style="color: #ef4444; font-weight: 600;">🛑 动态硬门控/移动止损价</span>
+                        <span class="row-val" style="color: #ef4444; font-weight: 800;">
+                            ${{ "{:,.2f}".format(data.position.stop_loss_price) }} (距现价 -{{ data.position.distance_to_stop_pct }}%)
+                        </span>
+                    </div>
+                    <div class="row-item" style="background: rgba(34, 197, 94, 0.08); padding-left: 6px; padding-right: 6px; border-radius: 6px; margin: 2px 0;">
+                        <span class="row-label" style="color: #22c55e; font-weight: 600;">🎯 第一阶段止盈目标 (TP1, +10%)</span>
+                        <span class="row-val" style="color: #22c55e; font-weight: 800;">
+                            ${{ "{:,.2f}".format(data.position.take_profit_tp1) }} (距现价 +{{ data.position.distance_to_tp1_pct }}%)
+                        </span>
+                    </div>
+                    <div class="row-item" style="background: rgba(168, 85, 247, 0.08); padding-left: 6px; padding-right: 6px; border-radius: 6px; margin: 2px 0;">
+                        <span class="row-label" style="color: #a855f7; font-weight: 600;">🚀 第二阶段止盈目标 (TP2, +20%)</span>
+                        <span class="row-val" style="color: #a855f7; font-weight: 800;">
+                            ${{ "{:,.2f}".format(data.position.take_profit_tp2) }} (距现价 +{{ data.position.distance_to_tp2_pct }}%)
+                        </span>
+                    </div>
+                    <div class="row-item">
+                        <span class="row-label">开仓以来最高价</span>
+                        <span class="row-val">${{ "{:,.2f}".format(data.position.highest_price_since_entry) }}</span>
+                    </div>
+                    <div class="row-item">
+                        <span class="row-label">动态风控执行规则</span>
+                        <span class="row-val" style="color: #38bdf8; font-size: 11px;">
+                            保本锁定(浮盈>5%锁成本) | 跟踪止盈(浮盈>10%回撤5%止盈) | 门控跌破平仓
                         </span>
                     </div>
                     <div class="row-item">
@@ -236,6 +268,10 @@ HTML_TEMPLATE = """
                     <div class="row-item">
                         <span class="row-label">现金资产余额</span>
                         <span class="row-val">${{ "{:,.2f}".format(data.capital.cash_usdt) }} USDT</span>
+                    </div>
+                    <div class="row-item">
+                        <span class="row-label">止损/止盈状态</span>
+                        <span class="row-val" style="color: #94a3b8;">空仓防守中，无需止损止盈</span>
                     </div>
                     <div class="row-item">
                         <span class="row-label">防守原因</span>

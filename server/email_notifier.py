@@ -51,27 +51,36 @@ def send_alert_email(
     curr_p = pos.get("current_price", mkt.get("curr_price", 0.0))
     entry_p = pos.get("entry_price", 0.0)
     top_sym = leaderboard.get("top_symbol", "BTCUSDT")
+    stop_p = pos.get("stop_loss_price", 0.0)
+    tp1 = pos.get("take_profit_tp1", 0.0)
+    tp2 = pos.get("take_profit_tp2", 0.0)
+    dist_stop = pos.get("distance_to_stop_pct", 0.0)
+    dist_tp1 = pos.get("distance_to_tp1_pct", 0.0)
+    dist_tp2 = pos.get("distance_to_tp2_pct", 0.0)
+    is_in_pos = pos.get("is_in_pos", False)
 
     if test_mode:
-        subject = "🧪 [测试报警] 加密量化系统 V1 通道测试 (双重门控 Top-1 现货 & 现金防守)"
+        subject = f"🧪 [测试报警] V1 策略监控通道测试 (当前持仓: {pos.get('active_symbol', 'USDT')} | 止损: ${stop_p:,.2f} | 止盈: ${tp1:,.2f})"
         badge_text = "TEST MODE VERIFICATION / 测试告警通道正常"
-        action_headline = "系统 15 分钟自动化流水线监听已就绪，V1 邮件推送通道测试成功！"
+        action_headline = f"系统 15 分钟自动化流水线监听已就绪，V1 邮件推送与止盈止损计算正常（止损: ${stop_p:,.2f}, 止盈1: ${tp1:,.2f}）！"
     elif event_type == "BUY":
-        subject = f"🚨 [买入信号] V1 双重门控放行！建议 1.0x 现货买入 {new_signal} | 当前价: ${curr_p:,.2f}"
+        subject = f"🚨 [买入信号] V1 建议 1.0x 现货买入 {new_signal} | 现价: ${curr_p:,.2f} | 止损: ${stop_p:,.2f} | 止盈: ${tp1:,.2f}"
         badge_text = f"BUY SIGNAL / 1.0x 现货进场信号 ({new_signal})"
-        action_headline = f"BTC 宏观顺势且 {new_signal} 强势站上 EMA200 (+0.5% 滞回门控)，建议以 1.0x 现货全额买入 {new_signal}，捕获主升浪超额收益！"
+        action_headline = f"BTC 顺势且 {new_signal} 站上 EMA200 (+0.5% 滞回门控)！建议以 1.0x 现货全额买入 {new_signal}。初始动态止损设在 ${stop_p:,.2f} (-{dist_stop}%)，第一止盈目标 ${tp1:,.2f} (+{dist_tp1}%)，第二止盈目标 ${tp2:,.2f} (+{dist_tp2}%)。浮盈达+5%自动移至成本保本，浮盈达+10%启动回撤5%跟踪止盈！"
     elif event_type == "EXIT":
-        subject = f"🛡️ [防守离场] V1 宏观门控破坏！建议平仓退守 100% USDT 现金防守"
+        subject = f"🛡️ [防守离场] V1 门控破坏或触发止损！建议平仓退守 100% USDT 现金防守"
         badge_text = "EXIT SIGNAL / 退出多头切入现金防守"
-        action_headline = f"BTC 宏观跌破或标的跌破 EMA200 (-0.5% 门控)！建议市价清空现货，全额持有 100% USDT 现金，规避单边大跌与基差风险！"
+        action_headline = f"BTC 宏观跌破或标的触发 EMA200 门控止损（止损线: ${stop_p:,.2f}）！建议市价清空现货，全额持有 100% USDT 现金，锁定本金利润，规避单边大跌与基差风险！"
     elif event_type == "ROTATE":
-        subject = f"🔄 [标的轮动] V1 截面龙头切换！建议从 {old_signal} 换仓至 {new_signal}"
+        subject = f"🔄 [标的轮动] V1 截面龙头切换！建议从 {old_signal} 换仓至 {new_signal} | 新止损: ${stop_p:,.2f}"
         badge_text = "ROTATION SIGNAL / 龙头币种截面换仓"
-        action_headline = f"截面动量评定更新：{new_signal} 评分超越 {old_signal}！建议市价卖出 {old_signal}，全额换入领涨龙头 {new_signal}。"
+        action_headline = f"截面动量评定更新：{new_signal} 评分超越 {old_signal}！建议市价卖出 {old_signal}，全额换入领涨龙头 {new_signal}。新仓止损位: ${stop_p:,.2f}，第一止盈: ${tp1:,.2f}。"
     else:
-        subject = f"ℹ️ [每日晨报] V1 现货与现金策略资产播报 | 净值: ${cap.get('current_equity_usdt', 10000.0):,.2f}"
+        subject = f"ℹ️ [每日晨报] V1 现货与现金策略资产播报 | 净值: ${cap.get('current_equity_usdt', 10000.0):,.2f} | 模式: {pos.get('direction', '现金防守')}"
         badge_text = "DAILY SUMMARY REPORT / 每日资产与策略健康度汇总"
         action_headline = f"系统 15 分钟自动化流水线运行正常。当前策略模式：{pos.get('direction', '现金防御')}。"
+        if is_in_pos:
+            action_headline += f" 当前标的: {pos.get('active_symbol')}，动态止损: ${stop_p:,.2f} (-{dist_stop}%)，目标止盈: ${tp1:,.2f} (+{dist_tp1}%)。"
 
     pnl_val = pos.get("unrealized_pnl_usdt", 0.0)
     pnl_color = "#3fb950" if pnl_val >= 0 else "#f85149"
@@ -130,11 +139,15 @@ def send_alert_email(
             </div>
 
             <div class="card" style="margin-bottom: 20px;">
-                <div class="card-title" style="color: #38bdf8;">🛡️ V1 策略风控属性与门控参数</div>
+                <div class="card-title" style="color: #38bdf8;">🛡️ V1 策略风控属性与止盈止损参数</div>
                 <table class="table-wrap">
                     <tr><td>当前持仓标的:</td><td>{pos.get('active_symbol', 'USDT_CASH')}</td></tr>
                     {f"<tr><td>开仓均价:</td><td>${entry_p:,.2f}</td></tr>" if entry_p else ""}
                     {f"<tr><td>当前市价:</td><td>${curr_p:,.2f}</td></tr>" if curr_p else ""}
+                    {f"<tr><td style='color: #ef4444; font-weight:700;'>🛑 动态硬门控/移动止损价:</td><td style='color: #ef4444;'>${stop_p:,.2f} (距现价 -{dist_stop}%)</td></tr>" if stop_p > 0 else ""}
+                    {f"<tr><td style='color: #22c55e; font-weight:700;'>🎯 第一阶段止盈目标 (TP1 +10%):</td><td style='color: #22c55e;'>${tp1:,.2f} (距现价 +{dist_tp1}%)</td></tr>" if tp1 > 0 else ""}
+                    {f"<tr><td style='color: #a855f7; font-weight:700;'>🚀 第二阶段止盈目标 (TP2 +20%):</td><td style='color: #a855f7;'>${tp2:,.2f} (距现价 +{dist_tp2}%)</td></tr>" if tp2 > 0 else ""}
+                    {f"<tr><td>止盈止损风控规则:</td><td style='color: #38bdf8; font-size: 11px;'>保本锁定(浮盈>5%) | 跟踪止盈(浮盈>10%回撤5%) | 门控跌破清仓</td></tr>" if is_in_pos else ""}
                     <tr><td>杠杆倍数:</td><td style="color: #22c55e;">1.0x 现货 (零杠杆 / 无借贷负债)</td></tr>
                     <tr><td>清算风险:</td><td style="color: #22c55e;">无爆仓线 / 绝对安全</td></tr>
                     <tr><td>门控滞回缓冲:</td><td>±0.5% (进场 +0.5% 确认, 离场 -0.5% 防抖)</td></tr>

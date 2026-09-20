@@ -53,6 +53,10 @@ class V1Top1State:
     entry_price: float = 0.0
     entry_time: Optional[str] = None
     current_price: float = 0.0
+    stop_loss_price: float = 0.0               # 动态门控/跟踪止损位 (破位离场)
+    take_profit_tp1: float = 0.0               # 第一目标止盈位 (TP1: +10% 动量加速区)
+    take_profit_tp2: float = 0.0               # 第二目标止盈位 (TP2: +20% 主升浪扩张区)
+    highest_price_since_entry: float = 0.0      # 开仓以来最高价 (动态追踪止盈止损)
     bars_held: int = 0
     cash_usdt: float = 10000.0
     asset_units: float = 0.0
@@ -280,13 +284,25 @@ class Top1RotationStrategy:
                 state.cash_usdt = 0.0
                 state.entry_price = curr_price
                 state.entry_time = latest_bar
+                state.highest_price_since_entry = curr_price
                 state.bars_held = 0
                 turnover_friction += buy_fee
                 action_taken = f"ENTER_{target_symbol}"
+                # TP1 (+10% 动量加速区) & TP2 (+20% 主升浪扩张区)
+                state.take_profit_tp1 = round(curr_price * 1.10, 2)
+                state.take_profit_tp2 = round(curr_price * 1.20, 2)
+                # 初始保护性止损: max(门控线 EMA200 * 0.995, 硬止损 -5%)
+                gate_stop = round(top_rank_item["ema200"] * (1.0 - self.hysteresis_pct), 2)
+                hard_stop = round(curr_price * 0.95, 2)
+                state.stop_loss_price = max(gate_stop, hard_stop)
             else:
                 action_taken = "EXIT_TO_CASH"
                 state.entry_price = 0.0
                 state.entry_time = None
+                state.highest_price_since_entry = 0.0
+                state.stop_loss_price = 0.0
+                state.take_profit_tp1 = 0.0
+                state.take_profit_tp2 = 0.0
                 state.bars_held = 0
 
             state.active_symbol = target_symbol
@@ -297,8 +313,25 @@ class Top1RotationStrategy:
             if state.position_mode == "OFFENSIVE_SPOT_LONG":
                 state.bars_held += 1
                 action_taken = "HOLD_LONG"
+                state.highest_price_since_entry = max(state.highest_price_since_entry, curr_price)
+                # 动态跟踪止损线调整:
+                # 1. 门控基准线: 始终不低于 EMA200 * 0.995
+                gate_stop = round(top_rank_item["ema200"] * (1.0 - self.hysteresis_pct), 2)
+                state.stop_loss_price = max(state.stop_loss_price, gate_stop)
+                # 2. 浮盈 > +5% 时自动上移至保本价 (+0.2% 覆盖摩擦)
+                if curr_price >= state.entry_price * 1.05:
+                    breakeven_stop = round(state.entry_price * 1.002, 2)
+                    state.stop_loss_price = max(state.stop_loss_price, breakeven_stop)
+                # 3. 浮盈 > +10% 时启动移动追踪止盈 (回撤 5% 锁定利润)
+                if curr_price >= state.entry_price * 1.10:
+                    trailing_lock = round(state.highest_price_since_entry * 0.95, 2)
+                    state.stop_loss_price = max(state.stop_loss_price, trailing_lock)
             else:
                 action_taken = "HOLD_CASH"
+                state.stop_loss_price = 0.0
+                state.take_profit_tp1 = 0.0
+                state.take_profit_tp2 = 0.0
+                state.highest_price_since_entry = 0.0
 
         # Mark to Market
         state.current_price = curr_price if state.active_symbol != "USDT_CASH" else 1.0
