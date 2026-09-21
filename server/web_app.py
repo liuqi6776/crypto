@@ -105,7 +105,7 @@ HTML_TEMPLATE = """
                 {% endif %}
             </div>
             <div style="font-size: 12px;">
-                4h 闭合时间: <span id="bar-time">{{ data.market.last_closed_bar }}</span> | 轮询刷新: <span id="sync-time">{{ data.timestamp_bjt }}</span>
+                4h 周期: <span id="bar-time" style="color: #38bdf8; font-weight: 600;">{{ data.market.candle_status_desc or data.market.last_closed_bar }}</span> | 轮询刷新: <span id="sync-time">{{ data.timestamp_bjt }}</span>
             </div>
         </div>
 
@@ -113,7 +113,7 @@ HTML_TEMPLATE = """
         <div class="card" style="margin-bottom: 20px; border-color: rgba(56, 189, 248, 0.35); background: linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);">
             <div class="card-header">
                 <div>
-                    <span class="card-title" style="color: #38bdf8; font-size: 15px;">👑 全市场截面动量选优与宏观门控看板</span>
+                    <span class="card-title" style="color: #38bdf8; font-size: 15px;">👑 全市场截面动量选优与宏观门控看板 (币安秒级实时流)</span>
                     <div style="font-size: 12px; color: var(--text-secondary); margin-top: 3px;">
                         BTC / ETH / SOL / BNB 截面池 | 布林带 Z-Score + 20日绝对动量综合打分 | 0.5% 门控滞回缓冲
                     </div>

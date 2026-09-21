@@ -90,12 +90,29 @@ class QuantServerPipeline:
             return f"https://{STATIC_NGROK_DOMAIN}"
         return f"http://127.0.0.1:{PORT}"
 
+    @staticmethod
+    def format_candle_bjt(bar_time_str: str) -> str:
+        """Formats bar timestamp to friendly Beijing Time with live status."""
+        try:
+            t = pd.to_datetime(bar_time_str)
+            if t.tzinfo is None:
+                t = t.tz_localize("UTC")
+            bjt_tz = timezone(timedelta(hours=8))
+            t_bjt = t.astimezone(bjt_tz)
+            t_bjt_end = t_bjt + timedelta(hours=4)
+            now_bjt = datetime.now(bjt_tz)
+            status_label = "实时进行中" if t_bjt <= now_bjt < t_bjt_end else "已闭合"
+            end_str = "24:00" if t_bjt_end.hour == 0 else t_bjt_end.strftime("%H:%M")
+            return f"{t_bjt.strftime('%m-%d %H:%M')} ~ {end_str} BJT ({status_label})"
+        except Exception:
+            return str(bar_time_str)
+
     def fetch_all_klines(self) -> Dict[str, pd.DataFrame]:
-        """Fetches latest 4h closed candles for all universe symbols."""
+        """Fetches latest 4h candles for all universe symbols including current forming bar."""
         klines = {}
         for sym in self.strategy.symbols:
             try:
-                df = self.fetcher.fetch_closed_klines(sym, interval=TIMEFRAME, limit=250, check_freshness=False)
+                df = self.fetcher.fetch_closed_klines(sym, interval=TIMEFRAME, limit=250, check_freshness=False, include_forming=True)
                 klines[sym] = df
             except Exception as e:
                 print(f"[PIPELINE WARNING] Failed to fetch {sym} from API: {e}. Falling back to local cache.")
@@ -108,26 +125,44 @@ class QuantServerPipeline:
         """Extracts complete operational state for Web UI and email alerts."""
         v1_state = V1Top1State.load(V1_STATE_PATH)
         klines = self.fetch_all_klines()
-        leaderboard = self.strategy.evaluate_cross_section(klines)
+        live_prices = self.fetcher.fetch_live_ticker_prices()
+        leaderboard = self.strategy.evaluate_cross_section(klines, live_prices=live_prices)
 
         is_in_pos = (v1_state.active_symbol != "USDT_CASH" and v1_state.position_mode == "OFFENSIVE_SPOT_LONG")
         pos_direction = f"1.0x 现货做多 ({v1_state.active_symbol.replace('USDT', '')})" if is_in_pos else "100% USDT 现金防御"
+
+        # Update position mark-to-market with real-time live price
+        curr_p = v1_state.current_price
+        if is_in_pos and v1_state.active_symbol in live_prices:
+            curr_p = float(live_prices[v1_state.active_symbol])
+            v1_state.current_price = curr_p
+            v1_state.nominal_usdt = v1_state.asset_units * curr_p
+            v1_state.total_equity_usdt = v1_state.cash_usdt + v1_state.nominal_usdt
+            if v1_state.entry_price > 0:
+                cost_basis = v1_state.asset_units * v1_state.entry_price
+                v1_state.unrealized_pnl_usdt = v1_state.nominal_usdt - cost_basis
+                v1_state.unrealized_pnl_pct = (v1_state.unrealized_pnl_usdt / cost_basis) * 100.0
+            if curr_p > v1_state.highest_price_since_entry:
+                v1_state.highest_price_since_entry = curr_p
+            if v1_state.total_equity_usdt > v1_state.peak_equity_usdt:
+                v1_state.peak_equity_usdt = v1_state.total_equity_usdt
+            v1_state.drawdown_pct = max(0.0, ((v1_state.peak_equity_usdt - v1_state.total_equity_usdt) / v1_state.peak_equity_usdt) * 100.0)
 
         # Funding Carry Guide (Corrected 50% nominal basis + fee deductions)
         funding_guide = get_funding_arbitrage_guide(base_capital_usdt=v1_state.total_equity_usdt)
 
         now_utc = datetime.now(timezone.utc)
         now_bjt = now_utc + timedelta(hours=8)
-        last_bar_time = v1_state.last_processed_bar or leaderboard.get("latest_bar_time", "")
+        last_bar_time = leaderboard.get("latest_bar_time") or v1_state.last_processed_bar or ""
+        candle_status_desc = self.format_candle_bjt(last_bar_time)
 
         active_mode = f"V1_SPOT_LONG_{v1_state.active_symbol.replace('USDT', '')}" if is_in_pos else "V1_USDT_CASH_DEFENSE"
 
         # Journal events
         journal = PaperJournal(V1_JOURNAL_PATH)
         events = journal.read_all_events()
-        trade_events = [e for e in events if "ENTER" in e.get("payload", {}).get("action", "") or "EXIT" in e.get("payload", {}).get("action", "")][-5:]
+        trade_events = [e for e in events if "ENTER" in e.get("payload", {}).get("action", "") or "EXIT" in e.get("payload", {}).get("action", "") or "ROTATE" in e.get("payload", {}).get("action", "")][-5:]
 
-        curr_p = v1_state.current_price
         stop_p = v1_state.stop_loss_price
         tp1 = v1_state.take_profit_tp1
         tp2 = v1_state.take_profit_tp2
@@ -194,6 +229,7 @@ class QuantServerPipeline:
                 "top_symbol": leaderboard["top_symbol"],
                 "curr_price": leaderboard["ranks"][0]["curr_price"],
                 "last_closed_bar": last_bar_time,
+                "candle_status_desc": candle_status_desc,
                 "btc_macro_bull": leaderboard["btc_macro_bull"],
                 "dual_gate_passed": leaderboard["dual_gate_passed"],
                 "data_source": leaderboard["data_source"],
@@ -212,19 +248,21 @@ class QuantServerPipeline:
     def run_cycle(self, force_notify: bool = False) -> Dict[str, Any]:
         """
         Executes one full 15-minute pipeline cycle:
-        1. Fetch fresh closed klines for BTC, ETH, SOL, BNB.
-        2. Evaluate V1 Top-1 rotation & Dual Macro Gate with hysteresis.
-        3. Execute asset rotation with 8.0 bps friction accounting.
-        4. Atomically persist state.
-        5. Detect signal transition and fire alert email.
+        1. Fetch fresh closed klines for BTC, ETH, SOL, BNB including forming candle.
+        2. Fetch real-time second-level ticker prices from Binance REST.
+        3. Evaluate V1 Top-1 rotation & Dual Macro Gate with hysteresis.
+        4. Execute asset rotation with 8.0 bps friction accounting.
+        5. Atomically persist state.
+        6. Detect signal transition and fire alert email.
         """
         t0 = time.time()
         with self.lock:
-            # Step 1: Fetch fresh klines
+            # Step 1: Fetch fresh klines & live prices
             klines = self.fetch_all_klines()
+            live_prices = self.fetcher.fetch_live_ticker_prices()
 
             # Step 2 & 3: Run V1 Top-1 strategy step & persist state
-            v1_state, leaderboard = self.strategy.update_portfolio_step(klines)
+            v1_state, leaderboard = self.strategy.update_portfolio_step(klines, live_prices=live_prices)
 
             curr_active_symbol = v1_state.active_symbol
             curr_mode = v1_state.position_mode

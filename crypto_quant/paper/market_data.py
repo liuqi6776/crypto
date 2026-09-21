@@ -7,7 +7,7 @@ from Binance Public REST endpoints without requiring any API keys.
 """
 
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 import requests
 import pandas as pd
 import numpy as np
@@ -46,6 +46,7 @@ class MarketDataFetcher:
         interval: str = "4h",
         limit: int = 250,
         check_freshness: bool = True,
+        include_forming: bool = False,
     ) -> pd.DataFrame:
         """
         Fetches at least `limit` klines from Binance Public API, verifies closure,
@@ -116,6 +117,7 @@ class MarketDataFetcher:
             symbol=symbol,
             interval=interval,
             check_freshness=check_freshness,
+            include_forming=include_forming,
         )
 
     def validate_and_format_klines(
@@ -125,6 +127,7 @@ class MarketDataFetcher:
         interval: str = "4h",
         check_freshness: bool = False,
         reference_time_utc: Optional[datetime] = None,
+        include_forming: bool = False,
     ) -> pd.DataFrame:
         """
         Applies exhaustive institutional data integrity and continuity checks.
@@ -140,9 +143,9 @@ class MarketDataFetcher:
         # 1. Deduplicate by open_time
         df = df.drop_duplicates(subset=["open_time"]).sort_values("open_time").reset_index(drop=True)
 
-        # 2. Check and drop unclosed live forming bar
+        # 2. Check and drop unclosed live forming bar (only if include_forming is False)
         # A bar is closed if and only if now_utc >= close_time (or open_time + interval)
-        if "close_time" in df.columns:
+        if "close_time" in df.columns and not include_forming:
             # Drop bars whose close_time is still in the future relative to now_utc
             last_close_time = df.iloc[-1]["close_time"]
             if hasattr(last_close_time, "tzinfo") and last_close_time.tzinfo is None:
@@ -203,6 +206,28 @@ class MarketDataFetcher:
                 )
 
         return df[["open", "high", "low", "close", "volume"]]
+
+    def fetch_live_ticker_prices(self, symbols: Optional[List[str]] = None) -> Dict[str, float]:
+        """
+        Fetches instant second-level live ticker prices from Binance Public REST.
+        """
+        target_symbols = [s.upper() for s in (symbols or ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"])]
+        for base_url in self.base_urls:
+            url = f"{base_url}/api/v3/ticker/price"
+            try:
+                resp = requests.get(url, timeout=self.timeout_seconds)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    prices = {}
+                    for item in data:
+                        sym = item.get("symbol")
+                        if sym in target_symbols:
+                            prices[sym] = float(item.get("price", 0.0))
+                    if len(prices) >= len(target_symbols):
+                        return prices
+            except Exception:
+                continue
+        return {}
 
 
 # Standalone canonical helper

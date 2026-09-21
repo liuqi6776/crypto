@@ -125,9 +125,14 @@ class Top1RotationStrategy:
         self.journal_path = Path(journal_path)
         self.journal = PaperJournal(self.journal_path)
 
-    def evaluate_cross_section(self, klines_dict: Dict[str, pd.DataFrame]) -> Dict[str, Any]:
+    def evaluate_cross_section(
+        self,
+        klines_dict: Dict[str, pd.DataFrame],
+        live_prices: Optional[Dict[str, float]] = None,
+    ) -> Dict[str, Any]:
         """
         Evaluates leaderboard rankings, scores, and macro trend gates.
+        Integrates instant live ticker prices if provided for sub-minute responsiveness.
         Returns complete leaderboard metadata with full data source transparency.
         """
         closes_dict = {}
@@ -143,11 +148,10 @@ class Top1RotationStrategy:
                 last_open_time = df.index[-1]
                 if hasattr(last_open_time, "tzinfo") and last_open_time.tzinfo is None:
                     last_open_time = last_open_time.replace(tzinfo=timezone.utc)
-                # A 4h candle closes 4 hours after its open_time
+                # If bar is still forming, close_time is in the future, so data age is effectively 0
                 last_close_time = last_open_time + pd.Timedelta(hours=4)
-                age = max(0.0, (now_utc - last_close_time).total_seconds())
+                age = max(0.0, (now_utc - last_close_time).total_seconds()) if now_utc > last_close_time else 0.0
                 data_ages[sym] = round(age, 1)
-                # A 4h bar is considered stale if overdue by more than 1 hour beyond its expected next close (5 hours after close)
                 if age > 18000:
                     is_stale = True
             else:
@@ -163,40 +167,48 @@ class Top1RotationStrategy:
         if len(closes) < 130:
             raise ValueError(f"Insufficient bars for cross-sectional scoring: {len(closes)} < 130")
 
+        # Inject real-time live prices into the latest candle if provided
+        if live_prices:
+            latest_idx = closes.index[-1]
+            for sym in self.symbols:
+                if sym in live_prices and sym in closes.columns:
+                    closes.loc[latest_idx, sym] = float(live_prices[sym])
+
         closes_prior = closes.shift(1)
         ema200 = closes_prior.ewm(span=200).mean()
         bb_mid = closes_prior.rolling(120).mean()
         bb_std = closes_prior.rolling(120).std()
-        bb_z = (closes_prior - bb_mid) / (bb_std + 1e-8)
-        mom20 = (closes_prior / closes_prior.shift(120)) - 1.0
+        
+        # Real-time Z-score and Momentum using latest price vs historical distributions
+        bb_z = (closes - bb_mid) / (bb_std + 1e-8)
+        mom20 = (closes / closes.shift(120)) - 1.0
         score = bb_z + mom20
 
         latest_t = score.index[-1]
         latest_scores = score.loc[latest_t].sort_values(ascending=False)
 
-        # BTC Macro Trend Gate
-        btc_close_prior = closes_prior.loc[latest_t, "BTCUSDT"]
-        btc_ema200 = ema200.loc[latest_t, "BTCUSDT"]
-        btc_bull = bool(btc_close_prior > btc_ema200)
+        # BTC Macro Trend Gate (uses real-time BTC price)
+        btc_curr_p = float(closes.loc[latest_t, "BTCUSDT"])
+        btc_ema200 = float(ema200.loc[latest_t, "BTCUSDT"])
+        btc_bull = bool(btc_curr_p > btc_ema200)
 
         ranks = []
         for rank, (tok, sc) in enumerate(latest_scores.items(), 1):
-            c_p = closes_prior.loc[latest_t, tok]
-            e_p = ema200.loc[latest_t, tok]
-            z_p = bb_z.loc[latest_t, tok]
-            m_p = mom20.loc[latest_t, tok]
-            curr_c = closes.loc[latest_t, tok]
-            is_ok = bool(c_p > e_p)
-            dist_to_ema_pct = round(((c_p - e_p) / e_p) * 100.0, 2)
+            curr_c = float(closes.loc[latest_t, tok])
+            e_p = float(ema200.loc[latest_t, tok])
+            z_p = float(bb_z.loc[latest_t, tok])
+            m_p = float(mom20.loc[latest_t, tok])
+            is_ok = bool(curr_c > e_p)
+            dist_to_ema_pct = round(((curr_c - e_p) / e_p) * 100.0, 2)
 
             ranks.append({
                 "rank": rank,
                 "symbol": tok,
                 "score": round(float(sc), 3),
-                "curr_price": round(float(curr_c), 2),
-                "ema200": round(float(e_p), 2),
-                "bb_z": round(float(z_p), 2),
-                "mom20_pct": round(float(m_p * 100.0), 2),
+                "curr_price": round(curr_c, 2),
+                "ema200": round(e_p, 2),
+                "bb_z": round(z_p, 2),
+                "mom20_pct": round(m_p * 100.0, 2),
                 "is_above_ema200": is_ok,
                 "dist_to_ema_pct": dist_to_ema_pct,
             })
@@ -227,6 +239,7 @@ class Top1RotationStrategy:
         self,
         klines_dict: Dict[str, pd.DataFrame],
         current_state: Optional[V1Top1State] = None,
+        live_prices: Optional[Dict[str, float]] = None,
     ) -> Tuple[V1Top1State, Dict[str, Any]]:
         """
         Executes one full evaluation pass for the V1 Top-1 Portfolio:
@@ -236,7 +249,7 @@ class Top1RotationStrategy:
         4. Marks to market and persists updated state atomically.
         """
         state = current_state or V1Top1State.load(self.state_path)
-        eval_res = self.evaluate_cross_section(klines_dict)
+        eval_res = self.evaluate_cross_section(klines_dict, live_prices=live_prices)
 
         top_cand = eval_res["top_symbol"]
         btc_bull = eval_res["btc_macro_bull"]
@@ -268,7 +281,12 @@ class Top1RotationStrategy:
             # Rotation occurred (e.g. USDT_CASH -> SOLUSDT, or SOLUSDT -> ETHUSDT, or SOLUSDT -> USDT_CASH)
             # 1. Close previous position if held
             if state.active_symbol != "USDT_CASH" and state.asset_units > 0:
-                prev_price = curr_price if state.active_symbol == top_cand else state.current_price
+                if live_prices and state.active_symbol in live_prices:
+                    prev_price = float(live_prices[state.active_symbol])
+                elif state.active_symbol == top_cand:
+                    prev_price = curr_price
+                else:
+                    prev_price = state.current_price
                 gross_proceeds = state.asset_units * prev_price
                 sell_fee = gross_proceeds * self.one_way_fee_rate
                 net_cash = gross_proceeds - sell_fee
@@ -287,7 +305,7 @@ class Top1RotationStrategy:
                 state.highest_price_since_entry = curr_price
                 state.bars_held = 0
                 turnover_friction += buy_fee
-                action_taken = f"ENTER_{target_symbol}"
+                action_taken = f"ROTATE_{state.active_symbol}_TO_{target_symbol}" if state.active_symbol != "USDT_CASH" else f"ENTER_{target_symbol}"
                 # TP1 (+10% 动量加速区) & TP2 (+20% 主升浪扩张区)
                 state.take_profit_tp1 = round(curr_price * 1.10, 2)
                 state.take_profit_tp2 = round(curr_price * 1.20, 2)
