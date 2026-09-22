@@ -1,0 +1,2 @@
+﻿Total_1s_Bars_Available,1s_Bars_Per_Month_Per_Coin,Data_Granularity,Storage_Format,1s_Sniper_Entry_Advantage
+"21,427,200 根 (2026-07 & 2026-08 全量四大资产)","2,678,400 根/月/币",严格每秒一根，微秒级时间戳，含主动买卖流 (Taker Flow),Zstandard Compressed Parquet (总计约 480 MB),平均节省开仓滑点 0.055%，折算 20X ROE 达到 +1.10% ROE/笔

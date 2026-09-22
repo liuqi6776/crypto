@@ -1,0 +1,4 @@
+Strategy,Total Return (%),Max Drawdown (%),Win Rate (%),Profit Factor,Sharpe Ratio,Total Trades,Liquidations
+Dynamic_TP_SL,+5.26%,-3.36%,45.2%,1.39,3.40,31,0
+Fixed_TP_SL,+3.62%,-3.57%,57.1%,1.28,2.22,21,0
+No_Stop_Liq_Exposed,+3.66%,-3.32%,43.8%,1.47,2.81,16,0

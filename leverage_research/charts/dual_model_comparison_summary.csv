@@ -1,0 +1,5 @@
+﻿Model_Strategy,Total_Trades,Win_Trades,BE_Trades,Loss_Trades,Liquidations,Win_Rate_Pct,Win_Plus_BE_Pct,Final_Equity,Net_Return_Pct,Max_Drawdown_Pct,Profit_Factor,Avg_Win_ROE_Pct,Avg_Loss_ROE_Pct
+Track A1: Baseline Direction Model (30% Golden Kelly),28,11,5,12,0,39.3,57.1,11390.66,13.91,31.61,1.15,20.63,-22.0
+Track A2: Dual-Model Confluence (30% Golden Kelly),25,13,3,9,0,52.0,64.0,17794.43,77.94,16.16,1.83,25.99,-22.0
+Track B1: Baseline Direction Model (20% Scientific),28,11,5,12,0,39.3,57.1,11071.05,10.71,22.16,1.18,20.63,-22.0
+Track B2: Dual-Model Confluence (20% Scientific),25,13,3,9,0,52.0,64.0,14933.05,49.33,10.89,1.91,25.99,-22.0

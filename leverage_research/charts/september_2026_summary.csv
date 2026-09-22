@@ -1,0 +1,3 @@
+﻿strategy,total_trades,daily_trades,win_rate,effective_win_rate (Win+BE),tp_count,be_count,sl_count,liquidations,final_equity,total_return_pct,max_drawdown_pct,profit_factor
+Track A: 30% Golden Kelly (黄金凯利流),28,1.27,39.3,57.1,11,5,12,0,11390.66,13.91,31.61,1.15
+Track B: 20% Scientific Baseline (科学稳健流),28,1.27,39.3,57.1,11,5,12,0,11071.05,10.71,22.16,1.18
