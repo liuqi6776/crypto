@@ -128,8 +128,8 @@ class QuantServerPipeline:
         live_prices = self.fetcher.fetch_live_ticker_prices()
         leaderboard = self.strategy.evaluate_cross_section(klines, live_prices=live_prices)
 
-        is_in_pos = (v1_state.active_symbol != "USDT_CASH" and v1_state.position_mode == "OFFENSIVE_SPOT_LONG")
-        pos_direction = f"1.0x 现货做多 ({v1_state.active_symbol.replace('USDT', '')})" if is_in_pos else "100% USDT 现金防御"
+        is_in_pos = (v1_state.active_symbol != "USDT_CASH" and "OFFENSIVE" in v1_state.position_mode)
+        pos_direction = f"🔥 3.0x 杠杆做多 ({v1_state.active_symbol.replace('USDT', '')})" if is_in_pos else "🛡️ 100% USDT 现金防御"
 
         # Update position mark-to-market with real-time live price
         curr_p = v1_state.current_price
@@ -137,16 +137,16 @@ class QuantServerPipeline:
             curr_p = float(live_prices[v1_state.active_symbol])
             v1_state.current_price = curr_p
             v1_state.nominal_usdt = v1_state.asset_units * curr_p
-            v1_state.total_equity_usdt = v1_state.cash_usdt + v1_state.nominal_usdt
-            if v1_state.entry_price > 0:
-                cost_basis = v1_state.asset_units * v1_state.entry_price
-                v1_state.unrealized_pnl_usdt = v1_state.nominal_usdt - cost_basis
-                v1_state.unrealized_pnl_pct = (v1_state.unrealized_pnl_usdt / cost_basis) * 100.0
+            cost_basis = v1_state.asset_units * v1_state.entry_price
+            v1_state.unrealized_pnl_usdt = v1_state.nominal_usdt - cost_basis
+            margin_capital = (cost_basis / v1_state.leverage) if v1_state.leverage > 0 else v1_state.total_equity_usdt
+            v1_state.unrealized_pnl_pct = (v1_state.unrealized_pnl_usdt / margin_capital) * 100.0 if margin_capital > 0 else 0.0
+            v1_state.total_equity_usdt = max(0.0, v1_state.cash_usdt + v1_state.unrealized_pnl_usdt)
             if curr_p > v1_state.highest_price_since_entry:
                 v1_state.highest_price_since_entry = curr_p
             if v1_state.total_equity_usdt > v1_state.peak_equity_usdt:
                 v1_state.peak_equity_usdt = v1_state.total_equity_usdt
-            v1_state.drawdown_pct = max(0.0, ((v1_state.peak_equity_usdt - v1_state.total_equity_usdt) / v1_state.peak_equity_usdt) * 100.0)
+            v1_state.drawdown_pct = max(0.0, ((v1_state.peak_equity_usdt - v1_state.total_equity_usdt) / v1_state.peak_equity_usdt) * 100.0) if v1_state.peak_equity_usdt > 0 else 0.0
 
         # Funding Carry Guide (Corrected 50% nominal basis + fee deductions)
         funding_guide = get_funding_arbitrage_guide(base_capital_usdt=v1_state.total_equity_usdt)
@@ -156,7 +156,7 @@ class QuantServerPipeline:
         last_bar_time = leaderboard.get("latest_bar_time") or v1_state.last_processed_bar or ""
         candle_status_desc = self.format_candle_bjt(last_bar_time)
 
-        active_mode = f"V1_SPOT_LONG_{v1_state.active_symbol.replace('USDT', '')}" if is_in_pos else "V1_USDT_CASH_DEFENSE"
+        active_mode = f"V1_3X_LONG_{v1_state.active_symbol.replace('USDT', '')}" if is_in_pos else "V1_USDT_CASH_DEFENSE"
 
         # Journal events
         journal = PaperJournal(V1_JOURNAL_PATH)
@@ -171,7 +171,7 @@ class QuantServerPipeline:
         # Fallback defaults if state file was saved by legacy version
         if is_in_pos and curr_p > 0:
             if stop_p <= 0.0:
-                stop_p = round(curr_p * 0.95, 2)
+                stop_p = round(curr_p * 0.965, 2)
             if tp1 <= 0.0:
                 tp1 = round(curr_p * 1.10, 2)
             if tp2 <= 0.0:
@@ -179,7 +179,14 @@ class QuantServerPipeline:
             if highest_p <= 0.0:
                 highest_p = curr_p
 
+        # 3.0x Leverage Liquidation Price calculation (Binance MMR = 0.5% -> -32.83% drop)
+        liq_p = v1_state.liquidation_price
+        if is_in_pos and liq_p <= 0.0 and v1_state.entry_price > 0:
+            liq_p = round(v1_state.entry_price * (1.0 - (1.0 / 3.0 - 0.005)), 2)
+
         dist_to_stop_pct = round(((curr_p - stop_p) / curr_p) * 100.0, 2) if (stop_p > 0 and curr_p > 0) else 0.0
+        dist_to_liq_pct = round(((curr_p - liq_p) / curr_p) * 100.0, 2) if (liq_p > 0 and curr_p > 0) else 0.0
+        safety_buffer_ratio = round(dist_to_liq_pct / max(dist_to_stop_pct, 0.1), 1) if (dist_to_liq_pct > 0 and dist_to_stop_pct > 0) else 0.0
         dist_to_tp1_pct = round(((tp1 - curr_p) / curr_p) * 100.0, 2) if (tp1 > 0 and curr_p > 0) else 0.0
         dist_to_tp2_pct = round(((tp2 - curr_p) / curr_p) * 100.0, 2) if (tp2 > 0 and curr_p > 0) else 0.0
 
@@ -187,8 +194,8 @@ class QuantServerPipeline:
             "timestamp_utc": now_utc.strftime("%Y-%m-%d %H:%M:%S UTC"),
             "timestamp_bjt": now_bjt.strftime("%Y-%m-%d %H:%M:%S BJT"),
             "active_mode": active_mode,
-            "experiment_id": "exp_v1_top1_dual_gate_cash",
-            "strategy_name": "v1_top1_dual_gate_cash (1.0x Spot + Hysteresis)",
+            "experiment_id": "exp_v1_top1_3x_leverage_compact",
+            "strategy_name": "v1_top1_3x_leverage_compact (3.0x Leverage + 1.5x ATR Stop + Trailing)",
             "public_url": self.get_public_url(),
             "recipient_email": DEFAULT_RECIPIENT,
             "capital": {
@@ -206,7 +213,11 @@ class QuantServerPipeline:
                 "position_mode": v1_state.position_mode,
                 "direction": pos_direction,
                 "is_in_pos": is_in_pos,
-                "leverage": 1.0,
+                "leverage": 3.0,
+                "liquidation_price": liq_p,
+                "distance_to_liq_pct": dist_to_liq_pct,
+                "safety_buffer_ratio": safety_buffer_ratio,
+                "atr_value": v1_state.atr_value,
                 "entry_price": v1_state.entry_price,
                 "entry_time": v1_state.entry_time,
                 "current_price": v1_state.current_price,

@@ -61,7 +61,7 @@ def test_funding_arb_50_percent_basis():
 
 
 def test_v1_strategy_turnover_friction(tmp_path):
-    """Verifies that switching from CASH to Spot token deducts 8 bps turnover friction."""
+    """Verifies that switching from CASH to 3.0x leverage token deducts 8 bps on 3x nominal position."""
     state_file = tmp_path / "v1_state.json"
     journal_file = tmp_path / "v1_journal.jsonl"
     strat = Top1RotationStrategy(state_path=state_file, journal_path=journal_file)
@@ -90,16 +90,19 @@ def test_v1_strategy_turnover_friction(tmp_path):
 
     st, eval_res = strat.update_portfolio_step(klines, current_state=initial_state)
 
-    # Turnover friction should be 8.0 bps on 10,000 USDT = 8.0 USDT
-    expected_equity = 10000.0 - (10000.0 * 0.0008)
+    # 3.0x Leverage Turnover friction: 8.0 bps on 30,000 USDT = 24.0 USDT
+    expected_equity = 10000.0 - (10000.0 * 3.0 * 0.0008)
     assert st.active_symbol != "USDT_CASH"
-    assert st.position_mode == "OFFENSIVE_SPOT_LONG"
-    assert abs(st.accumulated_fees_usdt - 8.0) < 0.01
-    assert abs(st.total_equity_usdt - expected_equity) < 0.1
+    assert "OFFENSIVE" in st.position_mode
+    assert st.leverage == 3.0
+    assert abs(st.accumulated_fees_usdt - 24.0) < 0.05
+    assert abs(st.total_equity_usdt - expected_equity) < 0.5
+    assert st.liquidation_price > 0.0
+    assert st.stop_loss_price > st.liquidation_price  # Stop-loss must be strictly above liquidation
 
 
 def test_flask_web_app_endpoints():
-    """Verifies Flask application creation and REST API endpoints."""
+    """Verifies Flask application creation, 3.0x leverage metrics, and REST API endpoints."""
     pipeline = QuantServerPipeline()
     app = create_app(pipeline)
     client = app.test_client()
@@ -113,8 +116,12 @@ def test_flask_web_app_endpoints():
     assert "leaderboard" in data
     assert data["capital"]["current_equity_usdt"] > 0
 
-    # Verify Take-Profit and Stop-Loss fields in position
+    # Verify 3.0x Leverage, Liquidation, Take-Profit, and Stop-Loss fields in position
     pos = data["position"]
+    assert pos["leverage"] == 3.0
+    assert "liquidation_price" in pos
+    assert "distance_to_liq_pct" in pos
+    assert "safety_buffer_ratio" in pos
     assert "stop_loss_price" in pos
     assert "distance_to_stop_pct" in pos
     assert "take_profit_tp1" in pos
@@ -123,17 +130,18 @@ def test_flask_web_app_endpoints():
     assert "distance_to_tp2_pct" in pos
     assert "highest_price_since_entry" in pos
 
-    # Verify HTML template renders TP & SL elements
+    # Verify HTML template renders 3.0x leverage and TP/SL elements
     html_resp = client.get("/")
     assert html_resp.status_code == 200
     html_text = html_resp.get_data(as_text=True)
     if pos["is_in_pos"]:
-        assert "🛑 动态硬门控/移动止损价" in html_text
-        assert "🎯 第一阶段止盈目标 (TP1, +10%)" in html_text
-        assert "🚀 第二阶段止盈目标 (TP2, +20%)" in html_text
+        assert "3.0x 杠杆" in html_text
+        assert "🛑 1.5x ATR 紧凑自适应止损价" in html_text
+        assert "⚡ 币安 3X 强平线" in html_text
         assert pos["take_profit_tp1"] > pos["current_price"]
         assert pos["take_profit_tp2"] > pos["take_profit_tp1"]
         assert pos["stop_loss_price"] < pos["current_price"]
+        assert pos["stop_loss_price"] > pos["liquidation_price"]
     else:
         assert "止损/止盈状态" in html_text
         assert "空仓防守中" in html_text

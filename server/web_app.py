@@ -81,8 +81,8 @@ HTML_TEMPLATE = """
             <div class="brand">
                 <div class="brand-icon">👑</div>
                 <div class="brand-text">
-                    <h1>加密量化系统 V1：双重宏观门控 Top-1 现货轮动 & USDT 现金防守</h1>
-                    <p>策略模式: 1.0x 现货进攻 + 100% USDT 现金防御 (零杠杆/零负债/零清算风险) | 15分钟高频流水线</p>
+                    <h1>加密量化系统：🔥 3.0x 杠杆紧凑自适应 Top-1 轮动 & USDT 现金防守</h1>
+                    <p>策略模式: 3.0x 杠杆进攻 (SL 1.5x ATR + Trailing Stop) + 100% USDT 现金防御 | 15分钟高频流水线</p>
                 </div>
             </div>
             <div class="btn-group">
@@ -99,9 +99,9 @@ HTML_TEMPLATE = """
         <div class="mode-banner {{ 'banner-long' if data.position.is_in_pos else 'banner-cash' }}">
             <div>
                 {% if data.position.is_in_pos %}
-                    🟢 <b>当前激活模式：V1 现货进攻 (1.0x {{ data.position.active_symbol.replace('USDT', '') }})</b> | 开仓: ${{ "{:,.2f}".format(data.position.entry_price) }} | 现价: ${{ "{:,.2f}".format(data.position.current_price) }} | 🛑 动态止损: <b style="color: #ef4444;">${{ "{:,.2f}".format(data.position.stop_loss_price) }} (-{{ data.position.distance_to_stop_pct }}%)</b> | 🎯 止盈TP1: <b style="color: #22c55e;">${{ "{:,.2f}".format(data.position.take_profit_tp1) }} (+{{ data.position.distance_to_tp1_pct }}%)</b>
+                    🟢 <b>当前激活模式：🔥 3.0x 杠杆进攻 ({{ data.position.active_symbol.replace('USDT', '') }})</b> | 开仓: ${{ "{:,.2f}".format(data.position.entry_price) }} | 现价: ${{ "{:,.2f}".format(data.position.current_price) }} | 🛑 1.5x ATR 止损: <b style="color: #ef4444;">${{ "{:,.2f}".format(data.position.stop_loss_price) }} (-{{ data.position.distance_to_stop_pct }}%)</b> | ⚡ 3X 强平线: <b style="color: #f59e0b;">${{ "{:,.2f}".format(data.position.liquidation_price) }} (-{{ data.position.distance_to_liq_pct }}%)</b> | 🛡️ 安全垫: <b style="color: #22c55e;">{{ data.position.safety_buffer_ratio }}x</b>
                 {% else %}
-                    🛡️ <b>当前激活模式：100% USDT 现金防御 (双重宏观门控未通过，零基差/零借贷风险)</b>
+                    🛡️ <b>当前激活模式：100% USDT 现金防御 (双重宏观门控未通过，零杠杆/零借贷风险/绝对安全)</b>
                 {% endif %}
             </div>
             <div style="font-size: 12px;">
@@ -146,13 +146,14 @@ HTML_TEMPLATE = """
                     <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
                         综合评分: <b style="color: {{ '#38bdf8' if r.rank == 1 else '#ffffff' }};">{{ r.score }}</b><br>
                         20日动量: <b style="color: {{ '#22c55e' if r.mom20_pct >= 0 else '#ef4444' }};">{{ '+' if r.mom20_pct >= 0 else '' }}{{ r.mom20_pct }}%</b> | 距EMA200: <b style="color: {{ '#22c55e' if r.dist_to_ema_pct >= 0 else '#ef4444' }};">{{ '+' if r.dist_to_ema_pct >= 0 else '' }}{{ r.dist_to_ema_pct }}%</b>
+                        {% if r.atr_14 %}<br>4h ATR: <b>${{ r.atr_14 }} ({{ r.atr_pct }}%)</b>{% endif %}
                     </div>
                 </div>
                 {% endfor %}
             </div>
             <div style="margin-top: 12px; font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
                 <span>BTC 宏观牛熊门控 (BTC > EMA200 +0.5%): <b style="color: {{ '#22c55e' if data.leaderboard.btc_macro_bull else '#ef4444' }};">{{ '✅ 顺势多头区 (允许进攻)' if data.leaderboard.btc_macro_bull else '⛔ 宏观防守区 (禁止进攻)' }}</b></span>
-                <span>双重硬门控状态: <b style="color: {{ '#22c55e' if data.leaderboard.dual_gate_passed else '#f59e0b' }};">{{ '✅ 完全放行 (买入/持有Top-1)' if data.leaderboard.dual_gate_passed else '🛡️ 拦截保护中 (持有USDT现金)' }}</b></span>
+                <span>双重硬门控状态: <b style="color: {{ '#22c55e' if data.leaderboard.dual_gate_passed else '#f59e0b' }};">{{ '✅ 完全放行 (允许3.0x做多Top-1)' if data.leaderboard.dual_gate_passed else '🛡️ 拦截保护中 (持有USDT现金)' }}</b></span>
             </div>
         </div>
 
@@ -161,7 +162,7 @@ HTML_TEMPLATE = """
             <!-- 资金净值卡片 (真实 V1 记账) -->
             <div class="card">
                 <div class="card-header">
-                    <span class="card-title">实盘模拟账户净值 (V1 记账)</span>
+                    <span class="card-title">实盘模拟账户净值 (3.0x 杠杆记账)</span>
                     <span class="pill pill-green">真实状态机同步</span>
                 </div>
                 <div class="metric-big">${{ "{:,.2f}".format(data.capital.current_equity_usdt) }}</div>
@@ -193,12 +194,12 @@ HTML_TEMPLATE = """
                 </div>
             </div>
 
-            <!-- 1.0x 现货持仓与门控卡片 (取代 3x 杠杆) -->
+            <!-- 3.0x 杠杆持仓与门控卡片 -->
             <div class="card">
                 <div class="card-header">
-                    <span class="card-title">V1 现货持仓与门控风控 (零杠杆)</span>
+                    <span class="card-title">🔥 3.0x 杠杆持仓与紧凑自适应风控</span>
                     <span class="pill {{ 'pill-green' if data.position.is_in_pos else 'pill-blue' }}">
-                        {{ '现货做多中' if data.position.is_in_pos else '现金防守中' }}
+                        {{ '3.0x 杠杆做多中' if data.position.is_in_pos else '现金防守中' }}
                     </span>
                 </div>
                 <div class="metric-big" style="color: {{ '#38bdf8' if data.position.is_in_pos else '#94a3b8' }};">
@@ -211,7 +212,11 @@ HTML_TEMPLATE = """
                         <span class="row-val">{{ data.position.active_symbol }}</span>
                     </div>
                     <div class="row-item">
-                        <span class="row-label">持仓现货数量</span>
+                        <span class="row-label">名义持仓头寸 (3.0x)</span>
+                        <span class="row-val" style="color: #38bdf8; font-weight: 800;">${{ "{:,.2f}".format(data.position.nominal_usdt) }} USDT</span>
+                    </div>
+                    <div class="row-item">
+                        <span class="row-label">持仓资产数量</span>
                         <span class="row-val">{{ data.position.asset_units }} 枚</span>
                     </div>
                     <div class="row-item">
@@ -223,42 +228,46 @@ HTML_TEMPLATE = """
                         <span class="row-val">${{ "{:,.2f}".format(data.position.current_price) }}</span>
                     </div>
                     <div class="row-item">
-                        <span class="row-label">浮动盈亏 (ROE)</span>
+                        <span class="row-label">保证金浮动盈亏 (ROE)</span>
                         <span class="row-val" style="color: {{ '#22c55e' if data.position.unrealized_pnl_usdt >= 0 else '#ef4444' }};">
-                            {{ '+' if data.position.unrealized_pnl_usdt >= 0 else '' }}${{ "{:,.2f}".format(data.position.unrealized_pnl_usdt) }} ({{ '+' if data.position.unrealized_pnl_pct >= 0 else '' }}{{ data.position.unrealized_pnl_pct }}%)
+                            {{ '+' if data.position.unrealized_pnl_usdt >= 0 else '' }}${{ "{:,.2f}".format(data.position.unrealized_pnl_usdt) }} ({{ '+' if data.position.unrealized_pnl_pct >= 0 else '' }}{{ data.position.unrealized_pnl_pct }}% ROE)
                         </span>
                     </div>
                     <div class="row-item" style="background: rgba(239, 68, 68, 0.08); padding-left: 6px; padding-right: 6px; border-radius: 6px; margin: 2px 0;">
-                        <span class="row-label" style="color: #ef4444; font-weight: 600;">🛑 动态硬门控/移动止损价</span>
+                        <span class="row-label" style="color: #ef4444; font-weight: 600;">🛑 1.5x ATR 紧凑自适应止损价</span>
                         <span class="row-val" style="color: #ef4444; font-weight: 800;">
                             ${{ "{:,.2f}".format(data.position.stop_loss_price) }} (距现价 -{{ data.position.distance_to_stop_pct }}%)
                         </span>
                     </div>
+                    <div class="row-item" style="background: rgba(245, 158, 11, 0.08); padding-left: 6px; padding-right: 6px; border-radius: 6px; margin: 2px 0;">
+                        <span class="row-label" style="color: #f59e0b; font-weight: 600;">⚡ 币安 3X 强平线 (MMR 0.5%)</span>
+                        <span class="row-val" style="color: #f59e0b; font-weight: 800;">
+                            ${{ "{:,.2f}".format(data.position.liquidation_price) }} (距现价 -{{ data.position.distance_to_liq_pct }}%)
+                        </span>
+                    </div>
                     <div class="row-item" style="background: rgba(34, 197, 94, 0.08); padding-left: 6px; padding-right: 6px; border-radius: 6px; margin: 2px 0;">
+                        <span class="row-label" style="color: #22c55e; font-weight: 600;">🛡️ 止损强平安全缓冲倍数</span>
+                        <span class="row-val" style="color: #22c55e; font-weight: 800;">
+                            {{ data.position.safety_buffer_ratio }} 倍安全垫 (止损线远在强平线上方)
+                        </span>
+                    </div>
+                    <div class="row-item" style="background: rgba(34, 197, 94, 0.05); padding-left: 6px; padding-right: 6px; border-radius: 6px; margin: 2px 0;">
                         <span class="row-label" style="color: #22c55e; font-weight: 600;">🎯 第一阶段止盈目标 (TP1, +10%)</span>
                         <span class="row-val" style="color: #22c55e; font-weight: 800;">
                             ${{ "{:,.2f}".format(data.position.take_profit_tp1) }} (距现价 +{{ data.position.distance_to_tp1_pct }}%)
                         </span>
                     </div>
-                    <div class="row-item" style="background: rgba(168, 85, 247, 0.08); padding-left: 6px; padding-right: 6px; border-radius: 6px; margin: 2px 0;">
+                    <div class="row-item" style="background: rgba(168, 85, 247, 0.05); padding-left: 6px; padding-right: 6px; border-radius: 6px; margin: 2px 0;">
                         <span class="row-label" style="color: #a855f7; font-weight: 600;">🚀 第二阶段止盈目标 (TP2, +20%)</span>
                         <span class="row-val" style="color: #a855f7; font-weight: 800;">
                             ${{ "{:,.2f}".format(data.position.take_profit_tp2) }} (距现价 +{{ data.position.distance_to_tp2_pct }}%)
                         </span>
                     </div>
                     <div class="row-item">
-                        <span class="row-label">开仓以来最高价</span>
-                        <span class="row-val">${{ "{:,.2f}".format(data.position.highest_price_since_entry) }}</span>
-                    </div>
-                    <div class="row-item">
                         <span class="row-label">动态风控执行规则</span>
                         <span class="row-val" style="color: #38bdf8; font-size: 11px;">
-                            保本锁定(浮盈>5%锁成本) | 跟踪止盈(浮盈>10%回撤5%止盈) | 门控跌破平仓
+                            1.5x ATR 紧凑止损 | 浮盈>5%保本锁成本 | 浮盈>10%回撤5%移动止盈
                         </span>
-                    </div>
-                    <div class="row-item">
-                        <span class="row-label">杠杆属性与清算风险</span>
-                        <span class="row-val" style="color: #22c55e;">1.0x 现货持仓 (零杠杆/无爆仓线)</span>
                     </div>
                     {% else %}
                     <div class="row-item">
@@ -279,7 +288,7 @@ HTML_TEMPLATE = """
                     </div>
                     <div class="row-item">
                         <span class="row-label">安全属性</span>
-                        <span class="row-val" style="color: #22c55e;">零基差波动风险 / 零清算风险</span>
+                        <span class="row-val" style="color: #22c55e;">零基差波动风险 / 零清算风险 / 绝对保本</span>
                     </div>
                     {% endif %}
                 </div>
