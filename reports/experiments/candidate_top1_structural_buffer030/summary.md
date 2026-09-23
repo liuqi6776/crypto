@@ -1,5 +1,5 @@
 # Quantitative Research Experiment Summary / 实验总结报告
-- **Experiment ID / 实验编号**: `exp_core4_L1x_all_fresh_20260923_034721`
+- **Experiment ID / 实验编号**: `exp_core4_L1x_all_fresh_20260923_034831`
 - **Role / 实验定位**: `HYPOTHESIS_EXPERIMENT`
 - **Mode / 运行模式**: `FRESH`
 - **Universe / 资产池**: `['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT']`

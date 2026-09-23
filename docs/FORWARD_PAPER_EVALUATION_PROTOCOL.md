@@ -3,90 +3,97 @@
 
 ---
 
-## 1. Executive Protocol / 协议宗旨与科学纪律
+## 1. Executive Protocol & Epistemological Status / 协议宗旨与科学认识论定位
 
-Following the empirical completion of:
-1. **Exact Baseline Reproducibility** (Clean Git tree, SHA256 checksums of inputs and outputs).
-2. **Step 1 Advantage Source Attribution** (Proving Trend Cash Defense is the primary source of risk-adjusted alpha).
+Following the rigorous completion of:
+1. **Exact Baseline Reproducibility** (Clean Git tree, SHA256 checksums of inputs and generated outputs).
+2. **Step 1 Advantage Source Attribution** (Proving Trend Cash Defense is the primary source of risk-adjusted alpha; Simple EMA Trend +4040.14% significantly outperforming baseline Top-1 +1121.52%).
 3. **Step 2 Component Ablation** (Proving BTC gate, asset gate, and momentum ranking are essential, while 1.5x ATR stop in spot trading adds destructive churn).
-4. **Step 3 Drawdown & Churn Diagnostics** (Tracing the -69.95% drawdown to 233 whipsaw trades and proving that Structural Exit + Momentum Buffer 0.30 achieves pure Pareto dominance).
+4. **Step 3 Drawdown & Churn Diagnostics** (Tracing the -69.95% drawdown to 233 whipsaw trades and demonstrating that Structural Exit + Momentum Buffer 0.30 curtails churn from 1,144 down to 426 trades).
+5. **Formal Candidate Reproduction** (Complete artifact package in `reports/experiments/candidate_top1_structural_buffer030/` with audited `manifest.json`, `trades.csv`, `bar_ledger.csv`, `summary.json`, and `annual_breakdown.csv`).
 
 We now declare the historical development and stress-test data (**2020-10-15 to 2026-09-23**) **OFFICIALLY FROZEN**.
-No further parameter tuning or model selection will be performed on historical data. True out-of-sample quantitative verification begins with forward paper tracking on live 4-hour candle closes.
+No further parameter tuning, indicator fitting, or model selection will be conducted on historical data.
 
-在完成基准复现纪律、优势来源归因、单部件受控消融与回撤磨损归因之后，我们正式宣布历史开发与压力测试区间（2020-10-15 至 2026-09-23）**全量封板冻结**。
-后续严禁在历史数据上反复微调参数（防止多重假设检验陷阱与数据窥探偏误）。真正的科学样本外检验，从当前时间点开始的前瞻模拟逐笔跟踪全面启动。
+> [!WARNING]
+> ### Scientific Tone & Epistemological Calibration / 科学定位与认知校准
+> **The historical return of +43,942.30% is an IN-SAMPLE DEVELOPMENT AND BACKTESTING FINDING, NOT an expected forward return rate!**
+> 去除 ATR 止损并引入 $\Delta \text{score} = 0.30$ 动量换仓缓冲阀是基于已观察的 2020–2026 全量历史数据进行归因消融后选出的；其“帕累托改进”目前仅在已观察历史中成立。
+> 严禁将回测发现当作对未来的确定性收益预期。真正的科学样本外检验，必须且只能依靠在未来实时 4 小时闭合 K 线上进行前瞻模拟跟踪。
 
 ---
 
-## 2. Frozen Candidate Strategy Specification / 冻结候选策略官方规范
+## 2. Dual Forward Parallel Tracking Benchmarks / 双候选基准并行前向模拟
 
-The frozen candidate model selected for forward paper tracking:
+To prevent sample-specific optimization bias, we establish **two parallel forward models** tracked under 100% identical candle timing, live order book quotes, and friction assumptions (8 bps fee, 5 bps execution slippage):
 
-| Parameter / 策略参数项 | Value / 选定值 | Rationale & Evidence / 选定依据与实证支撑 |
+| Dimension / 维度 | Candidate A (Challenger Group / 实验组) | Candidate B (Parallel Control Group / 对照组) |
 | :--- | :--- | :--- |
-| **Strategy Architecture / 策略架构** | `Core-4 Top-1 Rotation (Structural + Buffer)` | Top-1 momentum rotation with macro cash defense |
-| **Asset Universe / 资产池** | `BTCUSDT, ETHUSDT, SOLUSDT, BNBUSDT` | Deepest institutional liquidity, zero flash-crash bankruptcy risk |
-| **Leverage Multiplier / 杠杆倍数** | **1.0x Spot (现货全资)** | Eliminates margin call and liquidation risk; compounding without volatility drag |
-| **Macro Trend Gate / 宏观趋势门控** | `BTC > EMA200` (hysteresis = 0.5%) | Avoids bear market drawdowns (-14% vs -65% in 2022); indispensable |
-| **Individual Asset Gate / 自身均线门控** | `Asset > EMA200` (hysteresis = 0.5%) | Prevents buying decaying altcoins when BTC is healthy |
-| **Cross-Sectional Ranking / 截面动量打分** | `BB Z-score(120) + Momentum(20)` | Captures explosive bull leaders (SOL/BNB in 2021) |
-| **Momentum Switching Buffer / 换仓动量缓冲阀** | `delta_score_buffer = 0.30` | Slashes whipsaw turnover by 62.8% (from 1,144 down to 426 trades) |
-| **Stop-Loss Mechanics / 止损机制** | **Structural EMA200 Exit (移除窄ATR止损)** | Proven pure Pareto improvement: lowers Max DD from 69.9% to 53.1%, raises return to +43,942% |
-| **Fee Friction Model / 手续费模型** | `8 bps (0.0008)` Taker Fee | Conservative Binance VIP0 taker fee |
-| **Execution Slippage / 执行滑点** | `5 bps (0.0005)` Market Slippage | Realistic conservative two-way fill slippage |
+| **Model Name / 模型名称** | **Core-4 Top-1 Rotation (Structural + Buffer 0.30)** | **Simple Multi-Asset EMA Trend (No Rotation)** |
+| **Strategy Logic / 策略逻辑** | Cross-sectional momentum ranking (`BB Z-score + Mom20`) with 0.30 challenger buffer; exits when Asset < EMA200 or BTC < EMA200. | Each of the 4 assets holds 25% sub-portfolio if Close > EMA200, else Cash. **Zero cross-sectional ranking, zero rotation churn**. |
+| **Asset Universe / 标的池** | BTCUSDT, ETHUSDT, SOLUSDT, BNBUSDT | BTCUSDT, ETHUSDT, SOLUSDT, BNBUSDT |
+| **Capital Allocation / 资金分配** | 100% concentrated in single top-ranked winner | 25% independent budget per asset |
+| **Leverage / 杠杆** | 1.0x Spot (现货无借贷) | 1.0x Spot (现货无借贷) |
+| **Stop Mechanism / 出场机制** | Pure Structural Trend Exit (Asset / BTC EMA200 line) | Pure Structural Trend Exit (Individual EMA200 line) |
+| **Historical Full Cycle Net Return** | **+43,942.30%** (Max DD 53.14%, Sharpe 1.76) | **+4,040.14%** (Max DD 54.00%, Sharpe 1.41) |
+| **Historical Full Cycle Trades** | 426 trades | 1,614 entries/exits (403 roundtrips) |
+| **Primary Scientific Role / 核心科学定位** | Evaluates whether concentration + momentum buffer can beat diversified trend following forward. | **Strict Control Group (严苛对照基线)**: If Candidate A fails to beat Candidate B in forward tracking, Candidate A's historical superiority will be conclusively rejected as curve-fitting. |
 
 ---
 
-## 3. Forward Paper Tracking Workflow / 前向模拟执行流水线
+## 3. Audited Historical Reference Matrix / 经审计历史逐年对照矩阵
+
+All metrics below are automatically sourced from official experiment artifacts:
+- Baseline Top-1 & Candidate B: `reports/experiments/advantage_attribution/advantage_attribution_table.csv`
+- Candidate A: `reports/experiments/candidate_top1_structural_buffer030/annual_breakdown.csv`
+
+| Regime / 评估周期 | Candidate A Net Ret (Top-1 Buffer) | Candidate B Net Ret (Simple EMA) | Baseline Top-1 Net Ret (Tight SL) | BTC Buy & Hold | Core-4 Equal-Weight |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **2021 (Bull Expansion)** | **+2,815.71%** (DD 53.1%) | +760.91% (DD 41.9%) | +776.04% (DD 51.7%) | +59.89% (DD 54.1%) | +1,535.66% (DD 56.0%) |
+| **2022 (Secular Bear)** | **-8.32%** (DD 39.3%) | -34.46% (DD 46.3%) | -14.05% (DD 41.3%) | -64.68% (DD 67.2%) | -84.02% (DD 84.9%) |
+| **2023 (Recovery)** | **+256.84%** (DD 33.0%) | +203.99% (DD 35.3%) | +80.49% (DD 45.0%) | +156.04% (DD 21.2%) | +281.40% (DD 33.6%) |
+| **2024 (Choppy ETF)** | **+41.56%** (DD 37.0%) | +24.89% (DD 38.5%) | -13.54% (DD 58.3%) | +121.68% (DD 30.0%) | +90.18% (DD 39.7%) |
+| **2025 (Modern Cycle)** | **+57.03%** (DD 42.4%) | +19.81% (DD 24.3%) | +10.52% (DD 44.2%) | -6.39% (DD 34.4%) | -19.97% (DD 57.4%) |
+| **2026 (Stress / Dev)** | **+0.13%** (DD 29.1%) | +6.15% (DD 35.7%) | -14.95% (DD 35.3%) | -2.06% (DD 40.0%) | -6.53% (DD 51.0%) |
+| **Full Cycle (2020-2026)** | **+43,942.30%** (DD 53.1%) | **+4,040.14%** (DD 54.0%) | **+1,121.52%** (DD 70.0%) | **+652.54%** (DD 77.0%) | **+2,185.45%** (DD 89.1%) |
+
+---
+
+## 4. Forward Paper Tracking Workflow & Decision Rules / 前向执行流水线与判定准则
 
 For every forward 4-hour bar (00:00, 04:00, 08:00, 12:00, 16:00, 20:00 UTC):
 
 ```mermaid
 flowchart TD
-    A["Bar T-1 Candle Closes<br/>4h K线正式闭合"] --> B["Stateless Decision Engine<br/>无状态纯决策函数计算"]
-    B --> C{"Decision Output<br/>决策输出"}
-    C -->|"ENTER / ROTATE / EXIT"| D["Bar T Open Execution<br/>下一根开盘价成交"]
-    C -->|"HOLD"| E["Continue Holding<br/>继续持有现仓"]
-    D --> F["Log Live Metrics<br/>记录真实盘口、深度与滑点"]
-    E --> G["Mark-to-Market<br/>实时盯市与对账闭环"]
+    A["Live Bar T-1 Closes (UTC)<br/>4h K线闭合"] --> B["Compute Signals for Both Candidates<br/>双模型并行独立计算信号"]
+    B --> C["Candidate A: Top-1 Score with 0.30 Buffer<br/>计算截面得分与缓冲门槛"]
+    B --> D["Candidate B: Individual Close > EMA200<br/>计算四币独立均线门槛"]
+    C --> E["Execute Bar T Open Order<br/>按开盘价+滑点成交 Candidate A"]
+    D --> F["Execute Bar T Open Order<br/>按开盘价+滑点成交 Candidate B"]
+    E --> G["Record Forward Ledger & Live Depth<br/>记录前向流水与盘口深度"]
     F --> G
-    G --> H["Forward Ledger Audit<br/>前向账本恒等式验证"]
+    G --> H["Mathematical Identity Assertion<br/>逐笔断言恒等式: Equity == Cash + Pos"]
 ```
 
-### 3.1 Step-by-Step Forward Audit Checklist / 逐根前向审计清单
+### 4.1 Step-by-Step Forward Audit Checklist / 逐根前向审计清单
 
-1. **Signal Generation at Bar $T-1$ Close / 闭合时点决策**:
-   - Signal must be evaluated *strictly* after the 4-hour candle has officially closed in UTC.
-   - Record the exact timestamp, OHLC values, EMA200 values, and momentum scores across all 4 tokens.
+1. **Closed-Candle Causality / 闭合时点决策**:
+   - Signals are calculated *strictly* after the 4-hour candle has officially closed in UTC. No lookahead allowed.
 2. **Order Execution at Bar $T$ Open / 开盘时点成交**:
-   - Record Bar $T$ open price $P_{open}$.
-   - Check Binance live order book depth to ensure liquidity supports the order size.
-   - Record the simulated fill price $P_{fill} = P_{open} \times (1 \pm 0.0005)$ and actual live ticker quote.
-   - Deduct taker fee $Fee = Value \times 0.0008$.
+   - Simulated fill price $P_{fill} = P_{open} \times (1 \pm 0.0005)$ (5 bps slippage).
+   - Taker fee $Fee = Value \times 0.0008$ (8 bps taker fee).
+   - Real-time ticker price recorded to measure live market depth and slippage deviation.
 3. **Forward Audit Log Storage / 前向对账日志存储**:
-   - Append to `data/forward_tracking/forward_journal.jsonl`.
-   - Update `data/forward_tracking/forward_ledger.csv`.
-4. **Deviation Analysis / 回测与前向差异归因**:
-   - Compare actual forward slippage against backtest assumption (5 bps).
-   - If deviation exceeds $\pm 10 \text{ bps}$, flag execution friction anomaly.
-   - Assert mathematical identity: $Equity_T = Cash_T + Units_T \times Close_T$.
+   - Appended to `data/forward_tracking/forward_journal.jsonl`.
+   - Appended to `data/forward_tracking/forward_ledger.csv`.
+4. **Falsification & Acceptance Criteria / 证伪与验收准则**:
+   - **Candidate A Acceptance Condition**: Outperforms Candidate B on risk-adjusted metrics (Sharpe, Calmar) over forward rolling 60 days.
+   - **Candidate A Rejection Condition**: Underperforms Candidate B by >10% cumulative return or experiences maximum drawdown exceeding historical max drawdown (-53.14%).
+   - If Candidate A is rejected, system defaults to Candidate B (Simple Multi-Asset EMA Trend).
 
 ---
 
-## 4. Empirical Benchmark Reference / 冻结基准权威对照参考
+## 5. Summary / 总结
 
-Under the frozen candidate model (1.0x Spot, Structural Exit, Momentum Buffer 0.30, 8 bps fee, 5 bps slippage):
-
-| Interval / 周期 | Net Return / 净收益 | Max DD / 最大回撤 | Sharpe / 夏普 | Annual Trades / 年化交易笔数 | Win Rate / 胜率 |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Full Cycle (2020-2026)** | **+43,942.30%** | **53.14%** | **1.76** | ~72 trades/year | 48.6% |
-| **2021 (Bull Expansion)** | **+2,845.12%** | 49.80% | 3.42 | 92 trades | 62.0% |
-| **2022 (Secular Bear)** | **+6.20%** | 28.50% | 0.45 | 32 trades | 43.8% |
-| **2023 (Recovery)** | **+245.80%** | 31.20% | 2.15 | 86 trades | 52.3% |
-| **2024 (Choppy ETF)** | **+45.10%** | 39.50% | 0.95 | 98 trades | 44.9% |
-| **2025 (Modern Cycle)** | **+31.40%** | 35.80% | 0.88 | 76 trades | 46.1% |
-| **2026 (Stress / In-Progress)** | **+5.30%** | 22.40% | 0.48 | 42 trades | 45.2% |
-
-This candidate sets the official institutional hurdle that all forward paper trades will be tracked against.
-本基准确立了系统前向跟踪的官方基线，后续真实前瞻模拟将以此为唯一对照标杆。
+By freezing both **Candidate A (Top-1 Structural + Buffer 0.30)** and **Candidate B (Simple Multi-Asset EMA Trend)** side-by-side, we establish a robust, falsifiable, and un-cherry-picked quantitative foundation. The system eliminates premature claims of victory and adheres to strict scientific verification.
+通过将候选策略 A 与对照策略 B 并行固化，本系统确立了可证伪、不挑拣结果的科学研究规范，杜绝过早宣称回测胜利，全面转入实盘前瞻验证阶段。
