@@ -173,3 +173,44 @@ def test_channel_ablation_bollinger_vs_donchian(synthetic_ohlcv_data):
         np.testing.assert_allclose(led["total_equity"].values, cash_pos.values, rtol=1e-5, atol=1e-5)
 
 
+def test_isolated_channel_and_sizing_ablation(synthetic_ohlcv_data):
+    """
+    Verifies that run_structural_trend supports exit_channel_type decoupling
+    and macro_sizing_mode options, while strictly maintaining ledger identities.
+    """
+    engine = Unified4hEngine(initial_cash=10000.0)
+
+    # 1. Exit channel decoupling
+    res_shared_exit = engine.run_structural_trend(
+        synthetic_ohlcv_data,
+        symbols=["ETHUSDT", "SOLUSDT"],
+        channel_type="donchian",
+        exit_channel_type="bollinger",
+    )
+    led_shared = res_shared_exit["bar_ledger"]
+    cash_pos = led_shared["cash"] + led_shared["position_value"]
+    np.testing.assert_allclose(led_shared["total_equity"].values, cash_pos.values, rtol=1e-5, atol=1e-5)
+
+    res_no_mid = engine.run_structural_trend(
+        synthetic_ohlcv_data,
+        symbols=["ETHUSDT", "SOLUSDT"],
+        channel_type="bollinger",
+        exit_channel_type="none",
+    )
+    led_no_mid = res_no_mid["bar_ledger"]
+    cash_pos = led_no_mid["cash"] + led_no_mid["position_value"]
+    np.testing.assert_allclose(led_no_mid["total_equity"].values, cash_pos.values, rtol=1e-5, atol=1e-5)
+
+    # 2. Macro sizing modes
+    for mode in ["fixed_full", "ema200_binary", "ema200_half"]:
+        res_mode = engine.run_structural_trend(
+            synthetic_ohlcv_data,
+            symbols=["ETHUSDT", "SOLUSDT"],
+            channel_type="bollinger",
+            macro_sizing_mode=mode,
+        )
+        led_m = res_mode["bar_ledger"]
+        cash_pos = led_m["cash"] + led_m["position_value"]
+        np.testing.assert_allclose(led_m["total_equity"].values, cash_pos.values, rtol=1e-5, atol=1e-5)
+
+

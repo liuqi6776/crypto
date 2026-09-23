@@ -1,0 +1,7 @@
+macro_sizing_mode,stop_loss_mode,channel_type,net_return_pct,max_drawdown_pct,annualized_sharpe,calmar_ratio,total_trades,win_rate_pct,profit_factor,total_friction_usd
+EMA200_Half_Sizing (1.0 / 0.5),Mode_A_Close,Bollinger_120,2220.31,39.71,1.4,1.76,158,46.2,2.04,20332.81
+EMA200_Half_Sizing (1.0 / 0.5),Mode_B_Intrabar,Bollinger_120,860.05,32.44,1.12,1.43,205,42.4,1.64,17888.81
+Fixed_Full_Sizing (1.0 / 1.0),Mode_A_Close,Bollinger_120,2113.72,40.39,1.39,1.7,158,46.2,1.94,20965.27
+Fixed_Full_Sizing (1.0 / 1.0),Mode_B_Intrabar,Bollinger_120,791.83,33.71,1.09,1.32,205,42.4,1.59,17796.65
+Binary_Macro_Gate (1.0 / 0.0),Mode_A_Close,Bollinger_120,2217.94,37.48,1.4,1.86,156,46.8,1.95,21899.61
+Binary_Macro_Gate (1.0 / 0.0),Mode_B_Intrabar,Bollinger_120,814.03,31.05,1.09,1.45,202,43.1,1.58,18241.61

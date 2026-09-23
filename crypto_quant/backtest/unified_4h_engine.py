@@ -141,11 +141,15 @@ class Unified4hEngine:
         atr_mult: float = 3.0,
         allocation_ratio: float = 0.5,
         channel_type: str = "bollinger",
+        exit_channel_type: Optional[str] = None,
+        macro_sizing_mode: str = "ema200_half",
     ) -> Dict[str, Any]:
         """
         Runs Structural Trend strategy on specified symbols (e.g. ETH/SOL 50/50).
         Supports both BAR_CLOSE and conservative INTRABAR_STOP_TOUCH exit modes.
         Supports channel_type='bollinger' (Phase 19 standard) and 'donchian' (controlled ablation).
+        Supports exit_channel_type to decouple entry channel from exit channel for pure single-variable ablation.
+        Supports macro_sizing_mode: 'ema200_half' (Phase 19 standard), 'fixed_full' (1.0 constant), 'ema200_binary' (1.0/0.0).
         """
         # Determine common timestamp index
         common_idx = data_dict[symbols[0]].index
@@ -174,23 +178,42 @@ class Unified4hEngine:
             bb_upper = bb_mid + 2.0 * bb_std
             bb_lower = bb_mid - 2.0 * bb_std
 
+            # Donchian upper uses rolling highest CLOSE (最高收盘价), lower uses rolling lowest LOW
+            don_upper = c.shift(1).rolling(lookback_bars).max()
+            don_lower = l.shift(1).rolling(lookback_bars).min()
+
+            # Entry channel upper band
             if channel_type == "donchian":
-                don_upper = c.shift(1).rolling(lookback_bars).max()
-                don_lower = l.shift(1).rolling(lookback_bars).min()
                 channel_upper = don_upper
                 channel_lower = don_lower
-                channel_mid = (don_upper + don_lower) / 2.0
             else:
                 channel_upper = bb_upper
                 channel_lower = bb_lower
+
+            # Exit channel mid band (allows decoupling exit from entry channel)
+            eff_exit = exit_channel_type if exit_channel_type is not None else channel_type
+            if eff_exit == "bollinger":
                 channel_mid = bb_mid
+            elif eff_exit == "donchian":
+                channel_mid = (don_upper + don_lower) / 2.0
+            elif eff_exit == "none":
+                channel_mid = pd.Series(np.nan, index=common_idx)
+            else:
+                raise ValueError(f"Unknown exit_channel_type: {eff_exit}")
 
             # Swing low (60-period shifted by 1)
             swing_low = l.shift(1).rolling(60).min()
 
             # EMA200 Macro Trend Gate
             ema200 = c.shift(1).ewm(span=200).mean()
-            macro_mult = pd.Series(np.where(c.shift(1) > ema200, 1.0, 0.5), index=common_idx)
+            if macro_sizing_mode == "fixed_full":
+                macro_mult = pd.Series(1.0, index=common_idx)
+            elif macro_sizing_mode == "ema200_binary":
+                macro_mult = pd.Series(np.where(c.shift(1) > ema200, 1.0, 0.0), index=common_idx)
+            elif macro_sizing_mode == "ema200_half":
+                macro_mult = pd.Series(np.where(c.shift(1) > ema200, 1.0, 0.5), index=common_idx)
+            else:
+                raise ValueError(f"Unknown macro_sizing_mode: {macro_sizing_mode}")
 
             indicators[s] = pd.DataFrame({
                 "atr": atr,
@@ -419,7 +442,8 @@ class Unified4hEngine:
                 curr_h = current_highs[s]
                 curr_atr = float(indicators[s].loc[t, "atr"])
                 curr_channel_upper = float(indicators[s].loc[t, "channel_upper"])
-                curr_channel_mid = float(indicators[s].loc[t, "channel_mid"])
+                raw_mid = indicators[s].loc[t, "channel_mid"]
+                curr_channel_mid = float(raw_mid) if pd.notna(raw_mid) else None
                 curr_swing_l = float(indicators[s].loc[t, "swing_low"])
                 curr_macro_mult = float(indicators[s].loc[t, "macro_mult"])
 
@@ -437,7 +461,7 @@ class Unified4hEngine:
                         if curr_c < pos.trailing_stop_price:
                             exit_long = True
                             exit_reason = "TRAILING_STOP"
-                        elif curr_c < curr_channel_mid:
+                        elif curr_channel_mid is not None and curr_c < curr_channel_mid:
                             exit_long = True
                             exit_reason = "CHANNEL_EXIT"
 

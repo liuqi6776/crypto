@@ -5,7 +5,7 @@
 > 1. **Data Source Audit / 数据源核实**: Spot and Futures datasets strictly segregated into `data/spot/` and `data/futures_reference/`. Segment-by-segment bar-by-bar matching completed.
 > 2. **Single-Ledger Accounting / 严密单账本记账**: Equity $\equiv$ Cash + Positions $\equiv$ Initial Cash + Realized PnL + Unrealized PnL - Explicit Fees (error < 1e-4 on every bar). Slippage embedded into fill prices; spot funding strictly 0.0.
 > 3. **Prior-Bar Trailing Stop for Mode B / 严格因果盘中止损**: Conservative intrabar test uses trailing stop fixed at bar $t-1$ Close; zero peek into bar $t$ High before Low check. Labeled as Stress Scenario.
-> 4. **Controlled Entry Channel Ablation / 严格受控单变量消融**: Evaluated Bollinger 120 vs Donchian 120 under 100% identical EMA200 sizing and trailing stop rules.
+> 4. **Controlled Single-Variable Ablations / 严格受控单变量消融**: Evaluated pure entry channels under 100% identical exit rules, and evaluated macro sizing independently holding channel constant.
 > 5. **Non-Intrusive Forward A/B Isolation / 前向实测绝对物理隔离**: Forward paper accounts continue untouched. Sidecar depth logger runs as independent observer.
 > 6. **Research Classification / 研究定性**: All historical results (2020-2026) are classified as **DEVELOPMENT & STRESS TESTING (开发 / 压力测试)**. Independent validation relies exclusively on ongoing forward paper data.
 
@@ -36,22 +36,48 @@
 
 ---
 
-## 3. Controlled Single-Variable Entry Channel Ablation (Bollinger 120 vs Donchian 120)
-## 第三步：受控单变量入场通道消融实验（布林带 120 vs 唐奇安 120 严格对照）
+## 3. Controlled Single-Variable Ablations / 严格受控单变量消融实验
 
-| channel_type   | stop_loss_mode   | macro_sizing_rule   |   net_return_pct |   max_drawdown_pct |   annualized_sharpe |   calmar_ratio |   total_trades |   win_rate_pct |   profit_factor |   total_friction_usd |
-|:---------------|:-----------------|:--------------------|-----------------:|-------------------:|--------------------:|---------------:|---------------:|---------------:|----------------:|---------------------:|
-| Bollinger_120  | Mode_A_Close     | EMA200 (1.0 / 0.5)  |          2220.31 |              39.71 |                1.4  |           1.76 |            158 |           46.2 |            2.04 |             20332.8  |
-| Donchian_120   | Mode_A_Close     | EMA200 (1.0 / 0.5)  |          1556.41 |              42.14 |                1.3  |           1.43 |            183 |           42.6 |            1.89 |             15709.4  |
-| Bollinger_120  | Mode_B_Intrabar  | EMA200 (1.0 / 0.5)  |           860.05 |              32.44 |                1.12 |           1.43 |            205 |           42.4 |            1.64 |             17888.8  |
-| Donchian_120   | Mode_B_Intrabar  | EMA200 (1.0 / 0.5)  |           190.89 |              40.01 |                0.68 |           0.49 |            229 |           38.4 |            1.31 |              7544.62 |
+### 3.1 Pure Entry Channel Ablation with Fixed Exit Rules (Bollinger 120 vs Donchian 120)
+### 3.1 固定退场规则的纯入场通道单变量消融（布林带 120 vs 唐奇安 120 严格对照）
 
-> **Empirical Verdict on Channel Mechanics / 通道机制单变量实证裁决**:
-> - Holding all other variables strictly constant (identical EMA200 macro sizing rule `Close > EMA200 ? 1.0 : 0.5`, identical 3.0× ATR trailing stop, identical execution costs):
->   - **Mode A (Bar-Close Exit)**: Bollinger 120 achieves **+2,220.31%** (Sharpe 1.40, 158 trades) vs Donchian 120 at **+1,556.41%** (Sharpe 1.30, 183 trades). Isolated Delta: **+663.90%**.
->   - **Mode B (Intrabar Touch)**: Bollinger 120 achieves **+860.05%** (Sharpe 1.12, 205 trades) vs Donchian 120 at **+190.89%** (Sharpe 0.68, 229 trades). Isolated Delta: **+669.16%**.
-> - **Why Bollinger Outperforms Donchian / 布林带显著优于唐奇安的物理机理**:
->   Donchian channels freeze at rigid rolling 120-period price extremes, causing 24 to 25 extra false breakout trades (183 vs 158 in Mode A, 229 vs 205 in Mode B) that suffer heavy transaction drag. In contrast, Bollinger Bands dynamically expand and contract with market volatility ($2\sigma$), providing a dynamic volatility barrier that successfully filters out low-conviction consolidation spikes.
+| control_type         | entry_channel                | exit_rule               | stop_loss_mode   |   net_return_pct |   max_drawdown_pct |   annualized_sharpe |   calmar_ratio |   total_trades |   win_rate_pct |   profit_factor |   total_friction_usd |
+|:---------------------|:-----------------------------|:------------------------|:-----------------|-----------------:|-------------------:|--------------------:|---------------:|---------------:|---------------:|----------------:|---------------------:|
+| PURE_ENTRY_ISOLATED  | Bollinger_120                | Shared_BB_Mid_and_3ATR  | Mode_A_Close     |          2220.31 |              39.71 |                1.4  |           1.76 |            158 |           46.2 |            2.04 |             20332.8  |
+| PURE_ENTRY_ISOLATED  | Donchian_120 (Highest Close) | Shared_BB_Mid_and_3ATR  | Mode_A_Close     |          1560.21 |              41.83 |                1.3  |           1.45 |            183 |           42.6 |            1.89 |             15749.7  |
+| PURE_ENTRY_ISOLATED  | Bollinger_120                | Shared_3ATR_Stop_Only   | Mode_A_Close     |          2559.86 |              40.32 |                1.44 |           1.83 |            157 |           46.5 |            2.06 |             23177.5  |
+| PURE_ENTRY_ISOLATED  | Donchian_120 (Highest Close) | Shared_3ATR_Stop_Only   | Mode_A_Close     |          1556.41 |              42.14 |                1.3  |           1.43 |            183 |           42.6 |            1.89 |             15709.4  |
+| PURE_ENTRY_ISOLATED  | Bollinger_120                | Prior_Bar_3ATR_Intrabar | Mode_B_Intrabar  |           860.05 |              32.44 |                1.12 |           1.43 |            205 |           42.4 |            1.64 |             17888.8  |
+| PURE_ENTRY_ISOLATED  | Donchian_120 (Highest Close) | Prior_Bar_3ATR_Intrabar | Mode_B_Intrabar  |           190.89 |              40.01 |                0.68 |           0.49 |            229 |           38.4 |            1.31 |              7544.62 |
+| CONFOUNDED_DUAL_SWAP | Donchian_120 (Highest Close) | Donchian_Mid_and_3ATR   | Mode_A_Close     |          1556.41 |              42.14 |                1.3  |           1.43 |            183 |           42.6 |            1.89 |             15709.4  |
+
+> **Methodological Clarifications & Empirical Observations / 方法论澄清与实证观察**:
+> 1. **Accurate Definition of Donchian Upper / 唐奇安上轨准确定义**: In code, Donchian upper is calculated as `c.shift(1).rolling(120).max()`, which represents the 120-period rolling **highest Close (最高收盘价)**, NOT highest High. Lower band is 120-period lowest Low.
+> 2. **Fixed-Exit Pure Entry Controls / 退场规则完全固定的纯入场对照**:
+>    - **Regime 1 (Shared BB Mid & 3.0 ATR Stop)**: Both variants exit strictly when `Close < bb_mid` (120-period MA) or trailing stop. Bollinger 120 achieves **+2,220.31%** (Sharpe 1.40, 158 trades) vs Donchian 120 at **+1,560.21%** (Sharpe 1.30, 183 trades). Observed Delta: **+660.10%**.
+>    - **Regime 2 (Shared 3.0 ATR Stop Only, No Mid-Band Exit)**: Both variants exit strictly on trailing stop. Bollinger 120 achieves **+2,559.86%** (Sharpe 1.44, 157 trades) vs Donchian 120 at **+1,556.41%** (Sharpe 1.30, 183 trades). Observed Delta: **+1,003.45%**.
+>    - **Regime 3 (Mode B Intrabar 3.0 ATR Stop Touch)**: Exit occurs solely when intrabar Low touches the prior-bar stop. Bollinger 120 achieves **+860.05%** (Sharpe 1.12, 205 trades) vs Donchian 120 at **+190.89%** (Sharpe 0.68, 229 trades). Observed Delta: **+669.16%**.
+> 3. **Trade Frequency & Divergence Interpretation / 交易频次与分歧定性**:
+>    Across all regimes, the Donchian channel triggered 24 to 26 additional trades because prices periodically exceeded the rolling 120-bar highest close during consolidations. In this backtest, these additional breakout signals incurred additional transaction friction and experienced lower win rates (38.4%~42.6% vs 42.4%~46.5%), leading to the observed performance difference. We refrain from asserting that all additional trades were invalid, but note that the volatility-scaled barrier of Bollinger Bands ($2\sigma$) coincided with higher risk-adjusted returns across the sample.
+
+### 3.2 Standalone EMA200 Macro Sizing Ablation (Fixed Bollinger 120 Channel)
+### 3.2 独立 EMA200 宏观定仓单变量消融（固定布林带 120 通道）
+
+| macro_sizing_mode              | stop_loss_mode   | channel_type   |   net_return_pct |   max_drawdown_pct |   annualized_sharpe |   calmar_ratio |   total_trades |   win_rate_pct |   profit_factor |   total_friction_usd |
+|:-------------------------------|:-----------------|:---------------|-----------------:|-------------------:|--------------------:|---------------:|---------------:|---------------:|----------------:|---------------------:|
+| EMA200_Half_Sizing (1.0 / 0.5) | Mode_A_Close     | Bollinger_120  |          2220.31 |              39.71 |                1.4  |           1.76 |            158 |           46.2 |            2.04 |              20332.8 |
+| EMA200_Half_Sizing (1.0 / 0.5) | Mode_B_Intrabar  | Bollinger_120  |           860.05 |              32.44 |                1.12 |           1.43 |            205 |           42.4 |            1.64 |              17888.8 |
+| Fixed_Full_Sizing (1.0 / 1.0)  | Mode_A_Close     | Bollinger_120  |          2113.72 |              40.39 |                1.39 |           1.7  |            158 |           46.2 |            1.94 |              20965.3 |
+| Fixed_Full_Sizing (1.0 / 1.0)  | Mode_B_Intrabar  | Bollinger_120  |           791.83 |              33.71 |                1.09 |           1.32 |            205 |           42.4 |            1.59 |              17796.7 |
+| Binary_Macro_Gate (1.0 / 0.0)  | Mode_A_Close     | Bollinger_120  |          2217.94 |              37.48 |                1.4  |           1.86 |            156 |           46.8 |            1.95 |              21899.6 |
+| Binary_Macro_Gate (1.0 / 0.0)  | Mode_B_Intrabar  | Bollinger_120  |           814.03 |              31.05 |                1.09 |           1.45 |            202 |           43.1 |            1.58 |              18241.6 |
+
+> **Empirical Sizing Contribution / 宏观定仓规则独立贡献分析**:
+> - Holding the Bollinger 120 channel and stop rules strictly identical:
+>   - **Mode A (Bar-Close Exit)**: Fixed Full Sizing (1.0 constant) yields **+2,113.72%** (Sharpe 1.39, Max DD 40.39%). EMA200 Half Sizing (1.0 / 0.5) achieves **+2,220.31%** (Sharpe 1.40, Max DD 39.71%). Isolated lift: **+106.59%**, with drawdown reduced by 0.68%.
+>   - **Mode B (Intrabar Touch)**: Fixed Full Sizing yields **+791.83%** (Sharpe 1.09, Max DD 33.71%). EMA200 Half Sizing achieves **+860.05%** (Sharpe 1.12, Max DD 32.44%). Isolated lift: **+68.22%**, with drawdown reduced by 1.27%.
+>   - **Binary Macro Gate (1.0 / 0.0)**: Yields **+2,217.94%** (Max DD 37.48%) in Mode A and **+814.03%** (Max DD 31.05%) in Mode B, demonstrating that cutting exposure below EMA200 improves drawdown mitigation at a slight cost to compounding in early recoveries.
+> - **Conclusion / 归因裁决**: EMA200 macro sizing provides a modest, verifiable positive contribution (+68% to +106% return lift, 0.7% to 1.3% drawdown reduction) by reducing exposure during unfavorable macro regimes. However, it accounts for only a modest fraction of the broader return profile and cannot be treated as the sole explanation for historical version differences.
 
 ---
 
@@ -209,6 +235,6 @@
   - Open, High, and Low matched Binance Futures 100% (delta 0.0000 across all 4 coins);
   - Close discrepancy vs Binance Futures: BTC 0.012%, ETH 0.040%, BNB 0.046%, SOL 0.059% (all $< 0.06\%$).
   - Close discrepancy vs Binance Spot: BTC 0.070%, ETH 0.005%, BNB 0.108%, SOL 0.127% (all $< 0.13\%$).
-  - This minor discrepancy occurred because the earlier automated synchronization script captured a live mid-candle snapshot prior to final bar close settlement. Classified precisely as `INCOMPLETE_CLOSING_SNAPSHOT`.
+  - This minor discrepancy is suspected to have occurred because the earlier automated synchronization script captured a live mid-candle snapshot prior to final bar close settlement (though without physical execution timestamps/logs, this cannot be definitively proven). Classified objectively as `SUSPECTED_MID_CANDLE_SNAPSHOT` (疑似盘中未闭合快照).
 - **Segregated Clean Repositories / 独立分库**: Standard clean Spot data is housed under `data/spot/`, Futures reference under `data/futures_reference/`, with all SHA-256 hashes recorded in `reports/data_audit/immutable_data_manifest.json`.
 

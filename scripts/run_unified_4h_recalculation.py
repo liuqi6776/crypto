@@ -360,53 +360,122 @@ def main():
     print(f"[SAVED] Mode B Slippage Stress Table saved to {OUT_DIR / 'mode_b_slippage_stress.csv'}")
 
     # =========================================================================
-    # STEP 2.5: CONTROLLED SINGLE-VARIABLE ENTRY CHANNEL ABLATION (BOLLINGER 120 vs DONCHIAN 120)
+    # STEP 2.5: CONTROLLED ISOLATED ENTRY CHANNEL ABLATION (FIXED EXIT RULES)
     # =========================================================================
-    print("\n--- RUNNING CONTROLLED ENTRY CHANNEL ABLATION (BOLLINGER 120 vs DONCHIAN 120) ---")
-    ablation_rows = []
+    print("\n--- RUNNING CONTROLLED ISOLATED ENTRY CHANNEL ABLATION (BOLLINGER 120 vs DONCHIAN 120) ---")
+    entry_ablation_rows = []
 
-    # Mode A: Close Exit
-    eng_boll_a = Unified4hEngine(initial_cash=10000.0, stop_loss_mode=StopLossMode.BAR_CLOSE)
-    res_b_a = eng_boll_a.run_structural_trend(spot_eval_dfs, symbols=["ETHUSDT", "SOLUSDT"], channel_type="bollinger")
-    m_b_a = calculate_metrics(res_b_a["bar_ledger"], res_b_a["trades"])
-    m_b_a["channel_type"] = "Bollinger_120"
-    m_b_a["stop_loss_mode"] = "Mode_A_Close"
-    m_b_a["macro_sizing_rule"] = "EMA200 (1.0 / 0.5)"
-    ablation_rows.append(m_b_a)
+    # Regime 1: Mode A with Shared Bollinger Mid & 3.0 ATR Stop (Strictly identical exit)
+    eng_b_sm = Unified4hEngine(initial_cash=10000.0, stop_loss_mode=StopLossMode.BAR_CLOSE)
+    res_b_sm = eng_b_sm.run_structural_trend(spot_eval_dfs, symbols=["ETHUSDT", "SOLUSDT"], channel_type="bollinger", exit_channel_type="bollinger")
+    m_b_sm = calculate_metrics(res_b_sm["bar_ledger"], res_b_sm["trades"])
+    m_b_sm["control_type"] = "PURE_ENTRY_ISOLATED"
+    m_b_sm["entry_channel"] = "Bollinger_120"
+    m_b_sm["exit_rule"] = "Shared_BB_Mid_and_3ATR"
+    m_b_sm["stop_loss_mode"] = "Mode_A_Close"
+    entry_ablation_rows.append(m_b_sm)
 
-    eng_don_a = Unified4hEngine(initial_cash=10000.0, stop_loss_mode=StopLossMode.BAR_CLOSE)
-    res_d_a = eng_don_a.run_structural_trend(spot_eval_dfs, symbols=["ETHUSDT", "SOLUSDT"], channel_type="donchian")
-    m_d_a = calculate_metrics(res_d_a["bar_ledger"], res_d_a["trades"])
-    m_d_a["channel_type"] = "Donchian_120"
-    m_d_a["stop_loss_mode"] = "Mode_A_Close"
-    m_d_a["macro_sizing_rule"] = "EMA200 (1.0 / 0.5)"
-    ablation_rows.append(m_d_a)
+    eng_d_sm = Unified4hEngine(initial_cash=10000.0, stop_loss_mode=StopLossMode.BAR_CLOSE)
+    res_d_sm = eng_d_sm.run_structural_trend(spot_eval_dfs, symbols=["ETHUSDT", "SOLUSDT"], channel_type="donchian", exit_channel_type="bollinger")
+    m_d_sm = calculate_metrics(res_d_sm["bar_ledger"], res_d_sm["trades"])
+    m_d_sm["control_type"] = "PURE_ENTRY_ISOLATED"
+    m_d_sm["entry_channel"] = "Donchian_120 (Highest Close)"
+    m_d_sm["exit_rule"] = "Shared_BB_Mid_and_3ATR"
+    m_d_sm["stop_loss_mode"] = "Mode_A_Close"
+    entry_ablation_rows.append(m_d_sm)
 
-    # Mode B: Intrabar Stop Touch
+    # Regime 2: Mode A with 3.0 ATR Trailing Stop Only (No Mid-Band Exit, strictly identical exit)
+    eng_b_so = Unified4hEngine(initial_cash=10000.0, stop_loss_mode=StopLossMode.BAR_CLOSE)
+    res_b_so = eng_b_so.run_structural_trend(spot_eval_dfs, symbols=["ETHUSDT", "SOLUSDT"], channel_type="bollinger", exit_channel_type="none")
+    m_b_so = calculate_metrics(res_b_so["bar_ledger"], res_b_so["trades"])
+    m_b_so["control_type"] = "PURE_ENTRY_ISOLATED"
+    m_b_so["entry_channel"] = "Bollinger_120"
+    m_b_so["exit_rule"] = "Shared_3ATR_Stop_Only"
+    m_b_so["stop_loss_mode"] = "Mode_A_Close"
+    entry_ablation_rows.append(m_b_so)
+
+    eng_d_so = Unified4hEngine(initial_cash=10000.0, stop_loss_mode=StopLossMode.BAR_CLOSE)
+    res_d_so = eng_d_so.run_structural_trend(spot_eval_dfs, symbols=["ETHUSDT", "SOLUSDT"], channel_type="donchian", exit_channel_type="none")
+    m_d_so = calculate_metrics(res_d_so["bar_ledger"], res_d_so["trades"])
+    m_d_so["control_type"] = "PURE_ENTRY_ISOLATED"
+    m_d_so["entry_channel"] = "Donchian_120 (Highest Close)"
+    m_d_so["exit_rule"] = "Shared_3ATR_Stop_Only"
+    m_d_so["stop_loss_mode"] = "Mode_A_Close"
+    entry_ablation_rows.append(m_d_so)
+
+    # Regime 3: Mode B Intrabar Stop Touch (3.0 ATR Stop, 15 bps slippage, strictly identical exit)
     eng_boll_b = Unified4hEngine(initial_cash=10000.0, stop_loss_mode=StopLossMode.INTRABAR_STOP_TOUCH, stop_slippage=0.0015)
     res_b_b = eng_boll_b.run_structural_trend(spot_eval_dfs, symbols=["ETHUSDT", "SOLUSDT"], channel_type="bollinger")
     m_b_b = calculate_metrics(res_b_b["bar_ledger"], res_b_b["trades"])
-    m_b_b["channel_type"] = "Bollinger_120"
+    m_b_b["control_type"] = "PURE_ENTRY_ISOLATED"
+    m_b_b["entry_channel"] = "Bollinger_120"
+    m_b_b["exit_rule"] = "Prior_Bar_3ATR_Intrabar"
     m_b_b["stop_loss_mode"] = "Mode_B_Intrabar"
-    m_b_b["macro_sizing_rule"] = "EMA200 (1.0 / 0.5)"
-    ablation_rows.append(m_b_b)
+    entry_ablation_rows.append(m_b_b)
 
     eng_don_b = Unified4hEngine(initial_cash=10000.0, stop_loss_mode=StopLossMode.INTRABAR_STOP_TOUCH, stop_slippage=0.0015)
     res_d_b = eng_don_b.run_structural_trend(spot_eval_dfs, symbols=["ETHUSDT", "SOLUSDT"], channel_type="donchian")
     m_d_b = calculate_metrics(res_d_b["bar_ledger"], res_d_b["trades"])
-    m_d_b["channel_type"] = "Donchian_120"
+    m_d_b["control_type"] = "PURE_ENTRY_ISOLATED"
+    m_d_b["entry_channel"] = "Donchian_120 (Highest Close)"
+    m_d_b["exit_rule"] = "Prior_Bar_3ATR_Intrabar"
     m_d_b["stop_loss_mode"] = "Mode_B_Intrabar"
-    m_d_b["macro_sizing_rule"] = "EMA200 (1.0 / 0.5)"
-    ablation_rows.append(m_d_b)
+    entry_ablation_rows.append(m_d_b)
 
-    df_ablation = pd.DataFrame(ablation_rows)
-    df_ablation = df_ablation[[
-        "channel_type", "stop_loss_mode", "macro_sizing_rule", "net_return_pct",
+    # Regime 4: Confounded Dual Swap (Both Entry & Exit Swapped - for complete scientific disclosure)
+    eng_don_conf = Unified4hEngine(initial_cash=10000.0, stop_loss_mode=StopLossMode.BAR_CLOSE)
+    res_d_conf = eng_don_conf.run_structural_trend(spot_eval_dfs, symbols=["ETHUSDT", "SOLUSDT"], channel_type="donchian", exit_channel_type="donchian")
+    m_d_conf = calculate_metrics(res_d_conf["bar_ledger"], res_d_conf["trades"])
+    m_d_conf["control_type"] = "CONFOUNDED_DUAL_SWAP"
+    m_d_conf["entry_channel"] = "Donchian_120 (Highest Close)"
+    m_d_conf["exit_rule"] = "Donchian_Mid_and_3ATR"
+    m_d_conf["stop_loss_mode"] = "Mode_A_Close"
+    entry_ablation_rows.append(m_d_conf)
+
+    df_channel_ablation = pd.DataFrame(entry_ablation_rows)
+    df_channel_ablation = df_channel_ablation[[
+        "control_type", "entry_channel", "exit_rule", "stop_loss_mode",
+        "net_return_pct", "max_drawdown_pct", "annualized_sharpe", "calmar_ratio",
+        "total_trades", "win_rate_pct", "profit_factor", "total_friction_usd"
+    ]]
+    df_channel_ablation.to_csv(OUT_DIR / "channel_ablation_bollinger_vs_donchian.csv", index=False)
+    print(f"[SAVED] Channel Ablation Table saved to {OUT_DIR / 'channel_ablation_bollinger_vs_donchian.csv'}")
+
+    # =========================================================================
+    # STEP 2.6: ISOLATED MACRO SIZING ABLATION (HOLDING BOLLINGER 120 CONSTANT)
+    # =========================================================================
+    print("\n--- RUNNING ISOLATED MACRO SIZING ABLATION (HOLDING BOLLINGER 120 CONSTANT) ---")
+    sizing_ablation_rows = []
+
+    for s_mode, s_name in [("ema200_half", "EMA200_Half_Sizing (1.0 / 0.5)"),
+                           ("fixed_full", "Fixed_Full_Sizing (1.0 / 1.0)"),
+                           ("ema200_binary", "Binary_Macro_Gate (1.0 / 0.0)")]:
+        # Mode A
+        eng_s_a = Unified4hEngine(initial_cash=10000.0, stop_loss_mode=StopLossMode.BAR_CLOSE)
+        res_s_a = eng_s_a.run_structural_trend(spot_eval_dfs, symbols=["ETHUSDT", "SOLUSDT"], channel_type="bollinger", macro_sizing_mode=s_mode)
+        m_s_a = calculate_metrics(res_s_a["bar_ledger"], res_s_a["trades"])
+        m_s_a["macro_sizing_mode"] = s_name
+        m_s_a["stop_loss_mode"] = "Mode_A_Close"
+        m_s_a["channel_type"] = "Bollinger_120"
+        sizing_ablation_rows.append(m_s_a)
+
+        # Mode B
+        eng_s_b = Unified4hEngine(initial_cash=10000.0, stop_loss_mode=StopLossMode.INTRABAR_STOP_TOUCH, stop_slippage=0.0015)
+        res_s_b = eng_s_b.run_structural_trend(spot_eval_dfs, symbols=["ETHUSDT", "SOLUSDT"], channel_type="bollinger", macro_sizing_mode=s_mode)
+        m_s_b = calculate_metrics(res_s_b["bar_ledger"], res_s_b["trades"])
+        m_s_b["macro_sizing_mode"] = s_name
+        m_s_b["stop_loss_mode"] = "Mode_B_Intrabar"
+        m_s_b["channel_type"] = "Bollinger_120"
+        sizing_ablation_rows.append(m_s_b)
+
+    df_sizing_ablation = pd.DataFrame(sizing_ablation_rows)
+    df_sizing_ablation = df_sizing_ablation[[
+        "macro_sizing_mode", "stop_loss_mode", "channel_type", "net_return_pct",
         "max_drawdown_pct", "annualized_sharpe", "calmar_ratio", "total_trades",
         "win_rate_pct", "profit_factor", "total_friction_usd"
     ]]
-    df_ablation.to_csv(OUT_DIR / "channel_ablation_bollinger_vs_donchian.csv", index=False)
-    print(f"[SAVED] Channel Ablation Table saved to {OUT_DIR / 'channel_ablation_bollinger_vs_donchian.csv'}")
+    df_sizing_ablation.to_csv(OUT_DIR / "isolated_sizing_ablation.csv", index=False)
+    print(f"[SAVED] Sizing Ablation Table saved to {OUT_DIR / 'isolated_sizing_ablation.csv'}")
 
     # Save Unified Summary CSV
     df_summary = pd.DataFrame(all_models_summary)
