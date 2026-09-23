@@ -43,25 +43,24 @@ def test_compute_indicators():
     assert not res_sma["ma20"].isna().all()
 
 
-def test_state_machine_long_full_lifecycle():
+def test_state_machine_strict_support_long_lifecycle():
     """
-    Tests complete successful Long lifecycle:
+    Tests complete successful STRICT_SUPPORT Long lifecycle:
     1. Trend valid (close > ma200, slope > 0)
-    2. 3 consecutive bars with spread <= 0.5 * ATR -> CONGESTION_FORMED
-    3. Breakout within 6 bars -> AWAITING_PULLBACK
-    4. Pullback touches tolerance, holds lower bound, closes > U -> CONFIRMED_SIGNAL
+    2. 3 consecutive bars with spread <= 0.5 * ATR and close > U -> directly AWAITING_PULLBACK
+    3. Pullback bar: Low >= U (NO penetration) and Low <= U + 0.1 * ATR, Close > U -> CONFIRMED_SIGNAL
+    4. Assert low_distance_to_u >= 0
     """
-    sm = MACongestionStateMachine(symbol="BTCUSDT", direction="LONG")
+    sm = MACongestionStateMachine(symbol="BTCUSDT", direction="LONG", pullback_mode="STRICT_SUPPORT")
     now = pd.Timestamp("2026-01-01 00:00:00")
 
-    # Bars 1-3: Congestion formed
-    # ma20=100.1, ma50=100.0, ma100=99.9 -> spread=0.2 <= 0.5 * atr(1.0)
+    # Bars 1-3: Congestion formed with price above U (U=100.1, L=99.9, ATR=1.0, close=100.5 > U)
     for i in range(3):
         t = now + pd.Timedelta(minutes=15 * i)
         row = pd.Series({
             "close": 100.5,
             "high": 101.0,
-            "low": 99.5,
+            "low": 100.2,
             "ma20": 100.1,
             "ma50": 100.0,
             "ma100": 99.9,
@@ -72,71 +71,148 @@ def test_state_machine_long_full_lifecycle():
         sig = sm.feed_bar(t, row)
         assert sig is None
 
-    # After bar 3, state should be CONGESTION_FORMED
-    assert sm.state == PatternState.CONGESTION_FORMED
+    # In STRICT_SUPPORT mode, directly transitions to AWAITING_PULLBACK
+    assert sm.state == PatternState.AWAITING_PULLBACK
     assert sm.current_zone is not None
     assert sm.current_zone.U == 100.1
     assert sm.current_zone.L == 99.9
     assert sm.current_zone.frozen_atr == 1.0
 
-    # Bar 4: Non-breakout bar
+    # Bar 4: Strict pullback bar!
+    # Low = 100.15 >= U (100.1) -> NO penetration!
+    # Low = 100.15 <= U + 0.1 * ATR (100.2) -> touches tolerance band
+    # Close = 100.4 > U (100.1) -> reclaims/confirms support
     t4 = now + pd.Timedelta(minutes=45)
     row4 = pd.Series({
         "close": 100.4,
         "high": 100.8,
-        "low": 100.0,
+        "low": 100.15,
         "ma20": 100.1, "ma50": 100.0, "ma100": 99.9, "ma200": 95.1, "ma200_slope_4": 0.5, "atr14": 1.0,
     })
     sig4 = sm.feed_bar(t4, row4)
-    assert sig4 is None
-    assert sm.state == PatternState.CONGESTION_FORMED
-
-    # Bar 5: Breakout bar! (Close > U + 0.5 * ATR = 100.1 + 0.5 = 100.6)
-    t5 = now + pd.Timedelta(minutes=60)
-    row5 = pd.Series({
-        "close": 100.8,
-        "high": 101.5,
-        "low": 100.3,
-        "ma20": 100.2, "ma50": 100.0, "ma100": 99.9, "ma200": 95.2, "ma200_slope_4": 0.5, "atr14": 1.0,
-    })
-    sig5 = sm.feed_bar(t5, row5)
-    assert sig5 is None
-    assert sm.state == PatternState.AWAITING_PULLBACK
-    assert sm.breakout_bar == t5
-    assert sm.breakout_price == 100.8
-
-    # Bar 6: Pullback confirmation bar!
-    # U = 100.1, L = 99.9, frozen_atr = 1.0
-    # Tolerance zone: Low <= U + 0.1*ATR = 100.2
-    # Lower bound hold: Low >= L - 0.1*ATR = 99.8
-    # Close reclaims: Close > U = 100.1
-    t6 = now + pd.Timedelta(minutes=75)
-    row6 = pd.Series({
-        "close": 100.4,
-        "high": 100.7,
-        "low": 100.05,  # 100.05 is <= 100.2 and >= 99.8
-        "ma20": 100.2, "ma50": 100.0, "ma100": 99.9, "ma200": 95.3, "ma200_slope_4": 0.5, "atr14": 1.0,
-    })
-    sig6 = sm.feed_bar(t6, row6)
-    assert sig6 is not None
-    assert isinstance(sig6, TradeSignal)
-    assert sig6.direction == "LONG"
-    assert sig6.confirm_price == 100.4
+    assert sig4 is not None
+    assert isinstance(sig4, TradeSignal)
+    assert sig4.direction == "LONG"
+    assert sig4.pullback_mode == "STRICT_SUPPORT"
+    assert sig4.confirm_price == 100.4
+    assert sig4.low_distance_to_u == round(100.15 - 100.1, 6)
+    assert sig4.low_distance_to_u >= 0.0
     # Initial SL: L - 0.2 * frozen_atr = 99.9 - 0.2 = 99.7
-    assert pytest.approx(sig6.initial_sl, 1e-5) == 99.7
-    assert sm.state == PatternState.IDLE  # reset after firing
+    assert pytest.approx(sig4.initial_sl, 1e-5) == 99.7
+    assert sm.state == PatternState.IDLE
 
 
-def test_state_machine_long_invalidation():
-    """Tests that breaching L - 0.1 * ATR during pullback voids pattern immediately."""
-    sm = MACongestionStateMachine(symbol="BTCUSDT", direction="LONG")
+def test_state_machine_strict_support_long_invalidation():
+    """
+    Tests STRICT_SUPPORT invalidation:
+    If candle wick penetrates below U (Low < U), pattern is IMMEDIATELY VOIDED!
+    """
+    sm = MACongestionStateMachine(symbol="BTCUSDT", direction="LONG", pullback_mode="STRICT_SUPPORT")
     now = pd.Timestamp("2026-01-01 00:00:00")
 
     # Form congestion
     for i in range(3):
         t = now + pd.Timedelta(minutes=15 * i)
         row = pd.Series({
-            "close": 100.0, "high": 100.5, "low": 99.5,
+            "close": 100.5, "high": 101.0, "low": 100.2,
+            "ma20": 100.1, "ma50": 100.0, "ma100": 99.9, "ma200": 95.0, "ma200_slope_4": 0.5, "atr14": 1.0,
+        })
+        sm.feed_bar(t, row)
+    assert sm.state == PatternState.AWAITING_PULLBACK
+
+    # Bar 4: Wick penetrates into MA group: Low = 100.05 < U (100.1)
+    t4 = now + pd.Timedelta(minutes=45)
+    row4 = pd.Series({
+        "close": 100.3, "high": 100.8, "low": 100.05,  # 100.05 < 100.1!
+        "ma20": 100.1, "ma50": 100.0, "ma100": 99.9, "ma200": 95.0, "ma200_slope_4": 0.5, "atr14": 1.0,
+    })
+    sig4 = sm.feed_bar(t4, row4)
+    assert sig4 is None
+    assert sm.state == PatternState.IDLE  # Pattern invalidated immediately!
+
+
+def test_state_machine_strict_support_short_lifecycle():
+    """
+    Tests complete successful STRICT_SUPPORT Short lifecycle:
+    1. Trend valid (close < ma200, slope < 0)
+    2. 3 consecutive bars with spread <= 0.5 * ATR and close < L -> directly AWAITING_PULLBACK
+    3. Pullback bar: High <= L (NO penetration) and High >= L - 0.1 * ATR, Close < L -> CONFIRMED_SIGNAL
+    4. Assert high_distance_to_l >= 0
+    """
+    sm = MACongestionStateMachine(symbol="BTCUSDT", direction="SHORT", pullback_mode="STRICT_SUPPORT")
+    now = pd.Timestamp("2026-01-01 00:00:00")
+
+    # Form congestion (U=100.1, L=99.9, ATR=1.0, close=99.5 < L)
+    for i in range(3):
+        t = now + pd.Timedelta(minutes=15 * i)
+        row = pd.Series({
+            "close": 99.5, "high": 99.8, "low": 99.0,
+            "ma20": 100.1, "ma50": 100.0, "ma100": 99.9, "ma200": 105.0, "ma200_slope_4": -0.5, "atr14": 1.0,
+        })
+        sm.feed_bar(t, row)
+    assert sm.state == PatternState.AWAITING_PULLBACK
+
+    # Bar 4: Strict short bounce:
+    # High = 99.85 <= L (99.9) -> NO penetration into MA band!
+    # High = 99.85 >= L - 0.1 * ATR (99.8) -> touches tolerance band
+    # Close = 99.6 < L (99.9) -> confirms resistance
+    t4 = now + pd.Timedelta(minutes=45)
+    row4 = pd.Series({
+        "close": 99.6, "high": 99.85, "low": 99.2,
+        "ma20": 100.1, "ma50": 100.0, "ma100": 99.9, "ma200": 105.0, "ma200_slope_4": -0.5, "atr14": 1.0,
+    })
+    sig4 = sm.feed_bar(t4, row4)
+    assert sig4 is not None
+    assert sig4.direction == "SHORT"
+    assert sig4.pullback_mode == "STRICT_SUPPORT"
+    assert sig4.high_distance_to_l == round(99.9 - 99.85, 6)
+    assert sig4.high_distance_to_l >= 0.0
+    # Initial SL: U + 0.2 * ATR = 100.1 + 0.2 = 100.3
+    assert pytest.approx(sig4.initial_sl, 1e-5) == 100.3
+    assert sm.state == PatternState.IDLE
+
+
+def test_state_machine_strict_support_short_invalidation():
+    """
+    Tests STRICT_SUPPORT Short invalidation:
+    If candle wick penetrates above L (High > L), pattern is IMMEDIATELY VOIDED!
+    """
+    sm = MACongestionStateMachine(symbol="BTCUSDT", direction="SHORT", pullback_mode="STRICT_SUPPORT")
+    now = pd.Timestamp("2026-01-01 00:00:00")
+
+    for i in range(3):
+        t = now + pd.Timedelta(minutes=15 * i)
+        row = pd.Series({
+            "close": 99.5, "high": 99.8, "low": 99.0,
+            "ma20": 100.1, "ma50": 100.0, "ma100": 99.9, "ma200": 105.0, "ma200_slope_4": -0.5, "atr14": 1.0,
+        })
+        sm.feed_bar(t, row)
+    assert sm.state == PatternState.AWAITING_PULLBACK
+
+    # Bar 4: Wick penetrates into MA band: High = 99.95 > L (99.9)
+    t4 = now + pd.Timedelta(minutes=45)
+    row4 = pd.Series({
+        "close": 99.6, "high": 99.95, "low": 99.2,  # 99.95 > 99.9!
+        "ma20": 100.1, "ma50": 100.0, "ma100": 99.9, "ma200": 105.0, "ma200_slope_4": -0.5, "atr14": 1.0,
+    })
+    sig4 = sm.feed_bar(t4, row4)
+    assert sig4 is None
+    assert sm.state == PatternState.IDLE
+
+
+def test_state_machine_intraband_penetration():
+    """
+    Tests INTRABAND_PENETRATION mode:
+    Wick can penetrate inside zone (L <= Low < U), but Close > U triggers confirmation.
+    Breach below L - 0.1 * ATR invalidates.
+    """
+    sm = MACongestionStateMachine(symbol="BTCUSDT", direction="LONG", pullback_mode="INTRABAND_PENETRATION")
+    now = pd.Timestamp("2026-01-01 00:00:00")
+
+    for i in range(3):
+        t = now + pd.Timedelta(minutes=15 * i)
+        row = pd.Series({
+            "close": 100.2, "high": 100.5, "low": 99.5,
             "ma20": 100.1, "ma50": 100.0, "ma100": 99.9, "ma200": 95.0, "ma200_slope_4": 0.5, "atr14": 1.0,
         })
         sm.feed_bar(t, row)
@@ -145,59 +221,61 @@ def test_state_machine_long_invalidation():
     # Breakout
     t_bo = now + pd.Timedelta(minutes=45)
     row_bo = pd.Series({
-        "close": 101.0, "high": 101.5, "low": 100.0,
+        "close": 100.8, "high": 101.0, "low": 100.0,
         "ma20": 100.1, "ma50": 100.0, "ma100": 99.9, "ma200": 95.0, "ma200_slope_4": 0.5, "atr14": 1.0,
     })
     sm.feed_bar(t_bo, row_bo)
     assert sm.state == PatternState.AWAITING_PULLBACK
 
-    # Flash crash breaching lower tolerance: Low < L - 0.1 * ATR = 99.9 - 0.1 = 99.8
-    t_inv = now + pd.Timedelta(minutes=60)
-    row_inv = pd.Series({
-        "close": 100.2, "high": 100.5, "low": 99.6,  # 99.6 < 99.8!
+    # Pullback penetrates into band: Low = 100.0 (between L=99.9 and U=100.1), Close = 100.4 > U
+    t_pb = now + pd.Timedelta(minutes=60)
+    row_pb = pd.Series({
+        "close": 100.4, "high": 100.7, "low": 100.0,
         "ma20": 100.1, "ma50": 100.0, "ma100": 99.9, "ma200": 95.0, "ma200_slope_4": 0.5, "atr14": 1.0,
     })
-    sig = sm.feed_bar(t_inv, row_inv)
-    assert sig is None
-    assert sm.state == PatternState.IDLE  # Invalidated to IDLE!
+    sig = sm.feed_bar(t_pb, row_pb)
+    assert sig is not None
+    assert sig.pullback_mode == "INTRABAND_PENETRATION"
+    assert sig.low_distance_to_u == round(100.0 - 100.1, 6)  # negative because penetrated below U!
+    assert sig.low_distance_to_u < 0.0
 
 
-def test_state_machine_short_mirror():
-    """Tests strict short mirror logic."""
-    sm = MACongestionStateMachine(symbol="BTCUSDT", direction="SHORT")
+def test_state_machine_loose_penetration_reclaim_lifecycle():
+    """
+    Tests previous LOOSE_PENETRATION_RECLAIM lifecycle:
+    Requires antecedent breakout > U + 0.5*ATR, and allows Low down to L - 0.1*ATR.
+    """
+    sm = MACongestionStateMachine(symbol="BTCUSDT", direction="LONG", pullback_mode="LOOSE_PENETRATION_RECLAIM")
     now = pd.Timestamp("2026-01-01 00:00:00")
 
-    # 3 bars congestion in downtrend (Close < MA200 and slope < 0)
+    # 3 bars congestion
     for i in range(3):
         t = now + pd.Timedelta(minutes=15 * i)
         row = pd.Series({
-            "close": 99.5, "high": 100.5, "low": 99.0,
-            "ma20": 100.1, "ma50": 100.0, "ma100": 99.9, "ma200": 105.0, "ma200_slope_4": -0.5, "atr14": 1.0,
+            "close": 100.5, "high": 101.0, "low": 99.5,
+            "ma20": 100.1, "ma50": 100.0, "ma100": 99.9, "ma200": 95.0, "ma200_slope_4": 0.5, "atr14": 1.0,
         })
         sm.feed_bar(t, row)
     assert sm.state == PatternState.CONGESTION_FORMED
     assert sm.current_zone.U == 100.1
     assert sm.current_zone.L == 99.9
 
-    # Breakdown: Close < L - 0.5 * ATR = 99.9 - 0.5 = 99.4
-    t_bd = now + pd.Timedelta(minutes=45)
-    row_bd = pd.Series({
-        "close": 99.2, "high": 99.6, "low": 98.5,
-        "ma20": 100.0, "ma50": 100.0, "ma100": 99.9, "ma200": 105.0, "ma200_slope_4": -0.5, "atr14": 1.0,
+    # Breakout bar (Close > 100.1 + 0.5 = 100.6)
+    t_bo = now + pd.Timedelta(minutes=45)
+    row_bo = pd.Series({
+        "close": 100.8, "high": 101.5, "low": 100.3,
+        "ma20": 100.2, "ma50": 100.0, "ma100": 99.9, "ma200": 95.2, "ma200_slope_4": 0.5, "atr14": 1.0,
     })
-    sm.feed_bar(t_bd, row_bd)
+    sm.feed_bar(t_bo, row_bo)
     assert sm.state == PatternState.AWAITING_PULLBACK
 
-    # Pullback upward confirmation:
-    # High touches L - 0.1 * ATR = 99.8, High <= U + 0.1 * ATR = 100.2, and Close < L (99.9)
-    t_pb = now + pd.Timedelta(minutes=60)
-    row_pb = pd.Series({
-        "close": 99.7, "high": 100.0, "low": 99.3,  # High=100.0 is >= 99.8 and <= 100.2; Close=99.7 < 99.9
-        "ma20": 100.0, "ma50": 100.0, "ma100": 99.9, "ma200": 105.0, "ma200_slope_4": -0.5, "atr14": 1.0,
+    # Reclaim bar
+    t_rec = now + pd.Timedelta(minutes=60)
+    row_rec = pd.Series({
+        "close": 100.4, "high": 100.7, "low": 100.05,
+        "ma20": 100.2, "ma50": 100.0, "ma100": 99.9, "ma200": 95.3, "ma200_slope_4": 0.5, "atr14": 1.0,
     })
-    sig = sm.feed_bar(t_pb, row_pb)
+    sig = sm.feed_bar(t_rec, row_rec)
     assert sig is not None
-    assert sig.direction == "SHORT"
-    # Initial SL: U + 0.2 * ATR = 100.1 + 0.2 = 100.3
-    assert pytest.approx(sig.initial_sl, 1e-5) == 100.3
+    assert sig.pullback_mode == "LOOSE_PENETRATION_RECLAIM"
     assert sm.state == PatternState.IDLE

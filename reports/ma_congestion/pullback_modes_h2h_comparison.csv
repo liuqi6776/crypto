@@ -1,0 +1,4 @@
+experiment_name,pullback_mode,total_trades,win_rate_pct,avg_net_r,median_net_r,profit_factor,total_net_return_pct,max_drawdown_pct,daily_sharpe,total_fees_usdt,total_slippage_usdt
+v1_strict_support_15m_ema_long,STRICT_SUPPORT,290,23.1,-0.744,-1.365,0.32,-57.77,57.8,-3.85,2716.54,3380.07
+v1_intraband_penetration_15m_ema_long,INTRABAND_PENETRATION,308,21.75,-0.754,-1.385,0.38,-57.24,57.24,-3.56,2947.8,3667.36
+v1_loose_reclaim_15m_ema_long,LOOSE_PENETRATION_RECLAIM,467,22.06,-0.767,-1.4,0.36,-73.37,73.51,-4.43,3652.91,4538.94

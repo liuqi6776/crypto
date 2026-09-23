@@ -7,11 +7,16 @@ Strictly causal, bar-by-bar deterministic state machine for pattern detection:
 1. Trend Environment: Close > MA200 and MA200 > MA200[t-4] (Long) or mirror (Short).
 2. Congestion Formation: 3 consecutive bars where max(MA20, 50, 100) - min(MA20, 50, 100) <= 0.5 * ATR14.
    Freezes immutable U, L, and ATR_frozen at trigger bar.
-3. Breakout Window: Within 6 bars, Close > U + 0.5 * ATR_frozen.
-4. Pullback Window: Within 8 bars after breakout, Low touches U + 0.1 * ATR_frozen,
-   holds above L - 0.1 * ATR_frozen, and Close > U.
-   Invalidation: Any breach of Low < L - 0.1 * ATR_frozen immediately voids pattern.
-5. Exit / Risk Parameters: Initial SL = L - 0.2 * ATR_frozen.
+3. Three Distinct Pullback Modes Evaluated:
+   a. 'STRICT_SUPPORT': Strict non-penetration pullback.
+      Long: Low >= U (wick NEVER penetrates MA group), Low <= U + 0.1 * ATR_frozen, Close > U.
+      Short: High <= L (wick NEVER penetrates MA group), High >= L - 0.1 * ATR_frozen, Close < L.
+      Invalidation: Low < U (Long) or High > L (Short) instantly voids pattern.
+   b. 'INTRABAND_PENETRATION': Wick penetrates inside MA zone, but holds lower boundary L.
+      Long: L <= Low < U, Close > U.
+      Short: L < High <= U, Close < L.
+   c. 'LOOSE_PENETRATION_RECLAIM': Previous loose rule with 6-bar breakout prerequisite and Low down to L - 0.1 * ATR.
+4. Exit / Risk Parameters: Initial SL = L - 0.2 * ATR_frozen (Long) / U + 0.2 * ATR_frozen (Short).
    Dynamic Trailing Stop activated after +1R, ratcheting from next bar to max(SL, High_max - 2 * ATR14).
    Max holding duration: 8 hours.
 """
@@ -43,10 +48,10 @@ class CongestionZone:
 @dataclass
 class TradeSignal:
     symbol: str
-    direction: str  # 'LONG' or 'SHORT'
-    signal_time: pd.Timestamp       # Close time of confirmation candle
-    confirm_price: float           # Close of confirmation candle
-    initial_sl: float              # L - 0.2 * ATR_frozen (Long) or U + 0.2 * ATR_frozen (Short)
+    direction: str                     # 'LONG' or 'SHORT'
+    signal_time: pd.Timestamp          # Close time of confirmation candle
+    confirm_price: float              # Close of confirmation candle
+    initial_sl: float                 # L - 0.2 * ATR_frozen (Long) or U + 0.2 * ATR_frozen (Short)
     frozen_atr: float
     formation_time: pd.Timestamp
     breakout_time: pd.Timestamp
@@ -55,6 +60,9 @@ class TradeSignal:
     L: float
     breakout_price: float
     pattern_duration_bars: int
+    pullback_mode: str = "STRICT_SUPPORT"  # 'STRICT_SUPPORT', 'INTRABAND_PENETRATION', 'LOOSE_PENETRATION_RECLAIM'
+    low_distance_to_u: float = 0.0     # Low - U (for Long, >= 0 proves wick never penetrated U)
+    high_distance_to_l: float = 0.0    # L - High (for Short, >= 0 proves wick never penetrated L)
 
 
 def compute_indicators(
@@ -90,7 +98,6 @@ def compute_indicators(
     tr3 = (res["low"] - prev_close).abs()
     tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
     res["tr"] = tr
-    # Wilder's smoothing or EMA for ATR
     res["atr14"] = tr.ewm(span=atr_period, adjust=False).mean()
 
     # 4-bar slope for MA200
@@ -114,11 +121,13 @@ class MACongestionStateMachine:
         self,
         symbol: str,
         direction: str = "LONG",
+        pullback_mode: str = "STRICT_SUPPORT",   # 'STRICT_SUPPORT', 'INTRABAND_PENETRATION', 'LOOSE_PENETRATION_RECLAIM'
         breakout_max_bars: int = 6,
         pullback_max_bars: int = 8,
     ):
         self.symbol = symbol
         self.direction = direction.upper()
+        self.pullback_mode = pullback_mode.upper()
         self.breakout_max_bars = breakout_max_bars
         self.pullback_max_bars = pullback_max_bars
 
@@ -185,6 +194,15 @@ class MACongestionStateMachine:
             if self.consecutive_congestion_bars >= 3 and trend_valid:
                 U = max(ma20, ma50, ma100)
                 L = min(ma20, ma50, ma100)
+
+                # Prior position check:
+                # In STRICT_SUPPORT mode, price was originally above U (Long) or below L (Short)
+                if self.pullback_mode == "STRICT_SUPPORT":
+                    if self.direction == "LONG" and close < U:
+                        return None
+                    if self.direction == "SHORT" and close > L:
+                        return None
+
                 self.current_zone = CongestionZone(
                     formation_bar=bar_time,
                     formation_idx=0,
@@ -193,11 +211,21 @@ class MACongestionStateMachine:
                     frozen_atr=atr14,
                     direction=self.direction,
                 )
-                self.state = PatternState.CONGESTION_FORMED
                 self.bars_since_formation = 0
+
+                if self.pullback_mode == "STRICT_SUPPORT":
+                    # Direct transition to AWAITING_PULLBACK (no mandatory +0.5*ATR breakout required)
+                    self.breakout_bar = bar_time
+                    self.breakout_price = close
+                    self.state = PatternState.AWAITING_PULLBACK
+                    self.bars_since_breakout = 0
+                else:
+                    self.state = PatternState.CONGESTION_FORMED
+
             return None
 
         elif self.state == PatternState.CONGESTION_FORMED:
+            # Only used in LOOSE_PENETRATION_RECLAIM or INTRABAND_PENETRATION modes
             self.bars_since_formation += 1
             z = self.current_zone
 
@@ -217,81 +245,206 @@ class MACongestionStateMachine:
             # Check Breakout Expiration (max 6 bars)
             if self.bars_since_formation >= self.breakout_max_bars:
                 self.reset()
-                # Check if current bar immediately initiates a new congestion
-                if self.consecutive_congestion_bars >= 3 and trend_valid:
-                    U = max(ma20, ma50, ma100)
-                    L = min(ma20, ma50, ma100)
-                    self.current_zone = CongestionZone(
-                        formation_bar=bar_time,
-                        formation_idx=0,
-                        U=U,
-                        L=L,
-                        frozen_atr=atr14,
-                        direction=self.direction,
-                    )
-                    self.state = PatternState.CONGESTION_FORMED
-                    self.bars_since_formation = 0
             return None
 
         elif self.state == PatternState.AWAITING_PULLBACK:
             self.bars_since_breakout += 1
             z = self.current_zone
 
-            # 1. Invalidation Check FIRST!
-            # Long: any breach of Low < L - 0.1 * ATR_frozen immediately voids pattern
-            # Short: any breach of High > U + 0.1 * ATR_frozen immediately voids pattern
-            if self.direction == "LONG":
-                is_invalidated = (low < z.L - 0.1 * z.frozen_atr)
-            else:
-                is_invalidated = (high > z.U + 0.1 * z.frozen_atr)
-
-            if is_invalidated:
-                self.reset()
-                return None
-
-            # 2. Check Confirmation condition
-            confirmed = False
-            if self.direction == "LONG":
-                # Low touches U + 0.1 * ATR, holds above L - 0.1 * ATR, and Close > U
-                touch_tolerance = (low <= z.U + 0.1 * z.frozen_atr)
-                holds_lower = (low >= z.L - 0.1 * z.frozen_atr)
-                reclaims_u = (close > z.U)
-                if touch_tolerance and holds_lower and reclaims_u:
-                    confirmed = True
-            else:
-                # Short: High touches L - 0.1 * ATR, holds below U + 0.1 * ATR, and Close < L
-                touch_tolerance = (high >= z.L - 0.1 * z.frozen_atr)
-                holds_upper = (high <= z.U + 0.1 * z.frozen_atr)
-                reclaims_l = (close < z.L)
-                if touch_tolerance and holds_upper and reclaims_l:
-                    confirmed = True
-
-            if confirmed:
-                # Calculate initial Stop Loss
+            # =========================================================
+            # VARIANT A: STRICT_SUPPORT (User's Primary Intended Rule)
+            # 严格回踩获得支撑：影线绝对不穿入均线群（Low >= U）
+            # =========================================================
+            if self.pullback_mode == "STRICT_SUPPORT":
                 if self.direction == "LONG":
-                    sl_init = z.L - 0.2 * z.frozen_atr
+                    # Invalidation: If Low < U, the wick has penetrated into the MA group! Pattern voided.
+                    if low < z.U:
+                        self.reset()
+                        return None
+
+                    # Confirmation:
+                    # 1. Low >= U (Wick did not penetrate into MA group)
+                    # 2. Low <= U + 0.1 * ATR (Wick came close enough to U)
+                    # 3. Close > U (Closed above U)
+                    is_touch = (low <= z.U + 0.1 * z.frozen_atr)
+                    reclaims = (close > z.U)
+                    if is_touch and reclaims:
+                        sig = TradeSignal(
+                            symbol=self.symbol,
+                            direction="LONG",
+                            pullback_mode=self.pullback_mode,
+                            signal_time=bar_time,
+                            confirm_price=close,
+                            initial_sl=z.L - 0.2 * z.frozen_atr,
+                            frozen_atr=z.frozen_atr,
+                            formation_time=z.formation_bar,
+                            breakout_time=self.breakout_bar,
+                            confirm_time=bar_time,
+                            U=z.U,
+                            L=z.L,
+                            breakout_price=self.breakout_price,
+                            pattern_duration_bars=self.bars_since_breakout,
+                            low_distance_to_u=round(low - z.U, 6),
+                            high_distance_to_l=0.0,
+                        )
+                        self.reset()
+                        return sig
+
                 else:
-                    sl_init = z.U + 0.2 * z.frozen_atr
+                    # Short Strict Mirror:
+                    # Invalidation: If High > L, wick penetrated into MA group! Voided.
+                    if high > z.L:
+                        self.reset()
+                        return None
 
-                sig = TradeSignal(
-                    symbol=self.symbol,
-                    direction=self.direction,
-                    signal_time=bar_time,
-                    confirm_price=close,
-                    initial_sl=sl_init,
-                    frozen_atr=z.frozen_atr,
-                    formation_time=z.formation_bar,
-                    breakout_time=self.breakout_bar,
-                    confirm_time=bar_time,
-                    U=z.U,
-                    L=z.L,
-                    breakout_price=self.breakout_price,
-                    pattern_duration_bars=self.bars_since_formation + self.bars_since_breakout,
-                )
-                self.reset()
-                return sig
+                    # Confirmation: High <= L and High >= L - 0.1 * ATR and Close < L
+                    is_touch = (high >= z.L - 0.1 * z.frozen_atr)
+                    reclaims = (close < z.L)
+                    if is_touch and reclaims:
+                        sig = TradeSignal(
+                            symbol=self.symbol,
+                            direction="SHORT",
+                            pullback_mode=self.pullback_mode,
+                            signal_time=bar_time,
+                            confirm_price=close,
+                            initial_sl=z.U + 0.2 * z.frozen_atr,
+                            frozen_atr=z.frozen_atr,
+                            formation_time=z.formation_bar,
+                            breakout_time=self.breakout_bar,
+                            confirm_time=bar_time,
+                            U=z.U,
+                            L=z.L,
+                            breakout_price=self.breakout_price,
+                            pattern_duration_bars=self.bars_since_breakout,
+                            low_distance_to_u=0.0,
+                            high_distance_to_l=round(z.L - high, 6),
+                        )
+                        self.reset()
+                        return sig
 
-            # 3. Check Pullback Expiration (max 8 bars)
+            # =========================================================
+            # VARIANT B: INTRABAND_PENETRATION (影线刺入但收盘不跌破)
+            # =========================================================
+            elif self.pullback_mode == "INTRABAND_PENETRATION":
+                if self.direction == "LONG":
+                    # Invalidation: breach below lower bound L
+                    if low < z.L - 0.1 * z.frozen_atr:
+                        self.reset()
+                        return None
+                    # Penetration into band: Low < U and Low >= z.L, but Close > U
+                    penetrated = (low < z.U and low >= z.L)
+                    reclaims = (close > z.U)
+                    if penetrated and reclaims:
+                        sig = TradeSignal(
+                            symbol=self.symbol,
+                            direction="LONG",
+                            pullback_mode=self.pullback_mode,
+                            signal_time=bar_time,
+                            confirm_price=close,
+                            initial_sl=z.L - 0.2 * z.frozen_atr,
+                            frozen_atr=z.frozen_atr,
+                            formation_time=z.formation_bar,
+                            breakout_time=self.breakout_bar,
+                            confirm_time=bar_time,
+                            U=z.U,
+                            L=z.L,
+                            breakout_price=self.breakout_price,
+                            pattern_duration_bars=self.bars_since_breakout,
+                            low_distance_to_u=round(low - z.U, 6),
+                            high_distance_to_l=0.0,
+                        )
+                        self.reset()
+                        return sig
+                else:
+                    if high > z.U + 0.1 * z.frozen_atr:
+                        self.reset()
+                        return None
+                    penetrated = (high > z.L and high <= z.U)
+                    reclaims = (close < z.L)
+                    if penetrated and reclaims:
+                        sig = TradeSignal(
+                            symbol=self.symbol,
+                            direction="SHORT",
+                            pullback_mode=self.pullback_mode,
+                            signal_time=bar_time,
+                            confirm_price=close,
+                            initial_sl=z.U + 0.2 * z.frozen_atr,
+                            frozen_atr=z.frozen_atr,
+                            formation_time=z.formation_bar,
+                            breakout_time=self.breakout_bar,
+                            confirm_time=bar_time,
+                            U=z.U,
+                            L=z.L,
+                            breakout_price=self.breakout_price,
+                            pattern_duration_bars=self.bars_since_breakout,
+                            low_distance_to_u=0.0,
+                            high_distance_to_l=round(z.L - high, 6),
+                        )
+                        self.reset()
+                        return sig
+
+            # =========================================================
+            # VARIANT C: LOOSE_PENETRATION_RECLAIM (旧版规则：穿入后收回)
+            # =========================================================
+            else:
+                if self.direction == "LONG":
+                    if low < z.L - 0.1 * z.frozen_atr:
+                        self.reset()
+                        return None
+                    touch_tolerance = (low <= z.U + 0.1 * z.frozen_atr)
+                    holds_lower = (low >= z.L - 0.1 * z.frozen_atr)
+                    reclaims_u = (close > z.U)
+                    if touch_tolerance and holds_lower and reclaims_u:
+                        sig = TradeSignal(
+                            symbol=self.symbol,
+                            direction="LONG",
+                            pullback_mode=self.pullback_mode,
+                            signal_time=bar_time,
+                            confirm_price=close,
+                            initial_sl=z.L - 0.2 * z.frozen_atr,
+                            frozen_atr=z.frozen_atr,
+                            formation_time=z.formation_bar,
+                            breakout_time=self.breakout_bar,
+                            confirm_time=bar_time,
+                            U=z.U,
+                            L=z.L,
+                            breakout_price=self.breakout_price,
+                            pattern_duration_bars=self.bars_since_formation + self.bars_since_breakout,
+                            low_distance_to_u=round(low - z.U, 6),
+                            high_distance_to_l=0.0,
+                        )
+                        self.reset()
+                        return sig
+                else:
+                    if high > z.U + 0.1 * z.frozen_atr:
+                        self.reset()
+                        return None
+                    touch_tolerance = (high >= z.L - 0.1 * z.frozen_atr)
+                    holds_upper = (high <= z.U + 0.1 * z.frozen_atr)
+                    reclaims_l = (close < z.L)
+                    if touch_tolerance and holds_upper and reclaims_l:
+                        sig = TradeSignal(
+                            symbol=self.symbol,
+                            direction="SHORT",
+                            pullback_mode=self.pullback_mode,
+                            signal_time=bar_time,
+                            confirm_price=close,
+                            initial_sl=z.U + 0.2 * z.frozen_atr,
+                            frozen_atr=z.frozen_atr,
+                            formation_time=z.formation_bar,
+                            breakout_time=self.breakout_bar,
+                            confirm_time=bar_time,
+                            U=z.U,
+                            L=z.L,
+                            breakout_price=self.breakout_price,
+                            pattern_duration_bars=self.bars_since_formation + self.bars_since_breakout,
+                            low_distance_to_u=0.0,
+                            high_distance_to_l=round(z.L - high, 6),
+                        )
+                        self.reset()
+                        return sig
+
+            # Expiration
             if self.bars_since_breakout >= self.pullback_max_bars:
                 self.reset()
                 return None

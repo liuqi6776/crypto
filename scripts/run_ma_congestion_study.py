@@ -4,24 +4,25 @@ Moving Average Congestion Breakout & Pullback Study Runner
 均线密集突破后回踩全景量化研究实验运行器
 ===========================================================
 Executes:
-1. Four Pre-Registered Versions:
+1. Head-to-Head Pullback Mechanism Ablation:
+   - Variant A: STRICT_SUPPORT (User's primary hypothesis: wick NEVER penetrates MA band, Low >= U)
+   - Variant B: INTRABAND_PENETRATION (Wick penetrates inside MA band, but holds L, Close > U)
+   - Variant C: LOOSE_PENETRATION_RECLAIM (Previous baseline: breakout > U+0.5*ATR, Low down to L-0.1*ATR)
+2. Four Pre-Registered Versions (under Strict Support):
    - V1: 15m EMA Long (Spot Core-4) [Primary Experiment]
    - V2: 15m SMA Long (Spot Core-4) [MA Baseline]
+   - V1_SHORT: 15m EMA Short (Perpetual Futures Core-4 with funding)
    - V3: 5m EMA Long (Spot Core-4) [High-Frequency EMA]
    - V4: 5m SMA Long (Spot Core-4) [High-Frequency SMA]
-   - V1_SHORT: 15m EMA Short (Perpetual Futures Core-4 with funding)
    - V3_SHORT: 5m EMA Short (Perpetual Futures Core-4 with funding)
-2. Controlled Ablations:
+3. Controlled Ablations:
    - Ablation 1: Simple Trend Baseline (No 3-MA congestion requirement)
    - Ablation 2: Breakout-Only Entry (No pullback confirmation wait)
    - Ablation 3: Fixed 2R Exit (vs. Dynamic ATR trailing stop)
-3. Cost Friction Stress Tests:
+4. Cost Friction Stress Tests:
    - 1x Base, 2x Stress, 4x Extreme Frictions.
-4. Comprehensive Artifacts:
-   - Trade-by-trade CSV ledgers
-   - Ablation comparison summary
-   - Annual & symbol breakdown tables
-   - Cost friction sensitivity matrix
+5. Invariant Mathematical Proof:
+   - For all strict support trades, min(low_distance_to_u) >= 0.0 is verified by assertion.
 """
 
 import os
@@ -107,7 +108,6 @@ def calculate_metrics(trades: List[IntradayTradeRecord], equity_curve: List[Dict
         daily_sharpe = 0.0
 
     avg_bars_held = float(np.mean([t.bars_held for t in trades]))
-    # Assuming 15m default (4 bars per hour) unless 5m
     hours_per_bar = 0.25
     avg_hours_held = avg_bars_held * hours_per_bar
 
@@ -136,6 +136,7 @@ def run_experiment(
     ma_type: str = "EMA",
     direction: str = "LONG",
     market_type: str = "spot",
+    pullback_mode: str = "STRICT_SUPPORT",
     exit_rule: str = "DYNAMIC_TRAILING",
     ablation_mode: str = "NORMAL",        # 'NORMAL', 'NO_CONGESTION', 'BREAKOUT_ONLY'
     cost_multiplier: float = 1.0,         # 1.0, 2.0, 4.0
@@ -146,7 +147,7 @@ def run_experiment(
     """
     Run an end-to-end backtest experiment for a specified configuration.
     """
-    print(f"\n--- Running Experiment: {exp_name} ({interval}, {ma_type}, {direction}, {market_type}, {ablation_mode}, Cost={cost_multiplier}x) ---")
+    print(f"\n--- Running: {exp_name} ({interval}, {ma_type}, {direction}, {market_type}, Pullback={pullback_mode}, Ablation={ablation_mode}, Cost={cost_multiplier}x) ---")
 
     # Load data for Core-4
     raw_dfs = {}
@@ -215,8 +216,9 @@ def run_experiment(
                 funding_df.index = funding_df.index.tz_convert("UTC")
 
     # State machines for each symbol
+    sm_mode = "LOOSE_PENETRATION_RECLAIM" if ablation_mode == "BREAKOUT_ONLY" else pullback_mode
     state_machines = {
-        sym: MACongestionStateMachine(symbol=sym, direction=direction)
+        sym: MACongestionStateMachine(symbol=sym, direction=direction, pullback_mode=sm_mode)
         for sym in ind_dfs.keys()
     }
 
@@ -284,6 +286,7 @@ def run_experiment(
                                 L=low_p,
                                 breakout_price=close_p,
                                 pattern_duration_bars=1,
+                                pullback_mode="NO_CONGESTION",
                             )
                             new_signals.append(sig)
                 else:
@@ -304,12 +307,12 @@ def run_experiment(
                                 L=ma20,
                                 breakout_price=close_p,
                                 pattern_duration_bars=1,
+                                pullback_mode="NO_CONGESTION",
                             )
                             new_signals.append(sig)
 
             elif ablation_mode == "BREAKOUT_ONLY":
                 # Ablation 2: Congestion zone breakout directly, no pullback confirmation
-                # Feed state machine up to breakout, then fire immediately
                 sm.feed_bar(bar_t, row_t)
                 if sm.state.value == "AWAITING_PULLBACK" and sm.bars_since_breakout == 0:
                     z = sm.current_zone
@@ -329,6 +332,7 @@ def run_experiment(
                             L=z.L,
                             breakout_price=sm.breakout_price,
                             pattern_duration_bars=sm.bars_since_formation,
+                            pullback_mode="BREAKOUT_ONLY",
                         )
                         new_signals.append(sig)
                         sm.reset()
@@ -339,6 +343,11 @@ def run_experiment(
     trades = simulator.closed_trades
     metrics = calculate_metrics(trades, simulator.equity_curve, initial_cash=initial_cash)
     metrics["experiment_name"] = exp_name
+    metrics["pullback_mode"] = pullback_mode
+    metrics["interval"] = interval
+    metrics["ma_type"] = ma_type
+    metrics["direction"] = direction
+    metrics["market_type"] = market_type
 
     # Export trade ledger
     if trades:
@@ -349,6 +358,7 @@ def run_experiment(
                 "symbol": t.symbol,
                 "direction": t.direction,
                 "market_type": t.market_type,
+                "pullback_mode": t.pullback_mode,
                 "formation_time": t.formation_time,
                 "U": round(t.U, 4),
                 "L": round(t.L, 4),
@@ -357,6 +367,8 @@ def run_experiment(
                 "breakout_price": round(t.breakout_price, 4),
                 "confirm_time": t.confirm_time,
                 "confirm_price": round(t.confirm_price, 4),
+                "low_distance_to_u": round(t.low_distance_to_u, 6),
+                "high_distance_to_l": round(t.high_distance_to_l, 6),
                 "entry_time": t.entry_time,
                 "entry_price": round(t.entry_price, 4),
                 "units": round(t.units, 6),
@@ -379,6 +391,17 @@ def run_experiment(
         csv_path = os.path.join(REPORTS_DIR, f"{exp_name}_trades.csv")
         df_trades.to_csv(csv_path, index=False)
         print(f"[EXPORT] Saved {len(df_trades)} trade records to {csv_path}")
+
+        # Mathematical Invariant Assertion Proof
+        if pullback_mode == "STRICT_SUPPORT" and ablation_mode == "NORMAL":
+            if direction == "LONG" and not df_trades.empty:
+                min_dist = float(df_trades["low_distance_to_u"].min())
+                print(f"[PROOF] Strict Long min(low_distance_to_u) = {min_dist:.6f} >= 0.0 (Zero penetration of U confirmed)")
+                assert min_dist >= -1e-6, f"Invariant violated: Strict support long has trade penetrating U! min={min_dist}"
+            elif direction == "SHORT" and not df_trades.empty:
+                min_dist = float(df_trades["high_distance_to_l"].min())
+                print(f"[PROOF] Strict Short min(high_distance_to_l) = {min_dist:.6f} >= 0.0 (Zero penetration of L confirmed)")
+                assert min_dist >= -1e-6, f"Invariant violated: Strict support short has trade penetrating L! min={min_dist}"
 
     print(f"[SUMMARY] Trades: {metrics['total_trades']}, WinRate: {metrics['win_rate_pct']}%, Avg R: {metrics['avg_net_r']}, Return: {metrics['total_net_return_pct']}%, MaxDD: {metrics['max_drawdown_pct']}%, Sharpe: {metrics['daily_sharpe']}")
     return metrics, trades
@@ -426,85 +449,194 @@ def main():
     parser = argparse.ArgumentParser(description="Run MA Congestion Breakout & Pullback Study Suite.")
     parser.add_argument("--start-date", type=str, default="2024-01-01")
     parser.add_argument("--end-date", type=str, default=None)
-    parser.add_argument("--run-5m", action="store_true", help="Include 5m experiments (requires 5m data)")
+    parser.add_argument("--run-5m", action="store_true", default=True, help="Include 5m experiments")
     args = parser.parse_args()
 
     all_metrics = []
 
     # =========================================================================
-    # 1. Four Pre-Registered Versions (15m Primary + Sensitivities)
+    # PART 1: The Core Question - Head-to-Head Pullback Mechanism Comparison
+    # (Identical 15m EMA Long Spot Core-4, identical fees, risk, and exit rules)
     # =========================================================================
-    # V1: 15m EMA Long (Primary Experiment)
-    m_v1, trades_v1 = run_experiment("v1_15m_ema_long", interval="15m", ma_type="EMA", direction="LONG", market_type="spot", start_date=args.start_date)
-    all_metrics.append(m_v1)
+    print("\n" + "="*80)
+    print("PART 1: HEAD-TO-HEAD PULLBACK MECHANISM ABLATION (15m EMA Long Spot Core-4)")
+    print("="*80)
+
+    # Variant A: Strict Support (User's Primary Intended Rule: Low >= U)
+    m_strict, trades_strict = run_experiment(
+        "v1_strict_support_15m_ema_long",
+        interval="15m", ma_type="EMA", direction="LONG", market_type="spot",
+        pullback_mode="STRICT_SUPPORT", start_date=args.start_date
+    )
+    all_metrics.append(m_strict)
+
+    # Variant B: Intraband Penetration (Wick penetrates MA band L <= Low < U, Close > U)
+    m_intraband, trades_intraband = run_experiment(
+        "v1_intraband_penetration_15m_ema_long",
+        interval="15m", ma_type="EMA", direction="LONG", market_type="spot",
+        pullback_mode="INTRABAND_PENETRATION", start_date=args.start_date
+    )
+    all_metrics.append(m_intraband)
+
+    # Variant C: Loose Penetration & Reclaim (Old Baseline: breakout > U+0.5*ATR, Low down to L-0.1*ATR)
+    m_loose, trades_loose = run_experiment(
+        "v1_loose_reclaim_15m_ema_long",
+        interval="15m", ma_type="EMA", direction="LONG", market_type="spot",
+        pullback_mode="LOOSE_PENETRATION_RECLAIM", start_date=args.start_date
+    )
+    all_metrics.append(m_loose)
+
+    # =========================================================================
+    # PART 2: Pre-Registered Versions (under Strict Support)
+    # =========================================================================
+    print("\n" + "="*80)
+    print("PART 2: PRE-REGISTERED SENSITIVITIES (Strict Support Rule)")
+    print("="*80)
 
     # V2: 15m SMA Long (MA Baseline)
-    m_v2, _ = run_experiment("v2_15m_sma_long", interval="15m", ma_type="SMA", direction="LONG", market_type="spot", start_date=args.start_date)
+    m_v2, _ = run_experiment(
+        "v2_strict_15m_sma_long",
+        interval="15m", ma_type="SMA", direction="LONG", market_type="spot",
+        pullback_mode="STRICT_SUPPORT", start_date=args.start_date
+    )
     all_metrics.append(m_v2)
 
-    # V1_SHORT: 15m EMA Short (Perpetual Futures)
-    m_v1_short, trades_v1_short = run_experiment("v1_15m_ema_short_perps", interval="15m", ma_type="EMA", direction="SHORT", market_type="futures", start_date=args.start_date)
+    # V1_SHORT: 15m EMA Short (Perpetual Futures with 8h funding rates)
+    m_v1_short, trades_v1_short = run_experiment(
+        "v1_strict_15m_ema_short_perps",
+        interval="15m", ma_type="EMA", direction="SHORT", market_type="futures",
+        pullback_mode="STRICT_SUPPORT", start_date=args.start_date
+    )
     all_metrics.append(m_v1_short)
 
     if args.run_5m:
         # V3: 5m EMA Long
-        m_v3, _ = run_experiment("v3_5m_ema_long", interval="5m", ma_type="EMA", direction="LONG", market_type="spot", start_date=args.start_date)
+        m_v3, _ = run_experiment(
+            "v3_strict_5m_ema_long",
+            interval="5m", ma_type="EMA", direction="LONG", market_type="spot",
+            pullback_mode="STRICT_SUPPORT", start_date=args.start_date
+        )
         all_metrics.append(m_v3)
+
         # V4: 5m SMA Long
-        m_v4, _ = run_experiment("v4_5m_sma_long", interval="5m", ma_type="SMA", direction="LONG", market_type="spot", start_date=args.start_date)
+        m_v4, _ = run_experiment(
+            "v4_strict_5m_sma_long",
+            interval="5m", ma_type="SMA", direction="LONG", market_type="spot",
+            pullback_mode="STRICT_SUPPORT", start_date=args.start_date
+        )
         all_metrics.append(m_v4)
-        # V3_SHORT: 5m EMA Short
-        m_v3_short, _ = run_experiment("v3_5m_ema_short_perps", interval="5m", ma_type="EMA", direction="SHORT", market_type="futures", start_date=args.start_date)
+
+        # V3_SHORT: 5m EMA Short (Perps)
+        m_v3_short, _ = run_experiment(
+            "v3_strict_5m_ema_short_perps",
+            interval="5m", ma_type="EMA", direction="SHORT", market_type="futures",
+            pullback_mode="STRICT_SUPPORT", start_date=args.start_date
+        )
         all_metrics.append(m_v3_short)
 
     # =========================================================================
-    # 2. Controlled Ablations (on 15m EMA Long)
+    # PART 3: Controlled Mechanism Ablations (on 15m EMA Long)
     # =========================================================================
-    # Ablation 1: Simple Trend Baseline (No Congestion)
-    m_abl_simple, _ = run_experiment("ablation_simple_trend_no_congestion", interval="15m", ma_type="EMA", direction="LONG", market_type="spot", ablation_mode="NO_CONGESTION", start_date=args.start_date)
+    print("\n" + "="*80)
+    print("PART 3: CONTROLLED MECHANISM ABLATIONS")
+    print("="*80)
+
+    # Ablation 1: Simple Trend Baseline (No 3-MA Congestion filter)
+    m_abl_simple, _ = run_experiment(
+        "ablation_simple_trend_no_congestion",
+        interval="15m", ma_type="EMA", direction="LONG", market_type="spot",
+        ablation_mode="NO_CONGESTION", start_date=args.start_date
+    )
     all_metrics.append(m_abl_simple)
 
     # Ablation 2: Breakout-Only (No Pullback confirmation wait)
-    m_abl_bo, _ = run_experiment("ablation_breakout_only_no_pullback", interval="15m", ma_type="EMA", direction="LONG", market_type="spot", ablation_mode="BREAKOUT_ONLY", start_date=args.start_date)
+    m_abl_bo, _ = run_experiment(
+        "ablation_breakout_only_no_pullback",
+        interval="15m", ma_type="EMA", direction="LONG", market_type="spot",
+        ablation_mode="BREAKOUT_ONLY", start_date=args.start_date
+    )
     all_metrics.append(m_abl_bo)
 
     # Ablation 3: Fixed 2R Take-Profit (vs Dynamic Trailing Stop)
-    m_abl_2r, _ = run_experiment("ablation_fixed_2r_exit", interval="15m", ma_type="EMA", direction="LONG", market_type="spot", exit_rule="FIXED_2R", start_date=args.start_date)
+    m_abl_2r, _ = run_experiment(
+        "ablation_fixed_2r_exit",
+        interval="15m", ma_type="EMA", direction="LONG", market_type="spot",
+        pullback_mode="STRICT_SUPPORT", exit_rule="FIXED_2R", start_date=args.start_date
+    )
     all_metrics.append(m_abl_2r)
 
     # =========================================================================
-    # 3. Cost Friction Stress Tests (1x, 2x, 4x on V1)
+    # PART 4: Cost Friction Stress Tests (1x, 2x, 4x on Strict Support Primary)
     # =========================================================================
-    m_cost_2x, _ = run_experiment("stress_cost_2x_friction", interval="15m", ma_type="EMA", direction="LONG", market_type="spot", cost_multiplier=2.0, start_date=args.start_date)
+    print("\n" + "="*80)
+    print("PART 4: COST FRICTION STRESS TESTS (Strict Support)")
+    print("="*80)
+
+    m_cost_2x, _ = run_experiment(
+        "stress_cost_2x_friction",
+        interval="15m", ma_type="EMA", direction="LONG", market_type="spot",
+        pullback_mode="STRICT_SUPPORT", cost_multiplier=2.0, start_date=args.start_date
+    )
     all_metrics.append(m_cost_2x)
 
-    m_cost_4x, _ = run_experiment("stress_cost_4x_friction", interval="15m", ma_type="EMA", direction="LONG", market_type="spot", cost_multiplier=4.0, start_date=args.start_date)
+    m_cost_4x, _ = run_experiment(
+        "stress_cost_4x_friction",
+        interval="15m", ma_type="EMA", direction="LONG", market_type="spot",
+        pullback_mode="STRICT_SUPPORT", cost_multiplier=4.0, start_date=args.start_date
+    )
     all_metrics.append(m_cost_4x)
 
     # =========================================================================
-    # 4. Export Comparison Tables & Markdown Reports
+    # PART 5: Export Comparison Tables & Markdown Reports
     # =========================================================================
     df_summary = pd.DataFrame(all_metrics)
     summary_csv = os.path.join(REPORTS_DIR, "all_experiments_summary.csv")
     df_summary.to_csv(summary_csv, index=False)
     print(f"\n[SUMMARY SAVED] {summary_csv}")
 
+    # Build Head-to-Head Table for 3 Pullback Variants
+    h2h_variants = ["v1_strict_support_15m_ema_long", "v1_intraband_penetration_15m_ema_long", "v1_loose_reclaim_15m_ema_long"]
+    df_h2h = df_summary[df_summary["experiment_name"].isin(h2h_variants)][[
+        "experiment_name", "pullback_mode", "total_trades", "win_rate_pct", "avg_net_r", "median_net_r",
+        "profit_factor", "total_net_return_pct", "max_drawdown_pct", "daily_sharpe", "total_fees_usdt", "total_slippage_usdt"
+    ]].copy()
+    h2h_csv = os.path.join(REPORTS_DIR, "pullback_modes_h2h_comparison.csv")
+    df_h2h.to_csv(h2h_csv, index=False)
+
     # Generate Markdown Summary
-    md_content = ["# MA Congestion Breakout & Pullback Strategy Research Summary\n"]
-    md_content.append("## 1. Pre-Registered Versions & Ablations Comparison Table\n")
+    md_content = ["# MA Congestion Breakout & Pullback Strategy Research Report\n"]
+    md_content.append("## 1. 核心对比：三种回踩确认机制直接对照 (Head-to-Head Pullback Mechanism Comparison)\n")
+    md_content.append("同一数据集 (Core-4 Spot 2024-2026)、同一 15m EMA 均线簇、同一手续费与滑点、同一 0.5% 风险头寸与跟踪止损规则：\n")
+    md_content.append(df_h2h.to_markdown(index=False))
+
+    md_content.append("\n\n## 2. 全套预先登记版本与消融实验全景表 (All Experiments & Ablations Summary)\n")
     md_content.append(df_summary.to_markdown(index=False))
 
-    # Annual & Symbol Breakdowns for V1
-    year_df, sym_df = generate_annual_and_asset_breakdown(trades_v1)
-    md_content.append("\n\n## 2. V1 (15m EMA Long) Annual Breakdown\n")
-    md_content.append(year_df.to_markdown(index=False))
-    md_content.append("\n\n## 3. V1 (15m EMA Long) Asset Breakdown\n")
-    md_content.append(sym_df.to_markdown(index=False))
+    # Annual & Symbol Breakdowns for Strict Support V1
+    year_df, sym_df = generate_annual_and_asset_breakdown(trades_strict)
+    md_content.append("\n\n## 3. 严格支撑版本 (Strict Support V1) 逐年表现 (Annual Breakdown)\n")
+    md_content.append(year_df.to_markdown(index=False) if not year_df.empty else "No trades")
+    md_content.append("\n\n## 4. 严格支撑版本 (Strict Support V1) 单币表现 (Asset Breakdown)\n")
+    md_content.append(sym_df.to_markdown(index=False) if not sym_df.empty else "No trades")
+
+    # Invariant Proof section
+    strict_trades_csv = os.path.join(REPORTS_DIR, "v1_strict_support_15m_ema_long_trades.csv")
+    if os.path.exists(strict_trades_csv):
+        df_st = pd.read_csv(strict_trades_csv)
+        if not df_st.empty and "low_distance_to_u" in df_st.columns:
+            min_dist = df_st["low_distance_to_u"].min()
+            p25_dist = df_st["low_distance_to_u"].quantile(0.25)
+            median_dist = df_st["low_distance_to_u"].median()
+            max_dist = df_st["low_distance_to_u"].max()
+            md_content.append("\n\n## 5. 严格不穿入不变量数学审计证明 (Mathematical Audit of Non-Penetration Invariant)\n")
+            md_content.append(f"- **总交易笔数 (Total Trades)**: {len(df_st)}")
+            md_content.append(f"- **最小低点距上沿距离 $\\min(\\text{{Low}} - U)$**: `{min_dist:.6f}` USDT ($\\ge 0.0$ 恒成立，证明 100% 交易影线绝无穿入均线密集区)")
+            md_content.append(f"- **25分位数**: `{p25_dist:.6f}` | **中位数**: `{median_dist:.6f}` | **最大值**: `{max_dist:.6f}`")
 
     report_md_path = os.path.join(REPORTS_DIR, "RESEARCH_SUMMARY.md")
     with open(report_md_path, "w", encoding="utf-8") as f:
         f.write("\n".join(md_content))
-    print(f"[REPORT SAVED] {report_md_path}")
+    print(f"\n[REPORT SAVED] {report_md_path}")
 
 
 if __name__ == "__main__":

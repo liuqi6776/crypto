@@ -64,6 +64,9 @@ class IntradayTradeRecord:
     net_r_multiple: float              # net_pnl_usdt / risk_1r_usdt
     equity_at_entry: float
     equity_at_exit: float
+    pullback_mode: str = "UNKNOWN"
+    low_distance_to_u: float = 0.0     # Low - U (for Long, >= 0 proves wick never penetrated U)
+    high_distance_to_l: float = 0.0    # L - High (for Short, >= 0 proves wick never penetrated L)
 
 
 @dataclass
@@ -344,6 +347,9 @@ class IntradayRiskLedgerSimulator:
                 net_r_multiple=net_r,
                 equity_at_entry=pos.equity_at_entry,
                 equity_at_exit=self.get_portfolio_equity(current_prices),
+                pullback_mode=pos.signal_meta.get("pullback_mode", "UNKNOWN"),
+                low_distance_to_u=pos.signal_meta.get("low_distance_to_u", 0.0),
+                high_distance_to_l=pos.signal_meta.get("high_distance_to_l", 0.0),
             )
             self.closed_trades.append(rec)
             exited_this_bar.append(rec)
@@ -436,6 +442,9 @@ class IntradayRiskLedgerSimulator:
                     "breakout_price": sig.breakout_price,
                     "confirm_time": sig.confirm_time,
                     "confirm_price": sig.confirm_price,
+                    "pullback_mode": sig.pullback_mode,
+                    "low_distance_to_u": sig.low_distance_to_u,
+                    "high_distance_to_l": sig.high_distance_to_l,
                 },
             )
 
