@@ -51,8 +51,8 @@ def compute_top1_decision(
     if symbols is None:
         symbols = list(closes_df.columns)
 
-    if len(closes_df) < 120:
-        raise ValueError(f"Insufficient bars for cross-sectional scoring: {len(closes_df)} < 120")
+    if len(closes_df) < 121:
+        raise ValueError(f"Insufficient bars for cross-sectional scoring: {len(closes_df)} < 121")
 
     # 1. Indicator Calculations
     ema200 = closes_df.ewm(span=200).mean()
@@ -72,10 +72,11 @@ def compute_top1_decision(
 
     if len(latest_score) < len(symbols):
         # Fallback if some symbols missing
-        top_cand = latest_score.idxmax() if len(latest_score) > 0 else 'BTCUSDT'
-    else:
-        top_cand = latest_score.idxmax()
+        for s in symbols:
+            if s not in latest_score.index:
+                latest_score[s] = -999.0
 
+    top_cand = latest_score.idxmax()
     top_score = float(latest_score[top_cand]) if top_cand in latest_score else 0.0
 
     # BTC Macro Gate
@@ -98,13 +99,13 @@ def compute_top1_decision(
             "rank": rank,
             "symbol": tok,
             "score": round(float(sc), 3),
-            "curr_price": round(c_p, 4),
-            "ema200": round(e_p, 4),
+            "curr_price": float(c_p),
+            "ema200": float(e_p),
             "bb_z": round(z_p, 2),
             "mom20_pct": round(m_p * 100.0, 2),
             "is_above_ema200": bool(c_p > e_p),
             "dist_to_ema_pct": dist_pct,
-            "atr_14": round(atr_v, 4),
+            "atr_14": float(atr_v),
         })
 
     # 2. Dual Gate & Hysteresis Decision Logic

@@ -90,8 +90,8 @@ def test_v1_strategy_turnover_friction(tmp_path):
 
     st, eval_res = strat.update_portfolio_step(klines, current_state=initial_state)
 
-    # 3.0x Leverage Turnover friction: 8.0 bps on 30,000 USDT = 24.0 USDT
-    expected_equity = 10000.0 - (10000.0 * 3.0 * 0.0008)
+    # 3.0x Leverage Turnover friction: 8.0 bps taker fee (24.0 USDT) + 5.0 bps execution slippage (15.0 USDT) on 30,000 USDT
+    expected_equity = 10000.0 - (10000.0 * 3.0 * (0.0008 + strat.execution_slippage))
     assert st.active_symbol != "USDT_CASH"
     assert "OFFENSIVE" in st.position_mode
     assert st.leverage == 3.0

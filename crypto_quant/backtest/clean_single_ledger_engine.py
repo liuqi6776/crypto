@@ -133,6 +133,7 @@ class SingleLedgerSimulator:
 
         # Totals
         equity_curve = []
+        bar_records = []
         trades: List[TradeRecord] = []
         liquidated = False
         liquidation_date = None
@@ -149,10 +150,22 @@ class SingleLedgerSimulator:
         # For 1x spot: 100% (zero liquidation)
         liq_drop_pct = (1.0 / self.leverage - self.mmr) if self.leverage > 1.0 else 1.0
 
+        target_pos = 'USDT_CASH'
         # 3. Main Event Loop
         for i, t in enumerate(common_idx):
             if liquidated:
                 equity_curve.append(0.0)
+                bar_records.append({
+                    'bar_time': t,
+                    'target_pos': target_pos,
+                    'curr_pos': curr_pos,
+                    'asset_units': asset_units,
+                    'entry_price': entry_price,
+                    'stop_price': stop_price,
+                    'cash': cash,
+                    'equity': 0.0,
+                    'bars_held': bars_held,
+                })
                 continue
 
             settle = is_settlement_bar.loc[t]
@@ -161,9 +174,20 @@ class SingleLedgerSimulator:
             # STEP 1: Determine Target Position (Signals from Bar T-1)
             # -------------------------------------------------------------
             # Extract historical closes up to bar T-1 (zero lookahead)
-            if i < 120:
+            if i < 121:
                 # Warmup period
                 equity_curve.append(cash)
+                bar_records.append({
+                    'bar_time': t,
+                    'target_pos': 'USDT_CASH',
+                    'curr_pos': curr_pos,
+                    'asset_units': asset_units,
+                    'entry_price': entry_price,
+                    'stop_price': stop_price,
+                    'cash': cash,
+                    'equity': cash,
+                    'bars_held': bars_held,
+                })
                 continue
 
             closes_window = closes.iloc[:i] # data strictly prior to bar T
@@ -312,6 +336,17 @@ class SingleLedgerSimulator:
                     asset_units = 0.0
                     curr_pos = 'USDT_CASH'
                     equity_curve.append(0.0)
+                    bar_records.append({
+                        'bar_time': t,
+                        'target_pos': target_pos,
+                        'curr_pos': 'USDT_CASH',
+                        'asset_units': 0.0,
+                        'entry_price': 0.0,
+                        'stop_price': 0.0,
+                        'cash': 0.0,
+                        'equity': 0.0,
+                        'bars_held': 0,
+                    })
                     continue
 
                 # B. Stop-Loss Trigger Check
@@ -363,6 +398,17 @@ class SingleLedgerSimulator:
                     stop_price = 0.0
                     bars_held = 0
                     equity_curve.append(cash)
+                    bar_records.append({
+                        'bar_time': t,
+                        'target_pos': target_pos,
+                        'curr_pos': 'USDT_CASH',
+                        'asset_units': 0.0,
+                        'entry_price': 0.0,
+                        'stop_price': 0.0,
+                        'cash': cash,
+                        'equity': cash,
+                        'bars_held': 0,
+                    })
                     continue
 
                 # C. Trailing Stop Ratchet (if survived stop check)
@@ -394,6 +440,17 @@ class SingleLedgerSimulator:
                         liquidated = True
                         liquidation_date = str(t)
                         equity_curve.append(0.0)
+                        bar_records.append({
+                            'bar_time': t,
+                            'target_pos': target_pos,
+                            'curr_pos': 'USDT_CASH',
+                            'asset_units': 0.0,
+                            'entry_price': 0.0,
+                            'stop_price': 0.0,
+                            'cash': 0.0,
+                            'equity': 0.0,
+                            'bars_held': 0,
+                        })
                         continue
 
             # -------------------------------------------------------------
@@ -411,6 +468,17 @@ class SingleLedgerSimulator:
                     current_equity = 0.0
 
             equity_curve.append(current_equity)
+            bar_records.append({
+                'bar_time': t,
+                'target_pos': target_pos,
+                'curr_pos': curr_pos,
+                'asset_units': asset_units,
+                'entry_price': entry_price,
+                'stop_price': stop_price,
+                'cash': cash,
+                'equity': current_equity,
+                'bars_held': bars_held,
+            })
 
         # 4. Final Ledger Reconciliation Accounting
         eq_s = pd.Series(equity_curve, index=common_idx)
@@ -488,4 +556,5 @@ class SingleLedgerSimulator:
             'is_perfectly_reconciled': is_perfectly_reconciled,
             'trades_list': trades,
             'equity_curve': eq_s,
+            'bar_records': bar_records,
         }

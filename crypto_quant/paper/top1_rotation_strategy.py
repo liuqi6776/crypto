@@ -147,14 +147,26 @@ class Top1RotationStrategy:
     def __init__(
         self,
         symbols: Optional[List[str]] = None,
+        leverage: float = 3.0,
+        sl_atr_mult: float = 1.5,
         hysteresis_pct: float = DEFAULT_HYSTERESIS_PCT,
+        delta_score_buffer: float = 0.0,
         one_way_fee_rate: float = ROTATION_FEE_RATE,
+        execution_slippage: float = 0.0005,
+        stop_slippage: float = 0.0015,
+        borrow_apr: float = 0.10,
         state_path: Path = V1_STATE_PATH,
         journal_path: Path = V1_JOURNAL_PATH,
     ):
         self.symbols = symbols or ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"]
+        self.leverage = leverage
+        self.sl_atr_mult = sl_atr_mult
         self.hysteresis_pct = hysteresis_pct
+        self.delta_score_buffer = delta_score_buffer
         self.one_way_fee_rate = one_way_fee_rate
+        self.execution_slippage = execution_slippage
+        self.stop_slippage = stop_slippage
+        self.borrow_apr = borrow_apr
         self.state_path = Path(state_path)
         self.journal_path = Path(journal_path)
         self.journal = PaperJournal(self.journal_path)
@@ -165,10 +177,11 @@ class Top1RotationStrategy:
         live_prices: Optional[Dict[str, float]] = None,
         current_symbol: str = "USDT_CASH",
         check_stale: bool = True,
+        use_live_for_signal: bool = False,
     ) -> Dict[str, Any]:
         """
         Evaluates leaderboard rankings, scores, and macro trend gates.
-        Integrates instant live ticker prices if provided for sub-minute responsiveness.
+        Integrates instant live ticker prices only if use_live_for_signal is True.
         Returns complete leaderboard metadata with full data source transparency.
         """
         closes_dict = {}
@@ -201,11 +214,11 @@ class Top1RotationStrategy:
                         is_stale = True
 
         closes = pd.DataFrame(closes_dict).dropna()
-        if len(closes) < 130:
-            raise ValueError(f"Insufficient bars for cross-sectional scoring: {len(closes)} < 130")
+        if len(closes) < 121:
+            raise ValueError(f"Insufficient bars for cross-sectional scoring: {len(closes)} < 121")
 
-        # Inject real-time live prices into the latest candle if provided
-        if live_prices:
+        # Inject real-time live prices into the latest candle only if explicitly requested
+        if use_live_for_signal and live_prices:
             latest_idx = closes.index[-1]
             for sym in self.symbols:
                 if sym in live_prices and sym in closes.columns:
@@ -222,20 +235,25 @@ class Top1RotationStrategy:
             current_symbol=current_symbol,
             symbols=self.symbols,
             hysteresis_pct=self.hysteresis_pct,
+            delta_score_buffer=self.delta_score_buffer,
         )
 
         top_1 = decision.ranks[0]
-        dual_gate_passed = decision.dual_gate_passed if not (check_stale and is_stale) else False
-        recommended_mode = f"3.0x {decision.target_symbol} 杠杆做多" if (dual_gate_passed and decision.target_symbol != "USDT_CASH") else "100% USDT 现金防御"
+        if check_stale and is_stale:
+            target_symbol = "USDT_CASH"
+        else:
+            target_symbol = decision.target_symbol
+
+        recommended_mode = f"3.0x {target_symbol} 杠杆做多" if (target_symbol != "USDT_CASH") else "100% USDT 现金防御"
 
         return {
             "top_symbol": decision.top_candidate,
-            "target_symbol": decision.target_symbol,
+            "target_symbol": target_symbol,
             "action": decision.action,
             "top_score": decision.top_score,
             "top_atr": top_1.get("atr_14", 0.0),
             "btc_macro_bull": decision.btc_macro_bull,
-            "dual_gate_passed": dual_gate_passed,
+            "dual_gate_passed": decision.dual_gate_passed,
             "recommended_mode": recommended_mode,
             "ranks": decision.ranks,
             "latest_bar_time": str(decision.latest_bar_time),
@@ -249,16 +267,23 @@ class Top1RotationStrategy:
         klines_dict: Dict[str, pd.DataFrame],
         current_state: Optional[V1Top1State] = None,
         live_prices: Optional[Dict[str, float]] = None,
+        fill_prices: Optional[Dict[str, float]] = None,
+        intrabar_lows: Optional[Dict[str, float]] = None,
+        intrabar_highs: Optional[Dict[str, float]] = None,
+        bar_closes: Optional[Dict[str, float]] = None,
+        is_settlement_bar: bool = False,
+        funding_rate: float = 0.0001,
+        borrow_apr: float = 0.10,
         check_stale: bool = True,
     ) -> Tuple[V1Top1State, Dict[str, Any]]:
         """
         Executes one full evaluation pass for the V1 Top-1 Portfolio:
         1. Evaluates cross-section and dual macro trend gates via shared compute_top1_decision.
         2. Applies hysteresis buffer to avoid EMA200 threshold churning.
-        3. Executes 3.0x nominal leverage allocation with 1.5x ATR compact adaptive stop.
+        3. Executes nominal leverage allocation with two-way execution slippage and 1.5x ATR compact adaptive stop.
         4. Dynamically ratchets trailing stop (breakeven at +5%, trailing at +10%).
-        5. Handles intrabar stop-loss trigger protection to 100% USDT Cash.
-        6. Marks to market with margin ROE and persists updated state atomically.
+        5. Handles intrabar stop-loss trigger protection to 100% USDT Cash with stop slippage.
+        6. Marks to market with margin ROE, applies funding settlement when due, and persists state atomically.
         """
         state = current_state or V1Top1State.load(self.state_path)
         eval_res = self.evaluate_cross_section(
@@ -268,13 +293,18 @@ class Top1RotationStrategy:
             check_stale=check_stale,
         )
 
-        target_symbol = eval_res["target_symbol"] if eval_res["dual_gate_passed"] else "USDT_CASH"
-        target_mode = "OFFENSIVE_3X_LONG" if target_symbol != "USDT_CASH" else "DEFENSIVE_USDT_CASH"
+        target_symbol = eval_res["target_symbol"]
+        target_mode = "OFFENSIVE_3X_LONG" if (target_symbol != "USDT_CASH" and self.leverage > 1.0) else ("OFFENSIVE_1X_SPOT" if target_symbol != "USDT_CASH" else "DEFENSIVE_USDT_CASH")
         latest_bar = eval_res["latest_bar_time"]
 
         top_cand = eval_res["top_symbol"]
         top_rank_item = [r for r in eval_res["ranks"] if r["symbol"] == (target_symbol if target_symbol != "USDT_CASH" else top_cand)][0]
         curr_price = top_rank_item["curr_price"]
+
+        fp = fill_prices or live_prices or {}
+        il = intrabar_lows or live_prices or {}
+        ih = intrabar_highs or live_prices or {}
+        bc = bar_closes or live_prices or {}
 
         action_taken = "HOLD"
         turnover_friction = 0.0
@@ -284,60 +314,69 @@ class Top1RotationStrategy:
             # Rotation occurred (e.g. USDT_CASH -> SOLUSDT, or SOLUSDT -> ETHUSDT, or SOLUSDT -> USDT_CASH)
             # 1. Close previous position if held
             if state.active_symbol != "USDT_CASH" and state.asset_units > 0:
-                if live_prices and state.active_symbol in live_prices:
-                    prev_price = float(live_prices[state.active_symbol])
-                elif state.active_symbol in klines_dict and not klines_dict[state.active_symbol].empty:
-                    prev_price = float(klines_dict[state.active_symbol]["close"].iloc[-1])
-                elif state.active_symbol == top_cand:
-                    prev_price = curr_price
-                else:
-                    prev_price = state.current_price if state.current_price > 0 else state.entry_price
+                raw_prev_price = fp.get(
+                    state.active_symbol,
+                    float(klines_dict[state.active_symbol]["close"].iloc[-1]) if (state.active_symbol in klines_dict and not klines_dict[state.active_symbol].empty) else (state.current_price if state.current_price > 0 else state.entry_price)
+                )
+
+                # Two-way execution slippage on sell market order
+                prev_price = raw_prev_price * (1.0 - self.execution_slippage)
                 gross_proceeds = state.asset_units * prev_price
                 sell_fee = gross_proceeds * self.one_way_fee_rate
                 cost_basis = state.asset_units * state.entry_price
                 nominal_pnl = gross_proceeds - cost_basis
-                net_cash = max(0.0, state.cash_usdt + nominal_pnl - sell_fee)
-                state.cash_usdt = net_cash
+                state.cash_usdt = max(0.0, state.cash_usdt + nominal_pnl - sell_fee)
                 state.asset_units = 0.0
                 turnover_friction += sell_fee
 
-            # 2. Open new 3.0x position if target is offensive token
-            if target_symbol != "USDT_CASH":
-                leverage = 3.0
+            # 2. Open new position if target is offensive token
+            if target_symbol != "USDT_CASH" and state.cash_usdt > 0:
+                leverage = self.leverage
                 state.leverage = leverage
                 nominal_target = state.cash_usdt * leverage
                 buy_fee = nominal_target * self.one_way_fee_rate
                 investable_nominal = max(0.0, nominal_target - buy_fee)
-                state.asset_units = investable_nominal / curr_price
+
+                raw_entry_p = fp.get(target_symbol, curr_price)
+                # Two-way execution slippage on buy market order
+                exec_entry_price = raw_entry_p * (1.0 + self.execution_slippage)
+                state.asset_units = investable_nominal / exec_entry_price
                 state.cash_usdt = max(0.0, state.cash_usdt - buy_fee)
-                state.entry_price = curr_price
+                state.entry_price = exec_entry_price
                 state.entry_time = latest_bar
-                state.highest_price_since_entry = curr_price
+                state.highest_price_since_entry = exec_entry_price
                 state.bars_held = 0
                 turnover_friction += buy_fee
-                action_taken = f"ROTATE_{state.active_symbol}_TO_{target_symbol}" if state.active_symbol != "USDT_CASH" else f"ENTER_3X_{target_symbol}"
+                action_taken = f"ROTATE_{state.active_symbol}_TO_{target_symbol}" if state.active_symbol != "USDT_CASH" else f"ENTER_{int(leverage)}X_{target_symbol}"
                 
                 # ATR & Liquidation calculation
-                top_atr = eval_res.get("top_atr", 0.0)
+                top_rank_item = [r for r in eval_res["ranks"] if r["symbol"] == target_symbol][0]
+                top_atr = top_rank_item.get("atr_14", 0.0)
                 if top_atr <= 0:
                     top_atr = calculate_atr(klines_dict.get(target_symbol), period=14)
-                state.atr_value = round(top_atr, 2)
+                state.atr_value = top_atr
                 
-                # Binance 3x MMR = 0.5% -> Liquidation = entry * (1 - (1/3 - 0.005)) = entry * 0.67167 (-32.83%)
-                state.liquidation_price = round(curr_price * (1.0 - (1.0 / leverage - 0.005)), 2)
-                state.distance_to_liq_pct = round(((curr_price - state.liquidation_price) / curr_price) * 100.0, 2)
-
-                # Compact Adaptive 1.5x ATR Stop Loss
-                if top_atr > 0:
-                    initial_stop = round(curr_price - (1.5 * top_atr), 2)
+                # Liquidation Price calculation (Binance MMR = 0.5%)
+                if leverage > 1.0:
+                    liq_drop_pct = (1.0 / leverage - 0.005)
+                    state.liquidation_price = exec_entry_price * (1.0 - liq_drop_pct)
+                    state.distance_to_liq_pct = ((exec_entry_price - state.liquidation_price) / exec_entry_price) * 100.0
                 else:
-                    initial_stop = round(curr_price * 0.965, 2)
-                gate_stop = round(top_rank_item["ema200"] * (1.0 - self.hysteresis_pct), 2)
+                    state.liquidation_price = 0.0
+                    state.distance_to_liq_pct = 100.0
+
+                # Compact Adaptive 1.5x ATR Stop Loss or EMA200 Gate Stop
+                if top_atr > 0:
+                    initial_stop = exec_entry_price - (self.sl_atr_mult * top_atr)
+                else:
+                    initial_stop = exec_entry_price * 0.95
+                ema200_cand = top_rank_item["ema200"]
+                gate_stop = ema200_cand * (1.0 - self.hysteresis_pct)
                 state.stop_loss_price = max(gate_stop, initial_stop)
 
                 # Take-profit zones (TP1 +10%, TP2 +20%)
-                state.take_profit_tp1 = round(curr_price * 1.10, 2)
-                state.take_profit_tp2 = round(curr_price * 1.20, 2)
+                state.take_profit_tp1 = exec_entry_price * 1.10
+                state.take_profit_tp2 = exec_entry_price * 1.20
             else:
                 action_taken = "EXIT_TO_CASH"
                 state.entry_price = 0.0
@@ -353,69 +392,104 @@ class Top1RotationStrategy:
             state.active_symbol = target_symbol
             state.position_mode = target_mode
             state.accumulated_fees_usdt += turnover_friction
-        else:
-            # Sustained position
-            if "OFFENSIVE" in state.position_mode:
-                # Check Intrabar Stop Loss Trigger (1.5x ATR or Trailing Stop)
-                if state.stop_loss_price > 0 and curr_price <= state.stop_loss_price:
-                    # Intrabar Stop Out! Immediately exit to 100% USDT Cash
-                    gross_proceeds = state.asset_units * curr_price
-                    sell_fee = gross_proceeds * self.one_way_fee_rate
-                    cost_basis = state.asset_units * state.entry_price
-                    nominal_pnl = gross_proceeds - cost_basis
-                    state.cash_usdt = max(0.0, state.cash_usdt + nominal_pnl - sell_fee)
-                    turnover_friction += sell_fee
-                    state.accumulated_fees_usdt += turnover_friction
-                    state.asset_units = 0.0
-                    state.active_symbol = "USDT_CASH"
-                    state.position_mode = "DEFENSIVE_USDT_CASH"
-                    action_taken = "STOP_LOSS_EXIT_TO_CASH"
-                    state.entry_price = 0.0
-                    state.entry_time = None
-                    state.highest_price_since_entry = 0.0
-                    state.stop_loss_price = 0.0
-                    state.take_profit_tp1 = 0.0
-                    state.take_profit_tp2 = 0.0
-                    state.liquidation_price = 0.0
-                    state.distance_to_liq_pct = 0.0
-                    state.bars_held = 0
-                else:
-                    state.bars_held += 1
-                    action_taken = "HOLD_3X_LONG"
-                    state.highest_price_since_entry = max(state.highest_price_since_entry, curr_price)
-                    
-                    # Trailing Stop Ratchet:
-                    # 1. Breakeven lock when gain >= +5%
-                    if state.highest_price_since_entry >= state.entry_price * 1.05:
-                        breakeven_stop = round(state.entry_price * 1.002, 2)
-                        state.stop_loss_price = max(state.stop_loss_price, breakeven_stop)
-                    # 2. Trailing stop 5% off peak when gain >= +10%
-                    if state.highest_price_since_entry >= state.entry_price * 1.10:
-                        trailing_lock = round(state.highest_price_since_entry * 0.95, 2)
-                        state.stop_loss_price = max(state.stop_loss_price, trailing_lock)
-                    
-                    # Update distance to liquidation
-                    if state.liquidation_price > 0:
-                        state.distance_to_liq_pct = round(((curr_price - state.liquidation_price) / curr_price) * 100.0, 2)
-            else:
-                action_taken = "HOLD_CASH"
+
+        # Intrabar monitoring for the active position during bar T
+        if state.active_symbol != "USDT_CASH" and state.asset_units > 0:
+            bar_o = fp.get(state.active_symbol, state.entry_price)
+            bar_l = il.get(state.active_symbol, curr_price)
+            bar_h = ih.get(state.active_symbol, curr_price)
+            bar_c = bc.get(state.active_symbol, curr_price)
+
+            state.bars_held += 1
+            state.highest_price_since_entry = max(state.highest_price_since_entry, bar_h)
+
+            liq_drop_pct = (1.0 / self.leverage - 0.005) if self.leverage > 1.0 else 1.0
+            liq_price = state.entry_price * (1.0 - liq_drop_pct)
+
+            # A. Liquidation check
+            if self.leverage > 1.0 and bar_l <= liq_price:
+                state.cash_usdt = 0.0
+                state.asset_units = 0.0
+                state.active_symbol = "USDT_CASH"
+                state.position_mode = "DEFENSIVE_USDT_CASH"
+                action_taken = "LIQUIDATION"
+                state.entry_price = 0.0
+                state.entry_time = None
+                state.highest_price_since_entry = 0.0
                 state.stop_loss_price = 0.0
                 state.take_profit_tp1 = 0.0
                 state.take_profit_tp2 = 0.0
-                state.highest_price_since_entry = 0.0
                 state.liquidation_price = 0.0
                 state.distance_to_liq_pct = 0.0
+                state.bars_held = 0
+            # B. Stop-Loss Trigger Check
+            elif state.stop_loss_price > 0 and bar_l <= state.stop_loss_price:
+                exec_exit_price = min(bar_o, state.stop_loss_price * (1.0 - self.stop_slippage))
+                gross_proceeds = state.asset_units * exec_exit_price
+                sell_fee = gross_proceeds * self.one_way_fee_rate
+                gross_pnl = state.asset_units * (exec_exit_price - state.entry_price)
+                state.cash_usdt = max(0.0, state.cash_usdt + gross_pnl - sell_fee)
+                turnover_friction += sell_fee
+                state.accumulated_fees_usdt += turnover_friction
+                state.asset_units = 0.0
+                state.active_symbol = "USDT_CASH"
+                state.position_mode = "DEFENSIVE_USDT_CASH"
+                action_taken = "STOP_LOSS_EXIT_TO_CASH"
+                state.entry_price = 0.0
+                state.entry_time = None
+                state.highest_price_since_entry = 0.0
+                state.stop_loss_price = 0.0
+                state.take_profit_tp1 = 0.0
+                state.take_profit_tp2 = 0.0
+                state.liquidation_price = 0.0
+                state.distance_to_liq_pct = 0.0
+                state.bars_held = 0
+            else:
+                if action_taken == "HOLD":
+                    action_taken = f"HOLD_{int(self.leverage)}X_LONG" if self.leverage > 1.0 else "HOLD_1X_SPOT"
+
+                # Trailing Stop Ratchet
+                # 1. Breakeven lock when gain >= +5%
+                if state.highest_price_since_entry >= state.entry_price * 1.05:
+                    be_stop = state.entry_price * 1.002
+                    state.stop_loss_price = max(state.stop_loss_price, be_stop)
+                # 2. Trailing stop 5% off peak when gain >= +10%
+                if state.highest_price_since_entry >= state.entry_price * 1.10:
+                    trailing_lock = state.highest_price_since_entry * 0.95
+                    state.stop_loss_price = max(state.stop_loss_price, trailing_lock)
+
+                # Distance to liquidation
+                if state.liquidation_price > 0 and bar_c > 0:
+                    state.distance_to_liq_pct = ((bar_c - state.liquidation_price) / bar_c) * 100.0
+
+                # Funding & Borrow Interest
+                if is_settlement_bar and self.leverage > 1.0 and state.bars_held >= 1:
+                    nominal_notional = state.asset_units * bar_c
+                    borrow_fee = nominal_notional * ((self.leverage - 1.0) / self.leverage) * (borrow_apr / (365.25 * 3))
+                    fund_cost = nominal_notional * funding_rate
+                    state.cash_usdt = max(0.0, state.cash_usdt - fund_cost - borrow_fee)
+        else:
+            if action_taken == "HOLD":
+                action_taken = "HOLD_CASH"
+            state.stop_loss_price = 0.0
+            state.take_profit_tp1 = 0.0
+            state.take_profit_tp2 = 0.0
+            state.highest_price_since_entry = 0.0
+            state.liquidation_price = 0.0
+            state.distance_to_liq_pct = 0.0
 
         # Mark to Market
-        state.current_price = curr_price if state.active_symbol != "USDT_CASH" else 1.0
         if state.active_symbol != "USDT_CASH" and state.asset_units > 0:
-            state.nominal_usdt = state.asset_units * curr_price
+            bar_c = bc.get(state.active_symbol, curr_price)
+            state.current_price = bar_c
+            state.nominal_usdt = state.asset_units * bar_c
             cost_basis = state.asset_units * state.entry_price
             state.unrealized_pnl_usdt = state.nominal_usdt - cost_basis
             margin_capital = (cost_basis / state.leverage) if state.leverage > 0 else state.total_equity_usdt
-            state.unrealized_pnl_pct = (state.unrealized_pnl_usdt / margin_capital) * 100.0
+            state.unrealized_pnl_pct = (state.unrealized_pnl_usdt / margin_capital) * 100.0 if margin_capital > 0 else 0.0
             state.total_equity_usdt = max(0.0, state.cash_usdt + state.unrealized_pnl_usdt)
         else:
+            state.current_price = 1.0
             state.nominal_usdt = 0.0
             state.unrealized_pnl_usdt = 0.0
             state.unrealized_pnl_pct = 0.0
