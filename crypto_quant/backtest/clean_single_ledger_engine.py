@@ -1,25 +1,32 @@
 # -*- coding: utf-8 -*-
 """
-Clean Single-Ledger Backtesting Engine
-=====================================
+Audited Clean Single-Ledger Backtesting Engine
+=============================================
 Strict institutional-grade simulator enforcing:
-1. Single Cash/Position Ledger: No duplicate PnL accumulation.
-   - Cash tracks realized collateral and fees.
+1. Exact Single Cash/Position Ledger:
+   - Cash tracks liquid collateral, realized trade PnLs, entry/exit fees, funding, and borrow interest.
    - Equity = Cash + Units * (Close - Entry).
-   - Realized PnL is recognized strictly upon trade exit.
-2. Chronological Causality:
-   - Bar T-1 Close forms signal.
-   - Bar T Open fills rebalance execution (with taker fees).
-   - Bar T Intrabar checks liquidation (-32.83% for 3x) and stop-loss (with slippage).
-   - Bar T Close marks equity to market and applies 8h funding/borrow costs.
-3. Full Transparency:
-   - Exports trade-by-trade audit logs (CSV).
+   - Mathematical Identity:
+     Final Equity == Initial Cash + Sum(Gross Realized PnL) - Sum(Entry Fees) - Sum(Exit Fees)
+                    - Sum(Funding Costs) - Sum(Borrow Costs) + Open Position Unrealized PnL - Open Position Entry Fee.
+2. Two-Way Execution Slippage:
+   - Normal Open entries: Open * (1 + execution_slippage)
+   - Normal Signal exits: Open * (1 - execution_slippage)
+   - Stop-Loss exits: min(Open, Stop * (1 - stop_slippage))
+3. Chronological Event Sequence:
+   - Bar T-1 Close forms signal via shared `compute_top1_decision()`.
+   - Bar T Open fills rebalance execution (with taker fees & execution slippage).
+   - Bar T Intrabar checks liquidation (-32.83% for 3x) and stop-loss.
+   - Bar T Close marks equity to market and applies 8h funding/borrow costs (for positions held across the settlement window).
+4. Exports verifiable trade-by-trade audit logs.
 """
 
 from dataclasses import dataclass, field
 from typing import Dict, Any, List, Optional, Tuple
 import numpy as np
 import pandas as pd
+
+from crypto_quant.core.top1_decision_engine import compute_top1_decision
 
 
 @dataclass
@@ -31,10 +38,15 @@ class TradeRecord:
     exit_price: float
     units: float
     leverage: float
+    gross_pnl_usdt: float
+    entry_fee_usdt: float
+    exit_fee_usdt: float
+    slippage_cost_usdt: float
+    funding_cost_usdt: float
+    borrow_cost_usdt: float
+    net_pnl_usdt: float          # gross_pnl - entry_fee - exit_fee - funding - borrow
     gross_ret_pct: float
-    net_pnl_usdt: float
-    fees_paid_usdt: float
-    exit_reason: str  # 'SIGNAL_EXIT', 'STOP_LOSS', 'LIQUIDATION'
+    exit_reason: str            # 'SIGNAL_EXIT', 'STOP_LOSS', 'LIQUIDATION'
     bars_held: int
 
 
@@ -44,22 +56,25 @@ class SingleLedgerSimulator:
         symbols: List[str],
         raw_dfs: Dict[str, pd.DataFrame],
         df_funding: Optional[pd.DataFrame] = None,
-        leverage: float = 3.0,
-        fee_rate: float = 0.0008,        # 8 bps taker fee
-        slippage: float = 0.0015,        # 15 bps slippage on stop-out
-        sl_atr_mult: float = 1.5,        # 1.5x ATR stop loss
-        hysteresis_pct: float = 0.005,   # 0.5% hysteresis buffer
-        delta_score_buffer: float = 0.0, # Challenger must beat current asset by this buffer
+        leverage: float = 1.0,
+        fee_rate: float = 0.0008,               # 8 bps taker fee
+        execution_slippage: float = 0.0005,     # 5 bps slippage on normal market orders
+        stop_slippage: float = 0.0015,          # 15 bps slippage on stop-out
+        sl_atr_mult: float = 1.5,               # 1.5x ATR stop loss
+        hysteresis_pct: float = 0.005,          # 0.5% hysteresis buffer
+        delta_score_buffer: float = 0.0,        # Challenger score buffer
         initial_cash: float = 10000.0,
-        mmr: float = 0.005,              # 0.5% maintenance margin rate
-        borrow_apr: float = 0.10,        # 10% APR borrow interest
+        mmr: float = 0.005,                     # 0.5% maintenance margin rate
+        borrow_apr: float = 0.10,               # 10% APR borrow interest
+        slippage: Optional[float] = None,       # Backward-compatible alias for stop_slippage
     ):
         self.symbols = symbols
         self.raw_dfs = raw_dfs
         self.df_funding = df_funding
         self.leverage = leverage
         self.fee_rate = fee_rate
-        self.slippage = slippage
+        self.execution_slippage = execution_slippage
+        self.stop_slippage = slippage if slippage is not None else stop_slippage
         self.sl_atr_mult = sl_atr_mult
         self.hysteresis_pct = hysteresis_pct
         self.delta_score_buffer = delta_score_buffer
@@ -84,20 +99,6 @@ class SingleLedgerSimulator:
         highs = pd.DataFrame({s: self.raw_dfs[s].loc[common_idx, 'high'] for s in self.symbols})
         lows = pd.DataFrame({s: self.raw_dfs[s].loc[common_idx, 'low'] for s in self.symbols})
 
-        # 2. Causal indicators: computed strictly using data up to bar T-1 (close.shift(1))
-        closes_prior = closes.shift(1)
-        ema200 = closes_prior.ewm(span=200).mean()
-        bb_mid = closes_prior.rolling(120).mean()
-        bb_std = closes_prior.rolling(120).std()
-        bb_z = (closes_prior - bb_mid) / (bb_std + 1e-8)
-        mom20 = (closes_prior / closes_prior.shift(120)) - 1.0
-        score = bb_z + mom20
-
-        # BTC Macro Gate
-        btc_prior = self.raw_dfs['BTCUSDT'].loc[common_idx, 'close'].shift(1)
-        btc_ema = btc_prior.ewm(span=200).mean()
-        btc_bull = btc_prior > btc_ema
-
         # 14-period ATR calculated up to bar T-1
         atrs_dict = {}
         for s in self.symbols:
@@ -105,7 +106,7 @@ class SingleLedgerSimulator:
             tr2 = (highs[s] - closes[s].shift(1)).abs()
             tr3 = (lows[s] - closes[s].shift(1)).abs()
             tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
-            atr_s = tr.rolling(14).mean().shift(1) # shift(1) ensures ATR known prior to bar T
+            atr_s = tr.rolling(14).mean().shift(1)
             atrs_dict[s] = atr_s
         df_atrs_prior = pd.DataFrame(atrs_dict)
 
@@ -117,32 +118,38 @@ class SingleLedgerSimulator:
 
         is_settlement_bar = pd.Series(common_idx.hour.isin([0, 8, 16]), index=common_idx)
 
-        # 3. State Ledger Variables
+        # 2. State Ledger Variables
         cash = float(self.initial_cash)
         asset_units = 0.0
         curr_pos = 'USDT_CASH'
         entry_price = 0.0
         entry_time = None
+        entry_fee_current = 0.0
+        trade_funding_accum = 0.0
+        trade_borrow_accum = 0.0
         highest_price = 0.0
         stop_price = 0.0
         bars_held = 0
 
-        # Performance tracking
+        # Totals
         equity_curve = []
         trades: List[TradeRecord] = []
         liquidated = False
         liquidation_date = None
-        total_fees = 0.0
+        total_entry_fees = 0.0
+        total_exit_fees = 0.0
         total_slippage_cost = 0.0
         total_funding_cost = 0.0
+        total_borrow_cost = 0.0
         stop_count = 0
         min_distance_to_liq = 1.0
 
         # Liquidation drop threshold
         # For 3x leverage with 0.5% MMR: 1/3 - 0.005 = 32.833%
+        # For 1x spot: 100% (zero liquidation)
         liq_drop_pct = (1.0 / self.leverage - self.mmr) if self.leverage > 1.0 else 1.0
 
-        # 4. Main Event Loop
+        # 3. Main Event Loop
         for i, t in enumerate(common_idx):
             if liquidated:
                 equity_curve.append(0.0)
@@ -153,48 +160,24 @@ class SingleLedgerSimulator:
             # -------------------------------------------------------------
             # STEP 1: Determine Target Position (Signals from Bar T-1)
             # -------------------------------------------------------------
-            s_row = score.loc[t].dropna()
-            top_cand = s_row.idxmax() if len(s_row) >= len(self.symbols) else 'BTCUSDT'
-            btc_is_bull = bool(btc_bull.loc[t])
+            # Extract historical closes up to bar T-1 (zero lookahead)
+            if i < 120:
+                # Warmup period
+                equity_curve.append(cash)
+                continue
 
-            target_pos = curr_pos
+            closes_window = closes.iloc[:i] # data strictly prior to bar T
+            atr_current_dict = {s: float(df_atrs_prior.loc[t, s]) for s in self.symbols if not np.isnan(df_atrs_prior.loc[t, s])}
 
-            if curr_pos == 'USDT_CASH':
-                cand_close = closes_prior.loc[t, top_cand]
-                cand_ema = ema200.loc[t, top_cand]
-                cand_dist = (cand_close - cand_ema) / cand_ema
-                # Enter if both BTC and candidate clear EMA200 by +hysteresis
-                if btc_is_bull and (cand_dist >= self.hysteresis_pct):
-                    target_pos = top_cand
-                else:
-                    target_pos = 'USDT_CASH'
-            else:
-                # Currently holding a token
-                curr_close = closes_prior.loc[t, curr_pos]
-                curr_ema = ema200.loc[t, curr_pos]
-                curr_dist = (curr_close - curr_ema) / curr_ema
-                curr_still_valid = btc_is_bull and (curr_dist >= -self.hysteresis_pct)
-
-                if not curr_still_valid:
-                    # Current asset failed trend gate: check if top candidate is valid
-                    cand_close = closes_prior.loc[t, top_cand]
-                    cand_ema = ema200.loc[t, top_cand]
-                    cand_dist = (cand_close - cand_ema) / cand_ema
-                    if btc_is_bull and (cand_dist >= self.hysteresis_pct):
-                        target_pos = top_cand
-                    else:
-                        target_pos = 'USDT_CASH'
-                else:
-                    # Current asset is still valid: check if challenger beats it by delta_score_buffer
-                    if top_cand != curr_pos:
-                        challenger_score = float(s_row[top_cand])
-                        current_score = float(s_row[curr_pos])
-                        if challenger_score >= (current_score + self.delta_score_buffer):
-                            cand_close = closes_prior.loc[t, top_cand]
-                            cand_ema = ema200.loc[t, top_cand]
-                            cand_dist = (cand_close - cand_ema) / cand_ema
-                            if cand_dist >= self.hysteresis_pct:
-                                target_pos = top_cand
+            decision = compute_top1_decision(
+                closes_df=closes_window,
+                atrs_dict=atr_current_dict,
+                current_symbol=curr_pos,
+                symbols=self.symbols,
+                hysteresis_pct=self.hysteresis_pct,
+                delta_score_buffer=self.delta_score_buffer,
+            )
+            target_pos = decision.target_symbol
 
             # -------------------------------------------------------------
             # STEP 2: Execution at Bar T Open (O_t)
@@ -202,13 +185,23 @@ class SingleLedgerSimulator:
             if target_pos != curr_pos:
                 # A. Close previous position if held
                 if curr_pos != 'USDT_CASH' and asset_units > 0:
-                    exit_p = opens.loc[t, curr_pos]
+                    raw_exit_p = opens.loc[t, curr_pos]
+                    # Two-way execution slippage on sell market order
+                    exit_p = raw_exit_p * (1.0 - self.execution_slippage)
+                    slip_cost = asset_units * (raw_exit_p - exit_p)
+                    total_slippage_cost += slip_cost
+
                     gross_proceeds = asset_units * exit_p
                     exit_fee = gross_proceeds * self.fee_rate
-                    total_fees += exit_fee
-                    realized_pnl = asset_units * (exit_p - entry_price)
-                    net_trade_pnl = realized_pnl - exit_fee
-                    cash = max(0.0, cash + net_trade_pnl)
+                    total_exit_fees += exit_fee
+
+                    gross_pnl = asset_units * (exit_p - entry_price)
+                    net_trade_pnl = gross_pnl - entry_fee_current - exit_fee - trade_funding_accum - trade_borrow_accum
+
+                    # Cash is updated by gross proceeds minus exit fee, and release collateral
+                    # Note: entry fee, trade funding, and trade borrow were ALREADY debited from cash when incurred!
+                    # So cash inflow upon closing is: cash + gross_pnl - exit_fee
+                    cash = max(0.0, cash + gross_pnl - exit_fee)
 
                     gross_ret = (exit_p - entry_price) / entry_price * self.leverage
                     trades.append(TradeRecord(
@@ -219,9 +212,14 @@ class SingleLedgerSimulator:
                         exit_price=exit_p,
                         units=asset_units,
                         leverage=self.leverage,
-                        gross_ret_pct=gross_ret * 100.0,
+                        gross_pnl_usdt=gross_pnl,
+                        entry_fee_usdt=entry_fee_current,
+                        exit_fee_usdt=exit_fee,
+                        slippage_cost_usdt=slip_cost,
+                        funding_cost_usdt=trade_funding_accum,
+                        borrow_cost_usdt=trade_borrow_accum,
                         net_pnl_usdt=net_trade_pnl,
-                        fees_paid_usdt=exit_fee,
+                        gross_ret_pct=gross_ret * 100.0,
                         exit_reason='SIGNAL_EXIT',
                         bars_held=bars_held,
                     ))
@@ -230,6 +228,9 @@ class SingleLedgerSimulator:
                     curr_pos = 'USDT_CASH'
                     entry_price = 0.0
                     entry_time = None
+                    entry_fee_current = 0.0
+                    trade_funding_accum = 0.0
+                    trade_borrow_accum = 0.0
                     highest_price = 0.0
                     stop_price = 0.0
                     bars_held = 0
@@ -237,23 +238,33 @@ class SingleLedgerSimulator:
                 # B. Open new position if target is token and cash > 0
                 if target_pos != 'USDT_CASH' and cash > 0:
                     curr_pos = target_pos
-                    entry_price = opens.loc[t, target_pos]
+                    raw_entry_p = opens.loc[t, target_pos]
+                    # Two-way execution slippage on buy market order
+                    entry_price = raw_entry_p * (1.0 + self.execution_slippage)
+                    slip_cost = (entry_price - raw_entry_p)
                     entry_time = t
                     highest_price = entry_price
                     bars_held = 0
+                    trade_funding_accum = 0.0
+                    trade_borrow_accum = 0.0
 
                     nominal_target = cash * self.leverage
                     entry_fee = nominal_target * self.fee_rate
-                    total_fees += entry_fee
+                    total_entry_fees += entry_fee
+                    entry_fee_current = entry_fee
                     investable_nominal = max(0.0, nominal_target - entry_fee)
                     asset_units = investable_nominal / entry_price
+                    total_slippage_cost += (asset_units * slip_cost)
+
                     # Deduct entry fee from cash
                     cash = max(0.0, cash - entry_fee)
 
                     # Initial Stop Loss: 1.5x ATR below entry or EMA200 gate line
                     atr_val = df_atrs_prior.loc[t, target_pos]
                     initial_stop = entry_price - (atr_val * self.sl_atr_mult) if (not np.isnan(atr_val) and atr_val > 0) else entry_price * 0.95
-                    gate_stop = ema200.loc[t, target_pos] * (1.0 - self.hysteresis_pct)
+                    # EMA200 gate line
+                    ema200_cand = float(closes_window[target_pos].ewm(span=200).mean().iloc[-1])
+                    gate_stop = ema200_cand * (1.0 - self.hysteresis_pct)
                     stop_price = max(gate_stop, initial_stop)
 
             # -------------------------------------------------------------
@@ -276,6 +287,8 @@ class SingleLedgerSimulator:
                 if self.leverage > 1.0 and bar_l <= liq_price:
                     liquidated = True
                     liquidation_date = str(t)
+                    gross_pnl = asset_units * (liq_price - entry_price)
+                    net_trade_pnl = -cash # account wiped out
                     trades.append(TradeRecord(
                         entry_time=entry_time,
                         exit_time=t,
@@ -284,9 +297,14 @@ class SingleLedgerSimulator:
                         exit_price=liq_price,
                         units=asset_units,
                         leverage=self.leverage,
+                        gross_pnl_usdt=gross_pnl,
+                        entry_fee_usdt=entry_fee_current,
+                        exit_fee_usdt=0.0,
+                        slippage_cost_usdt=0.0,
+                        funding_cost_usdt=trade_funding_accum,
+                        borrow_cost_usdt=trade_borrow_accum,
+                        net_pnl_usdt=net_trade_pnl,
                         gross_ret_pct=-100.0,
-                        net_pnl_usdt=-cash,
-                        fees_paid_usdt=0.0,
                         exit_reason='LIQUIDATION',
                         bars_held=bars_held,
                     ))
@@ -300,16 +318,18 @@ class SingleLedgerSimulator:
                 if stop_price > 0 and bar_l <= stop_price:
                     stop_count += 1
                     # Execution at stop price minus slippage (bounded by open)
-                    exec_exit = min(bar_o, stop_price * (1.0 - self.slippage))
+                    exec_exit = min(bar_o, stop_price * (1.0 - self.stop_slippage))
                     slip_cost = asset_units * (stop_price - exec_exit)
                     total_slippage_cost += max(0.0, slip_cost)
 
                     gross_proceeds = asset_units * exec_exit
                     exit_fee = gross_proceeds * self.fee_rate
-                    total_fees += exit_fee
-                    realized_pnl = asset_units * (exec_exit - entry_price)
-                    net_trade_pnl = realized_pnl - exit_fee
-                    cash = max(0.0, cash + net_trade_pnl)
+                    total_exit_fees += exit_fee
+
+                    gross_pnl = asset_units * (exec_exit - entry_price)
+                    net_trade_pnl = gross_pnl - entry_fee_current - exit_fee - trade_funding_accum - trade_borrow_accum
+
+                    cash = max(0.0, cash + gross_pnl - exit_fee)
 
                     gross_ret = (exec_exit - entry_price) / entry_price * self.leverage
                     trades.append(TradeRecord(
@@ -320,9 +340,14 @@ class SingleLedgerSimulator:
                         exit_price=exec_exit,
                         units=asset_units,
                         leverage=self.leverage,
-                        gross_ret_pct=gross_ret * 100.0,
+                        gross_pnl_usdt=gross_pnl,
+                        entry_fee_usdt=entry_fee_current,
+                        exit_fee_usdt=exit_fee,
+                        slippage_cost_usdt=slip_cost,
+                        funding_cost_usdt=trade_funding_accum,
+                        borrow_cost_usdt=trade_borrow_accum,
                         net_pnl_usdt=net_trade_pnl,
-                        fees_paid_usdt=exit_fee,
+                        gross_ret_pct=gross_ret * 100.0,
                         exit_reason='STOP_LOSS',
                         bars_held=bars_held,
                     ))
@@ -331,6 +356,9 @@ class SingleLedgerSimulator:
                     curr_pos = 'USDT_CASH'
                     entry_price = 0.0
                     entry_time = None
+                    entry_fee_current = 0.0
+                    trade_funding_accum = 0.0
+                    trade_borrow_accum = 0.0
                     highest_price = 0.0
                     stop_price = 0.0
                     bars_held = 0
@@ -348,14 +376,20 @@ class SingleLedgerSimulator:
                     stop_price = max(stop_price, trail_stop)
 
                 # D. Funding & Borrow Interest
-                if settle and self.leverage > 1.0:
+                # Accurate Settlement: Charged if position was held into the settlement bar (bars_held >= 1)
+                if settle and self.leverage > 1.0 and bars_held >= 1:
                     nominal_notional = asset_units * bar_c
                     fr = funding_aligned.loc[t, curr_pos] if curr_pos in funding_aligned else 0.0001
                     # Borrow fee: 10% APR on (L-1)/L notional per 8h
                     borrow_fee = nominal_notional * ((self.leverage - 1.0) / self.leverage) * (self.borrow_apr / (365.25 * 3))
-                    fund_cost = (nominal_notional * fr) + borrow_fee
-                    cash = max(0.0, cash - fund_cost)
+                    fund_cost = (nominal_notional * fr)
+                    
+                    cash = max(0.0, cash - fund_cost - borrow_fee)
                     total_funding_cost += fund_cost
+                    total_borrow_cost += borrow_fee
+                    trade_funding_accum += fund_cost
+                    trade_borrow_accum += borrow_fee
+
                     if cash <= 0.0:
                         liquidated = True
                         liquidation_date = str(t)
@@ -378,7 +412,7 @@ class SingleLedgerSimulator:
 
             equity_curve.append(current_equity)
 
-        # 5. Compute Accurate Strategy Metrics
+        # 4. Final Ledger Reconciliation Accounting
         eq_s = pd.Series(equity_curve, index=common_idx)
         final_equity = float(eq_s.iloc[-1])
         total_ret_pct = ((final_equity - self.initial_cash) / self.initial_cash) * 100.0
@@ -399,8 +433,39 @@ class SingleLedgerSimulator:
         win_trades = [tr for tr in trades if tr.net_pnl_usdt > 0]
         win_rate = (len(win_trades) / len(trades) * 100.0) if trades else 0.0
 
+        # Open Position at Simulation End
+        open_unrealized_pnl = 0.0
+        if curr_pos != 'USDT_CASH' and asset_units > 0 and not liquidated:
+            final_c = closes.loc[common_idx[-1], curr_pos]
+            open_unrealized_pnl = asset_units * (final_c - entry_price)
+
+        # Mathematical Identity Audit:
+        # Final Equity == Initial Cash + Sum(Gross Trade PnL) - Sum(Entry Fees) - Sum(Exit Fees)
+        #                 - Sum(Funding) - Sum(Borrow) + Open Unrealized PnL - (Open Entry Fee already in entry_fees)
+        sum_gross_pnl = sum(tr.gross_pnl_usdt for tr in trades)
+        sum_net_pnl = sum(tr.net_pnl_usdt for tr in trades)
+
+        # Expected Final Equity from ledger formula:
+        if not liquidated:
+            expected_final_equity = (
+                self.initial_cash
+                + sum_gross_pnl
+                - total_entry_fees
+                - total_exit_fees
+                - total_funding_cost
+                - total_borrow_cost
+                + open_unrealized_pnl
+            )
+            reconciliation_error = abs(final_equity - expected_final_equity)
+            is_perfectly_reconciled = bool(reconciliation_error < 1e-4)
+        else:
+            expected_final_equity = 0.0
+            reconciliation_error = abs(final_equity)
+            is_perfectly_reconciled = True
+
         return {
             'final_equity': round(final_equity, 2),
+            'final_cash': round(cash, 2),
             'total_ret_pct': round(total_ret_pct, 2),
             'cagr_pct': round(cagr_pct, 2),
             'max_dd_pct': round(max_dd_pct, 2),
@@ -412,9 +477,15 @@ class SingleLedgerSimulator:
             'liquidated': liquidated,
             'liquidation_date': liquidation_date,
             'min_distance_to_liq_pct': round(float(min_distance_to_liq * 100.0), 2),
-            'total_fees': round(total_fees, 2),
+            'total_entry_fees': round(total_entry_fees, 2),
+            'total_exit_fees': round(total_exit_fees, 2),
+            'total_fees': round(total_entry_fees + total_exit_fees, 2),
             'total_slippage': round(total_slippage_cost, 2),
             'total_funding': round(total_funding_cost, 2),
+            'total_borrow': round(total_borrow_cost, 2),
+            'open_unrealized_pnl': round(open_unrealized_pnl, 2),
+            'reconciliation_error': round(reconciliation_error, 6),
+            'is_perfectly_reconciled': is_perfectly_reconciled,
             'trades_list': trades,
             'equity_curve': eq_s,
         }

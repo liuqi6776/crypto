@@ -34,7 +34,7 @@ def run_clean_leverage_comparison():
         df_funding.index = df_funding.index.tz_localize(None)
 
     periods = {
-        '2026 (盲测弱势期)': ('2026-01-01', '2026-09-22'),
+        '2026 近期样本外走势 (2026 OOS)': ('2026-01-01', '2026-09-22'),
         '2025 (分化震荡期)': ('2025-01-01', '2025-12-31'),
         '2022 (极端熊市测试)': ('2022-01-01', '2022-12-31'),
         '2020-2024 (训练牛熊期)': ('2020-10-15', '2024-12-31'),
@@ -56,7 +56,8 @@ def run_clean_leverage_comparison():
                 df_funding=df_funding,
                 leverage=lev,
                 fee_rate=0.0008,
-                slippage=0.0015,
+                execution_slippage=0.0005,
+                stop_slippage=0.0015,
                 sl_atr_mult=1.5,
                 hysteresis_pct=0.005,
             )

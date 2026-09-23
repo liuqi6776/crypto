@@ -36,6 +36,7 @@ from crypto_quant.paper.config import (
     get_code_commit,
 )
 from crypto_quant.paper.journal import PaperJournal
+from crypto_quant.core.top1_decision_engine import compute_top1_decision, Top1DecisionResult
 
 V1_STATE_PATH: Path = STATE_DIR / "v1_top1_state.json"
 V1_JOURNAL_PATH: Path = LOG_DIR / "v1_top1_journal.jsonl"
@@ -162,6 +163,8 @@ class Top1RotationStrategy:
         self,
         klines_dict: Dict[str, pd.DataFrame],
         live_prices: Optional[Dict[str, float]] = None,
+        current_symbol: str = "USDT_CASH",
+        check_stale: bool = True,
     ) -> Dict[str, Any]:
         """
         Evaluates leaderboard rankings, scores, and macro trend gates.
@@ -185,7 +188,7 @@ class Top1RotationStrategy:
                 last_close_time = last_open_time + pd.Timedelta(hours=4)
                 age = max(0.0, (now_utc - last_close_time).total_seconds()) if now_utc > last_close_time else 0.0
                 data_ages[sym] = round(age, 1)
-                if age > 18000:
+                if check_stale and age > 18000:
                     is_stale = True
             else:
                 # Fallback to local historical parquet
@@ -194,7 +197,8 @@ class Top1RotationStrategy:
                     df = pd.read_parquet(p)
                     closes_dict[sym] = df["close"].tail(250)
                     data_source = "LOCAL_CACHE_FALLBACK"
-                    is_stale = True
+                    if check_stale:
+                        is_stale = True
 
         closes = pd.DataFrame(closes_dict).dropna()
         if len(closes) < 130:
@@ -207,68 +211,34 @@ class Top1RotationStrategy:
                 if sym in live_prices and sym in closes.columns:
                     closes.loc[latest_idx, sym] = float(live_prices[sym])
 
-        closes_prior = closes.shift(1)
-        ema200 = closes_prior.ewm(span=200).mean()
-        bb_mid = closes_prior.rolling(120).mean()
-        bb_std = closes_prior.rolling(120).std()
-        
-        # Real-time Z-score and Momentum using latest price vs historical distributions
-        bb_z = (closes - bb_mid) / (bb_std + 1e-8)
-        mom20 = (closes / closes.shift(120)) - 1.0
-        score = bb_z + mom20
+        atrs_dict = {}
+        for sym in self.symbols:
+            tok_df = klines_dict.get(sym)
+            atrs_dict[sym] = calculate_atr(tok_df, period=14)
 
-        latest_t = score.index[-1]
-        latest_scores = score.loc[latest_t].sort_values(ascending=False)
+        decision = compute_top1_decision(
+            closes_df=closes,
+            atrs_dict=atrs_dict,
+            current_symbol=current_symbol,
+            symbols=self.symbols,
+            hysteresis_pct=self.hysteresis_pct,
+        )
 
-        # BTC Macro Trend Gate (uses real-time BTC price)
-        btc_curr_p = float(closes.loc[latest_t, "BTCUSDT"])
-        btc_ema200 = float(ema200.loc[latest_t, "BTCUSDT"])
-        btc_bull = bool(btc_curr_p > btc_ema200)
-
-        ranks = []
-        for rank, (tok, sc) in enumerate(latest_scores.items(), 1):
-            curr_c = float(closes.loc[latest_t, tok])
-            e_p = float(ema200.loc[latest_t, tok])
-            z_p = float(bb_z.loc[latest_t, tok])
-            m_p = float(mom20.loc[latest_t, tok])
-            is_ok = bool(curr_c > e_p)
-            dist_to_ema_pct = round(((curr_c - e_p) / e_p) * 100.0, 2)
-            tok_df = klines_dict.get(tok)
-            atr_tok = calculate_atr(tok_df, period=14)
-            atr_pct = round((atr_tok / curr_c) * 100.0, 2) if curr_c > 0 else 0.0
-
-            ranks.append({
-                "rank": rank,
-                "symbol": tok,
-                "score": round(float(sc), 3),
-                "curr_price": round(curr_c, 2),
-                "ema200": round(e_p, 2),
-                "bb_z": round(z_p, 2),
-                "mom20_pct": round(m_p * 100.0, 2),
-                "is_above_ema200": is_ok,
-                "dist_to_ema_pct": dist_to_ema_pct,
-                "atr_14": round(atr_tok, 2),
-                "atr_pct": atr_pct,
-            })
-
-        top_1 = ranks[0]
-        # Dual Gate Condition
-        dual_gate_passed = bool(btc_bull and top_1["is_above_ema200"])
-        if is_stale:
-            # Data safety lock: Stale data prevents active offensive buy!
-            dual_gate_passed = False
-
-        recommended_mode = f"3.0x {top_1['symbol']} 杠杆做多" if dual_gate_passed else "100% USDT 现金防御"
+        top_1 = decision.ranks[0]
+        dual_gate_passed = decision.dual_gate_passed if not (check_stale and is_stale) else False
+        recommended_mode = f"3.0x {decision.target_symbol} 杠杆做多" if (dual_gate_passed and decision.target_symbol != "USDT_CASH") else "100% USDT 现金防御"
 
         return {
-            "top_symbol": top_1["symbol"],
-            "top_score": top_1["score"],
-            "top_atr": top_1["atr_14"],
-            "btc_macro_bull": btc_bull,
+            "top_symbol": decision.top_candidate,
+            "target_symbol": decision.target_symbol,
+            "action": decision.action,
+            "top_score": decision.top_score,
+            "top_atr": top_1.get("atr_14", 0.0),
+            "btc_macro_bull": decision.btc_macro_bull,
             "dual_gate_passed": dual_gate_passed,
             "recommended_mode": recommended_mode,
-            "ranks": ranks,
-            "latest_bar_time": str(latest_t),
+            "ranks": decision.ranks,
+            "latest_bar_time": str(decision.latest_bar_time),
             "data_source": data_source,
             "is_stale": is_stale,
             "data_ages": data_ages,
@@ -279,10 +249,11 @@ class Top1RotationStrategy:
         klines_dict: Dict[str, pd.DataFrame],
         current_state: Optional[V1Top1State] = None,
         live_prices: Optional[Dict[str, float]] = None,
+        check_stale: bool = True,
     ) -> Tuple[V1Top1State, Dict[str, Any]]:
         """
         Executes one full evaluation pass for the V1 Top-1 Portfolio:
-        1. Evaluates cross-section and dual macro trend gates.
+        1. Evaluates cross-section and dual macro trend gates via shared compute_top1_decision.
         2. Applies hysteresis buffer to avoid EMA200 threshold churning.
         3. Executes 3.0x nominal leverage allocation with 1.5x ATR compact adaptive stop.
         4. Dynamically ratchets trailing stop (breakeven at +5%, trailing at +10%).
@@ -290,29 +261,20 @@ class Top1RotationStrategy:
         6. Marks to market with margin ROE and persists updated state atomically.
         """
         state = current_state or V1Top1State.load(self.state_path)
-        eval_res = self.evaluate_cross_section(klines_dict, live_prices=live_prices)
+        eval_res = self.evaluate_cross_section(
+            klines_dict,
+            live_prices=live_prices,
+            current_symbol=state.active_symbol,
+            check_stale=check_stale,
+        )
 
-        top_cand = eval_res["top_symbol"]
-        btc_bull = eval_res["btc_macro_bull"]
-        is_stale = eval_res["is_stale"]
+        target_symbol = eval_res["target_symbol"] if eval_res["dual_gate_passed"] else "USDT_CASH"
+        target_mode = "OFFENSIVE_3X_LONG" if target_symbol != "USDT_CASH" else "DEFENSIVE_USDT_CASH"
         latest_bar = eval_res["latest_bar_time"]
 
-        # Hysteresis Filter:
-        # To enter LONG, price must clear EMA200 by +0.5%.
-        # To exit to CASH, price must drop below EMA200 by -0.5%.
-        top_rank_item = [r for r in eval_res["ranks"] if r["symbol"] == top_cand][0]
+        top_cand = eval_res["top_symbol"]
+        top_rank_item = [r for r in eval_res["ranks"] if r["symbol"] == (target_symbol if target_symbol != "USDT_CASH" else top_cand)][0]
         curr_price = top_rank_item["curr_price"]
-        dist_pct = top_rank_item["dist_to_ema_pct"] / 100.0
-
-        if "OFFENSIVE" in state.position_mode:
-            # Currently in long: exit only if BTC breaks below -0.5% or top coin breaks below -0.5%
-            gate_pass = (not is_stale) and btc_bull and (dist_pct >= -self.hysteresis_pct)
-        else:
-            # Currently in cash: enter only if both clear +0.5%
-            gate_pass = (not is_stale) and btc_bull and (dist_pct >= self.hysteresis_pct)
-
-        target_symbol = top_cand if gate_pass else "USDT_CASH"
-        target_mode = "OFFENSIVE_3X_LONG" if gate_pass else "DEFENSIVE_USDT_CASH"
 
         action_taken = "HOLD"
         turnover_friction = 0.0
@@ -481,7 +443,7 @@ class Top1RotationStrategy:
                 "total_equity": round(float(state.total_equity_usdt), 2),
                 "unrealized_pnl": round(float(state.unrealized_pnl_usdt), 2),
                 "turnover_friction": round(float(turnover_friction), 2),
-                "dual_gate_passed": bool(gate_pass),
+                "dual_gate_passed": bool(eval_res["dual_gate_passed"]),
             },
             symbol=state.active_symbol,
             bar_time=latest_bar,

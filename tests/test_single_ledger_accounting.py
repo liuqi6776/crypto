@@ -49,12 +49,14 @@ def test_single_ledger_no_double_counting():
     # Trade net pnl sum check
     trade_pnls = sum(tr.net_pnl_usdt for tr in res['trades_list'])
     total_funding = res['total_funding']
-    # Final equity = initial_cash + closed trade pnls - funding + open trade unrealized pnl (if any)
+    # Final equity strictly matches mathematical identity
+    assert res['is_perfectly_reconciled'] is True
+    assert res['reconciliation_error'] < 1e-4
     assert res['final_equity'] > 0
 
 
 def test_event_sequence_open_fill():
-    """Verify that execution fill price is strictly the Open of bar T, not Close."""
+    """Verify that execution fill price is strictly the Open of bar T with execution slippage, not Close."""
     symbols = ['BTCUSDT', 'ETHUSDT']
     raw_dfs = {
         'BTCUSDT': make_mock_df(150, 40000.0, trend=0.005),
@@ -63,7 +65,8 @@ def test_event_sequence_open_fill():
     sim = SingleLedgerSimulator(symbols=symbols, raw_dfs=raw_dfs, leverage=3.0)
     res = sim.run('2024-01-01', '2024-03-01')
     assert res is not None
+    assert res['is_perfectly_reconciled'] is True
     for tr in res['trades_list']:
-        # Entry price must match open of entry_time
-        expected_open = raw_dfs[tr.symbol].loc[tr.entry_time, 'open']
+        # Entry price must match open of entry_time plus execution slippage
+        expected_open = raw_dfs[tr.symbol].loc[tr.entry_time, 'open'] * (1.0 + sim.execution_slippage)
         assert pytest.approx(tr.entry_price, rel=1e-5) == expected_open
