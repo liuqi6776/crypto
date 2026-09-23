@@ -1,0 +1,8 @@
+model_key,strategy_name,role,net_return_pct,max_drawdown_pct,annualized_sharpe,calmar_ratio,avg_cash_pct,total_trades,win_rate_pct,profit_factor,top3_trades_profit_share_pct,max_dd_recovery_days,final_equity_usd,total_friction_usd
+M1A_Structural_Trend_Close,"Structural Trend (ETH/SOL 50/50, Mode A Bar-Close)",DEVELOPMENT_STRESS_TEST,1020.84,39.52,1.19,1.27,83.3,146,44.5,1.77,62.9,461,112083.69,11383.27
+M1B_Structural_Trend_Intrabar,"Structural Trend (ETH/SOL 50/50, Mode B Intrabar Stop Touch)",STRESS_TEST_SCENARIO,124.9,33.99,0.58,0.43,87.3,176,42.0,1.28,101.4,289,22490.13,5161.21
+M2_Simple_EMA_ETHSOL,"Simple EMA Control (ETH/SOL 50/50, No Rotation)",CONTROL_BENCHMARK,7675.96,67.85,1.44,1.59,49.1,408,15.7,1.36,134.2,797,777595.93,195874.01
+M3_Simple_EMA_Core4,"Simple EMA Control (Core-4 25% Each, No Rotation)",CONTROL_BENCHMARK,4476.73,55.87,1.45,1.62,48.7,822,15.8,1.36,113.1,797,457672.72,125241.71
+M4_Top1_Rotation_Candidate,"Top-1 Rotation Candidate (Buffer 0.30, Clean Spot)",HYPOTHESIS_EXPERIMENT,36825.25,53.14,1.73,3.21,97.4,426,46.2,1.38,46.3,564,3692525.36,1705634.92
+M5_BTC_Buy_Hold,BTC Buy & Hold (Market Beta),MARKET_BENCHMARK,658.36,77.04,0.88,0.53,0.0,0,0.0,0.0,0.0,850,75835.91,12.99
+M6_Core4_EW_Buy_Hold,Core-4 Equal-Weight Buy & Hold (Market Beta),MARKET_BENCHMARK,2204.39,89.05,1.06,0.78,0.0,0,0.0,0.0,0.0,1111,230438.96,12.99

@@ -1,0 +1,4 @@
+net_return_pct,max_drawdown_pct,annualized_sharpe,calmar_ratio,avg_cash_pct,total_trades,win_rate_pct,profit_factor,top3_trades_profit_share_pct,max_dd_recovery_days,final_equity_usd,total_friction_usd,stop_slippage_bps,scenario_tag
+124.9,33.99,0.58,0.43,87.3,176,42.0,1.28,101.4,289,22490.13,5161.21,15,Mode_B_Baseline_15bps
+97.42,34.82,0.51,0.35,87.3,176,40.9,1.22,122.3,290,19741.81,6779.82,30,Mode_B_Stress_30bps
+65.88,35.9,0.42,0.25,87.3,176,39.2,1.16,167.2,390,16587.92,8554.56,50,Mode_B_Stress_50bps

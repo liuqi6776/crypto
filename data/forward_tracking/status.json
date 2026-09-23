@@ -12,13 +12,13 @@
     "SOLUSDT",
     "BNBUSDT"
   ],
-  "total_bars_processed": 2,
-  "last_processed_bar": "2026-09-23 04:00:00+00:00",
+  "total_bars_processed": 3,
+  "last_processed_bar": "2026-09-23 08:00:00+00:00",
   "anomalies_count": 1,
   "candidate_a": {
     "name": "Candidate A: Top-1 Rotation (Buffer 0.30)",
     "cash": 0.0,
-    "equity": 9987.005338344245,
+    "equity": 9921.75340909259,
     "curr_pos": "BTCUSDT",
     "asset_units": 0.11584073789993561,
     "entry_price": 86256.356625,
@@ -28,18 +28,18 @@
     "trade_count": 0,
     "win_count": 0,
     "realized_pnl": 0.0,
-    "unrealized_pnl": -4.994661655755408,
+    "unrealized_pnl": -70.24659090741079,
     "total_fees": 8.0,
     "total_slippage": 4.993503248375853,
     "peak_equity": 10000.0,
-    "max_drawdown_pct": 0.1299466165575541,
+    "max_drawdown_pct": 0.782465909074108,
     "bars_in_cash": 1,
-    "bars_in_token": 1
+    "bars_in_token": 2
   },
   "candidate_b": {
     "name": "Candidate B: Simple Multi-Asset EMA Trend",
     "total_cash": 0.0,
-    "total_equity": 9986.75394402204,
+    "total_equity": 9914.4248563583,
     "sub_portfolios": {
       "BTCUSDT": {
         "cash": 0.0,
@@ -81,10 +81,10 @@
     "trade_count": 0,
     "win_count": 0,
     "realized_pnl": 0.0,
-    "unrealized_pnl": -5.246055977959259,
+    "unrealized_pnl": -77.57514364169992,
     "total_fees": 8.0,
     "total_slippage": 4.993503248375577,
     "peak_equity": 10000.0,
-    "max_drawdown_pct": 0.1324605597795926
+    "max_drawdown_pct": 0.8557514364169947
   }
 }
