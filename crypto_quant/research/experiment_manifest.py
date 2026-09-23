@@ -66,6 +66,49 @@ def compute_file_sha256(filepath: str) -> Optional[str]:
     return hasher.hexdigest()
 
 
+def get_environment_dependencies() -> Dict[str, str]:
+    """Captures versions of key installed packages and environment snapshot."""
+    import importlib.metadata
+    packages = {}
+    key_pkgs = [
+        "pandas", "numpy", "scipy", "pyarrow", "pytest", "flask", 
+        "requests", "pydantic", "matplotlib", "fastapi", "uvicorn"
+    ]
+    for pkg in key_pkgs:
+        try:
+            packages[pkg] = importlib.metadata.version(pkg)
+        except Exception:
+            pass
+    return packages
+
+
+def compute_output_hashes(output_dir: str, filenames: Optional[List[str]] = None) -> Dict[str, str]:
+    """Computes SHA256 checksums of generated output files in the experiment output directory."""
+    out_path = Path(output_dir)
+    if not out_path.exists():
+        return {}
+    if filenames is None:
+        filenames = ["trades.csv", "bar_ledger.csv", "summary.json", "data_admission_report.json"]
+    hashes = {}
+    for fname in filenames:
+        fpath = out_path / fname
+        if fpath.exists():
+            hashes[fname] = compute_file_sha256(str(fpath))
+    return hashes
+
+
+def finalize_manifest_with_outputs(manifest_path: str, output_hashes: Dict[str, str]) -> None:
+    """Updates the saved manifest with output file hashes."""
+    p = Path(manifest_path)
+    if not p.exists():
+        return
+    with open(p, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    data["output_hashes"] = output_hashes
+    with open(p, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+
 def generate_experiment_manifest(
     experiment_id: str,
     universe: List[str],
@@ -75,23 +118,36 @@ def generate_experiment_manifest(
     eval_end_dt: str,
     role: str = "HYPOTHESIS_EXPERIMENT",
     description: str = "",
+    hypothesis: Optional[str] = None,
     extra_metadata: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
     Constructs a comprehensive experiment manifest dictionary.
+    Enforces research disciplines:
+    - If role is OFFICIAL_BASELINE, git_dirty MUST be False.
+    - Captures environment dependencies snapshot.
+    - Records pre-registered hypothesis.
     """
     valid_roles = ["OFFICIAL_BASELINE", "HYPOTHESIS_EXPERIMENT", "DEVELOPMENT_STRESS_TEST"]
     if role not in valid_roles:
         raise ValueError(f"Invalid experiment role '{role}'. Must be one of {valid_roles}")
 
     git_info = get_git_info()
+    if role == "OFFICIAL_BASELINE" and git_info["is_dirty"]:
+        raise ValueError(
+            "Research Discipline Violation: An OFFICIAL_BASELINE experiment can only be generated "
+            "from a clean Git working tree (git_dirty == False). Please commit or stash your changes before running."
+        )
+
     data_hashes = {sym: compute_file_sha256(path) for sym, path in data_files.items()}
+    dependencies = get_environment_dependencies()
 
     manifest = {
-        "manifest_version": "1.0.0",
+        "manifest_version": "1.1.0",
         "experiment_id": experiment_id,
         "experiment_role": role,
         "description": description,
+        "pre_registered_hypothesis": hypothesis,
         "created_at_utc": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
         "command_line": " ".join(sys.argv),
         "code_environment": {
@@ -99,9 +155,11 @@ def generate_experiment_manifest(
             "git_branch": git_info["branch"],
             "git_dirty": git_info["is_dirty"],
             "python_version": sys.version.split()[0],
+            "dependencies": dependencies,
         },
         "universe": universe,
         "data_input_hashes": data_hashes,
+        "output_hashes": {},
         "time_interval": {
             "eval_start_dt": eval_start_dt,
             "eval_end_dt": eval_end_dt,
@@ -119,3 +177,4 @@ def save_manifest(manifest: Dict[str, Any], output_path: str) -> None:
     p.parent.mkdir(parents=True, exist_ok=True)
     with open(p, "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2, ensure_ascii=False)
+

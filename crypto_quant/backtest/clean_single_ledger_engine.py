@@ -75,6 +75,10 @@ class SingleLedgerSimulator:
         mmr: float = 0.005,                     # 0.5% maintenance margin rate
         borrow_apr: float = 0.10,               # 10% APR borrow interest
         slippage: Optional[float] = None,       # Backward-compatible alias for stop_slippage
+        use_btc_gate: bool = True,              # Whether to enforce BTC > EMA200 macro gate
+        use_asset_gate: bool = True,            # Whether to enforce candidate Asset > EMA200
+        disable_momentum_rank: bool = False,    # If True, disable rotation ranking and default to BTC
+        enable_atr_stop: bool = True,           # If False, disable ATR stops and rely only on structural exits
     ):
         self.symbols = symbols
         self.raw_dfs = raw_dfs
@@ -89,6 +93,10 @@ class SingleLedgerSimulator:
         self.initial_cash = initial_cash
         self.mmr = mmr
         self.borrow_apr = borrow_apr
+        self.use_btc_gate = use_btc_gate
+        self.use_asset_gate = use_asset_gate
+        self.disable_momentum_rank = disable_momentum_rank
+        self.enable_atr_stop = enable_atr_stop
 
     def run(
         self,
@@ -259,6 +267,9 @@ class SingleLedgerSimulator:
                     symbols=self.symbols,
                     hysteresis_pct=self.hysteresis_pct,
                     delta_score_buffer=self.delta_score_buffer,
+                    use_btc_gate=self.use_btc_gate,
+                    use_asset_gate=self.use_asset_gate,
+                    disable_momentum_rank=self.disable_momentum_rank,
                 )
                 target_pos = decision.target_symbol
 
@@ -338,11 +349,14 @@ class SingleLedgerSimulator:
                     cash = max(0.0, cash - entry_fee)
 
                     # Initial Stop Loss: 1.5x ATR below entry or EMA200 gate line
-                    atr_val = df_atrs_prior.loc[t, target_pos]
-                    initial_stop = entry_price - (atr_val * self.sl_atr_mult) if (not np.isnan(atr_val) and atr_val > 0) else entry_price * 0.95
-                    ema200_cand = float(closes_window[target_pos].ewm(span=200).mean().iloc[-1])
-                    gate_stop = ema200_cand * (1.0 - self.hysteresis_pct)
-                    stop_price = max(gate_stop, initial_stop)
+                    if self.enable_atr_stop and self.sl_atr_mult > 0.0:
+                        atr_val = df_atrs_prior.loc[t, target_pos]
+                        initial_stop = entry_price - (atr_val * self.sl_atr_mult) if (not np.isnan(atr_val) and atr_val > 0) else entry_price * 0.95
+                        ema200_cand = float(closes_window[target_pos].ewm(span=200).mean().iloc[-1])
+                        gate_stop = ema200_cand * (1.0 - self.hysteresis_pct)
+                        stop_price = max(gate_stop, initial_stop)
+                    else:
+                        stop_price = 0.0
 
             # -------------------------------------------------------------
             # STEP 3: Intrabar Price Movements on Bar T (High, Low, Close)
@@ -574,12 +588,13 @@ class SingleLedgerSimulator:
                     continue
 
                 # 5. Trailing Stop Ratchet (survived all stop checks)
-                if highest_price >= entry_price * 1.05:
-                    be_stop = entry_price * 1.002
-                    stop_price = max(stop_price, be_stop)
-                if highest_price >= entry_price * 1.10:
-                    trail_stop = highest_price * 0.95
-                    stop_price = max(stop_price, trail_stop)
+                if self.enable_atr_stop and self.sl_atr_mult > 0.0:
+                    if highest_price >= entry_price * 1.05:
+                        be_stop = entry_price * 1.002
+                        stop_price = max(stop_price, be_stop)
+                    if highest_price >= entry_price * 1.10:
+                        trail_stop = highest_price * 0.95
+                        stop_price = max(stop_price, trail_stop)
 
                 # 6. Accurate Funding & Borrow Interest Settlement
                 if settle and self.leverage > 1.0 and bars_held >= 1:

@@ -35,6 +35,9 @@ def compute_top1_decision(
     symbols: Optional[List[str]] = None,
     hysteresis_pct: float = 0.005,
     delta_score_buffer: float = 0.0,
+    use_btc_gate: bool = True,
+    use_asset_gate: bool = True,
+    disable_momentum_rank: bool = False,
 ) -> Top1DecisionResult:
     """
     Stateless pure function: Given historical closed bar closes and current position,
@@ -47,6 +50,9 @@ def compute_top1_decision(
     - symbols: Universe symbol list (defaults to all columns in closes_df).
     - hysteresis_pct: Buffer around EMA200 to prevent churn (default 0.5%).
     - delta_score_buffer: Minimum score advantage required for challenger to unseat incumbent.
+    - use_btc_gate: Whether to require BTC > EMA200 (default True).
+    - use_asset_gate: Whether to require Asset > EMA200 (default True).
+    - disable_momentum_rank: If True, disables cross-sectional ranking and defaults to BTC (default False).
     """
     if symbols is None:
         symbols = list(closes_df.columns)
@@ -76,13 +82,20 @@ def compute_top1_decision(
             if s not in latest_score.index:
                 latest_score[s] = -999.0
 
-    top_cand = latest_score.idxmax()
-    top_score = float(latest_score[top_cand]) if top_cand in latest_score else 0.0
+    if disable_momentum_rank:
+        top_cand = "BTCUSDT" if "BTCUSDT" in symbols else symbols[0]
+        top_score = float(latest_score.get(top_cand, 0.0))
+    else:
+        top_cand = latest_score.idxmax()
+        top_score = float(latest_score[top_cand]) if top_cand in latest_score else 0.0
 
     # BTC Macro Gate
-    btc_p = float(latest_closes['BTCUSDT'])
-    btc_e = float(latest_ema200['BTCUSDT'])
-    btc_macro_bull = bool(btc_p > btc_e)
+    if use_btc_gate and 'BTCUSDT' in latest_closes:
+        btc_p = float(latest_closes['BTCUSDT'])
+        btc_e = float(latest_ema200['BTCUSDT'])
+        btc_macro_bull = bool(btc_p > btc_e)
+    else:
+        btc_macro_bull = True
 
     # Leaderboard ranks
     sorted_scores = latest_score.sort_values(ascending=False)
@@ -111,8 +124,8 @@ def compute_top1_decision(
     # 2. Dual Gate & Hysteresis Decision Logic
     top_cand_close = float(latest_closes[top_cand])
     top_cand_ema = float(latest_ema200[top_cand])
-    top_cand_dist = (top_cand_close - top_cand_ema) / top_cand_ema
-    candidate_above_ema = bool(top_cand_dist >= hysteresis_pct)
+    top_cand_dist = (top_cand_close - top_cand_ema) / top_cand_ema if top_cand_ema > 0 else 0.0
+    candidate_above_ema = bool(top_cand_dist >= hysteresis_pct) if use_asset_gate else True
     dual_gate_passed = bool(btc_macro_bull and candidate_above_ema)
 
     target_symbol = current_symbol
@@ -127,10 +140,15 @@ def compute_top1_decision(
             action = "HOLD"
     else:
         # Currently holding a token
-        curr_p = float(latest_closes[current_symbol])
-        curr_e = float(latest_ema200[current_symbol])
-        curr_dist = (curr_p - curr_e) / curr_e
-        curr_still_valid = bool(btc_macro_bull and (curr_dist >= -hysteresis_pct))
+        if use_asset_gate:
+            curr_p = float(latest_closes[current_symbol])
+            curr_e = float(latest_ema200[current_symbol])
+            curr_dist = (curr_p - curr_e) / curr_e if curr_e > 0 else 0.0
+            asset_valid = bool(curr_dist >= -hysteresis_pct)
+        else:
+            asset_valid = True
+
+        curr_still_valid = bool(btc_macro_bull and asset_valid)
 
         if not curr_still_valid:
             if dual_gate_passed:
@@ -147,7 +165,7 @@ def compute_top1_decision(
                 challenger_score = float(latest_score[top_cand])
                 current_score = float(latest_score[current_symbol])
                 if challenger_score >= (current_score + delta_score_buffer):
-                    if top_cand_dist >= hysteresis_pct:
+                    if (not use_asset_gate) or (top_cand_dist >= hysteresis_pct):
                         target_symbol = top_cand
                         action = "ROTATE"
 

@@ -1,0 +1,6 @@
+name,desc,net_ret_pct,cagr_pct,max_dd_pct,sharpe,calmar,trades_count,stop_count,turnover_reduction_pct,return_diff_pct,total_friction,peak_time,trough_time
+Official Baseline,"Dual Gate (0.5% hyst), 1.5x ATR Stop, Score Buffer 0.0",1119.75,52.38,69.95490684023639,0.93,0.75,1144,499,0.0,0.0,348422.42,2024-03-17 20:00:00,2025-07-08 12:00:00
+Intervention 1: Structural Exit Only (No ATR Stop),"Disable tight 1.5x ATR stop, exit purely on EMA200 trend gate",35738.29,169.24,60.72495342399347,1.72,2.79,795,0,30.506993006993007,34618.54,3195992.43,2021-02-19 20:00:00,2021-03-26 12:00:00
+Intervention 2: Momentum Buffer (Delta Score >= 0.30),Challenger must beat incumbent by 0.30 score to unseat,837.58,45.77,68.50193555153338,0.87,0.67,817,511,28.583916083916083,-282.16999999999996,250181.64,2024-03-17 20:00:00,2025-04-17 16:00:00
+Intervention 3: Wide Hysteresis Gate (1.0% Buffer),Increase EMA200 band to 1.0% to prevent border whipsaw,1093.16,51.81,67.19107807307473,0.93,0.77,1120,487,2.097902097902098,-26.589999999999918,334986.31,2024-03-17 20:00:00,2026-08-18 00:00:00
+Intervention 4: Structural Exit + Momentum Buffer (0.30),No ATR Stop + Delta Score Buffer 0.30,43942.3,178.75,53.1362217020211,1.76,3.36,426,0,62.76223776223776,42822.55,2036446.02,2021-02-19 20:00:00,2021-02-28 16:00:00

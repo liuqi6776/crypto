@@ -32,7 +32,12 @@ sys.path.insert(0, str(ROOT_DIR))
 
 from crypto_quant.core.data_admission import validate_crypto_universe, DataAdmissionError
 from crypto_quant.backtest.clean_single_ledger_engine import SingleLedgerSimulator
-from crypto_quant.research.experiment_manifest import generate_experiment_manifest, save_manifest
+from crypto_quant.research.experiment_manifest import (
+    generate_experiment_manifest,
+    save_manifest,
+    compute_output_hashes,
+    finalize_manifest_with_outputs,
+)
 
 if sys.stdout.encoding != 'utf-8':
     try:
@@ -68,6 +73,7 @@ def parse_args():
     parser.add_argument("--hysteresis", type=float, default=0.005, help="Hysteresis buffer around EMA200 (default 0.005 = 0.5%)")
     parser.add_argument("--initial-cash", type=float, default=10000.0, help="Initial cash in USDT")
     parser.add_argument("--role", type=str, default=None, help="Experiment role (OFFICIAL_BASELINE, HYPOTHESIS_EXPERIMENT, DEVELOPMENT_STRESS_TEST)")
+    parser.add_argument("--hypothesis", type=str, default=None, help="Pre-registered hypothesis for ablation or research experiments")
     parser.add_argument("--output-dir", type=str, default=None, help="Custom output directory for artifacts")
     return parser.parse_args()
 
@@ -90,15 +96,27 @@ def main():
     else:
         raise ValueError(f"Unknown period format '{args.period}'. Must be one of {list(PERIODS.keys())} or 'START:END'.")
 
-    # 3. Resolve Role
+    # 3. Resolve Role (Strict Date-Driven Classification)
+    is_in_2026 = (start_dt >= "2026-01-01 00:00:00")
     if args.role:
         role = args.role
-    elif args.period == "2026":
-        role = "DEVELOPMENT_STRESS_TEST"
-    elif args.universe.lower() == "core4" and args.leverage == 1.0:
-        role = "OFFICIAL_BASELINE"
+        if role == "OFFICIAL_BASELINE" and is_in_2026:
+            raise ValueError(
+                f"Research Discipline Violation: Interval starting in 2026 ({start_dt}) cannot be classified as OFFICIAL_BASELINE. "
+                f"It must be classified as DEVELOPMENT_STRESS_TEST."
+            )
     else:
-        role = "HYPOTHESIS_EXPERIMENT"
+        if is_in_2026:
+            role = "DEVELOPMENT_STRESS_TEST"
+        elif args.universe.lower() == "core4" and args.leverage == 1.0 and args.fee_rate == 0.0008 and args.execution_slippage == 0.0005 and args.stop_slippage == 0.0015 and args.sl_atr_mult == 1.5 and args.hysteresis == 0.005 and not is_in_2026:
+            role = "OFFICIAL_BASELINE"
+        else:
+            role = "HYPOTHESIS_EXPERIMENT"
+
+    if role == "HYPOTHESIS_EXPERIMENT" and not args.hypothesis:
+        raise ValueError(
+            "Research Discipline Violation: HYPOTHESIS_EXPERIMENT requires an explicit pre-registered hypothesis via --hypothesis."
+        )
 
     # 4. Generate Run ID & Output Directory
     timestamp_str = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
@@ -111,6 +129,8 @@ def main():
     print(f" Role: {role} | Mode: {args.mode.upper()} | Leverage: {args.leverage}x")
     print(f" Universe: {symbols}")
     print(f" Evaluation Interval: [{start_dt}, {end_dt}) UTC")
+    if args.hypothesis:
+        print(f" Pre-Registered Hypothesis: {args.hypothesis}")
     print("=" * 80)
 
     # 5. Load Data
@@ -171,7 +191,8 @@ def main():
         eval_start_dt=start_dt,
         eval_end_dt=end_dt,
         role=role,
-        description=f"Quantitative research evaluation of {args.universe} at {args.leverage}x leverage under {args.mode} mode."
+        description=f"Quantitative research evaluation of {args.universe} at {args.leverage}x leverage under {args.mode} mode.",
+        hypothesis=args.hypothesis,
     )
     save_manifest(manifest, str(out_dir / "manifest.json"))
     print(f"  Manifest saved: Git commit {manifest['code_environment']['git_commit'][:8]} (Dirty: {manifest['code_environment']['git_dirty']})")
@@ -318,6 +339,11 @@ def main():
 """
     with open(out_dir / "summary.md", "w", encoding="utf-8") as f:
         f.write(summary_md)
+
+    # Finalize Manifest with SHA256 hashes of generated artifacts
+    output_hashes = compute_output_hashes(str(out_dir))
+    finalize_manifest_with_outputs(str(out_dir / "manifest.json"), output_hashes)
+    print(f"  Artifact SHA256 hashes computed and embedded into manifest.json ({len(output_hashes)} files)")
 
     # 11. Final Print
     print("\n[Step 5/5] Experiment Complete!")

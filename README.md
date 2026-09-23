@@ -18,14 +18,18 @@
 
 > [!TIP]
 > **Institutional Research & Reproducibility Guide / 机构级科研复现指南**:
-> - **Standardized Experiment Runner / 标准化实验运行器 (Manifest + Data Quality + Trade Logs)**:
+> - **Step 1: Advantage Source Attribution / 优势来源全口径拆解**:
+>   `python scripts/benchmark_advantage_attribution.py` *(Top-1 vs BTC B&H vs EW 25% vs Simple EMA)*
+> - **Step 2: Component Ablation Study / 受控单部件消融实验**:
+>   `python scripts/run_controlled_ablation.py` *(Pre-registered hypotheses on BTC gate, asset gate, rank, ATR stop)*
+> - **Step 3: Drawdown & Friction Churn Diagnostics / 回撤与交易磨损深度归因**:
+>   `python scripts/diagnose_drawdown_and_churn.py` *(Pinpointing -69.95% DD & Pareto optimal intervention)*
+> - **Step 4: Forward Paper Tracking Protocol / 前向模拟与前瞻跟踪规范**:
+>   [`docs/FORWARD_PAPER_EVALUATION_PROTOCOL.md`](docs/FORWARD_PAPER_EVALUATION_PROTOCOL.md)
+> - **Standardized Experiment Runner / 标准化实验运行器 (Manifest + Output Hashes)**:
 >   `python scripts/run_research_experiment.py --universe core4 --leverage 1.0 --period all`
 > - **Run Complete Test Suite (111 Tests 100% Passed) / 运行全量单元测试套件**:
 >   `python -m pytest tests/ -v`
-> - **1x vs 3x vs 5x Comprehensive Comparison / 考虑滑点与手续费的1x/3x/5x实测对比**:
->   `python scripts/compare_1x_3x_5x_comprehensive.py`
-> - **Data Admission Quality Check / 独立运行数据准入与健康核验**:
->   `python -c "from crypto_quant.core.data_admission import validate_crypto_universe; import pandas as pd; print(validate_crypto_universe({s: pd.read_parquet(f'data/{s}_4h_2020_2026.parquet') for s in ['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT']}, ['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT'], pd.read_parquet('data/binance_funding_8h.parquet')).summary_markdown())"`
 
 ---
 
