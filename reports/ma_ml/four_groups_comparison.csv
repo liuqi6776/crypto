@@ -1,0 +1,5 @@
+model_name,total_events,trades_taken,trade_rate_pct,win_rate_pct,avg_net_r,median_net_r,profit_factor,total_net_r,expectancy_status
+Group 0: Existing Strict Pullback Baseline (5m),7199,457,6.3,18.38,-0.966,-1.554,0.26,-441.46,NEGATIVE
+Group 1: Fixed Post-Congestion Rule,7199,4265,59.2,11.47,-0.879,-1.12,0.1,-3747.62,NEGATIVE
+Group 2: Calibrated Logistic Regression,7199,5,0.1,20.0,-0.233,-0.465,0.49,-1.16,NEGATIVE
+Group 3: Regularized XGBoost,7199,16,0.2,50.0,0.095,0.034,1.32,1.53,POSITIVE
