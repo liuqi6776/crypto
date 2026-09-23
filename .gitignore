@@ -53,3 +53,7 @@ paper_logs/*
 # Scratch directory
 scratch/
 
+# Intraday high-frequency raw cache
+data/intraday/*.parquet
+!data/intraday/.gitkeep
+
