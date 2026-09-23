@@ -143,12 +143,19 @@ def generate_report():
         f.write("- Mode B 在盘中急跌时能更早截断亏损，但会承受更多假刺破的磨损与 15 bps 劣势滑点；滑点压力测试证实其对执行摩擦高度敏感。\n\n")
 
         f.write("---\n\n")
-        f.write("## 6. Real-Time Orderbook Depth & Static Capacity Limits\n")
-        f.write("## 实时盘口深度与静态资金容量限制估算\n\n")
-        f.write("> **Capacity Qualification**: Based on instantaneous 10-level Binance Spot depth snapshots. Labeled strictly as static snapshot estimates, NOT guaranteed execution capacity.\n\n")
-        f.write("- For BTCUSDT and ETHUSDT, \$10k to \$250k single-order market buys execute with < 0.05 bps static slippage within the top 5 book levels.\n")
-        f.write("- For BNBUSDT, available liquidity across the top 10 ask levels is constrained (~\\$5,775 to \\$40,000 USDT). Market orders exceeding \\$50k experience depth exhaustion at the 10-level boundary, proving that high-growth rotation models cannot assume frictionless fills at scale.\n")
-        f.write("- 比特币与以太坊在 10 档盘口内具备充沛流动性（可承接 25 万美元以内市价吃单）；但 BNB 等币种在 10 档内的累积深度仅数万美元，大资金冲击滑点会急剧放大，实盘必须采用拆单算法。\n\n")
+        f.write("## 6. Orderbook Depth Snapshot & Static Capacity Audit\n")
+        f.write("## 盘口深度单次快照审计与静态资金容量边界\n\n")
+        f.write("> **Empirical Scope Qualification / 证据范围严格定性**:\n")
+        f.write("> 1. **Point-in-Time Snapshot Audit / 单次点位截面快照**: Based on a single point-in-time 10-level Binance Spot depth snapshot taken on 2026-09-23 13:07:29 UTC (~5 hours after the 08:00 UTC bar decision). It does NOT constitute continuous real-time depth stream capture or trade-instant fill proof.\n")
+        f.write("> 2. **Static Capacity Boundaries / 静态流动性边界**: For BTCUSDT and ETHUSDT, 10-level ask depth exceeds \\$300k-\\$1.08M with spread < 0.05 bps. For BNBUSDT, available 10-level ask depth is constrained to ~\\$5,775 to \\$40,000 USDT; market orders $\\ge \\$10\\text{k}$ face depth exhaustion at level 10.\n")
+        f.write("> 3. **Implication / 启示**: High-frequency or high-notional rotation strategies cannot assume frictionless fills at scale, and must account for orderbook depth exhaustion in real-world deployment.\n\n")
+
+        f.write("---\n\n")
+        f.write("## 7. Data Audit Scope & Unclassified Candle Disclosure\n")
+        f.write("## 行情数据审计核验范围与未分类 K 线明确披露\n\n")
+        f.write("- **Audit Scope / 核验范围**: The bar-by-bar matching audit against Binance Spot and Futures REST APIs was conducted strictly on **OHLC (Open, High, Low, Close)** prices with a threshold of $< 1e-4$. Volume was excluded due to disparate spot vs futures accounting bases.\n")
+        f.write("- **2026 Epoch Breakdown / 2026 年区间构成**: Out of 1,590 bars in 2026, 1,533 match Binance Spot 100%, 56 match Binance USDS-M Futures 100%, and exactly **1 bar** (`2026-09-22 20:00:00 UTC`) is unclassified. Detailed inspection shows that Open, High, and Low matched Futures with zero error, while Close differed by $< 0.05\%$ because the earlier automated synchronization script captured a live mid-candle snapshot prior to final bar close settlement.\n")
+        f.write("- **Segregated Clean Repositories / 独立分库**: Standard clean Spot data is housed under `data/spot/`, Futures reference under `data/futures_reference/`, with all SHA-256 hashes recorded in `reports/data_audit/immutable_data_manifest.json`.\n\n")
 
     print(f"[REPORT COMPLETE] Successfully written to {out_md}")
 

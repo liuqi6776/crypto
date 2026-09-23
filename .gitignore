@@ -57,3 +57,11 @@ scratch/
 data/intraday/*.parquet
 !data/intraday/.gitkeep
 
+# Forward tracking runtime state files (prevent live daemon from dirtying git)
+data/forward_tracking/status.json
+data/forward_tracking/forward_ledger.csv
+data/forward_tracking/forward_journal.jsonl
+data/forward_tracking/execution_depth_log.jsonl
+data/forward_tracking/forward_comparison.md
+
+

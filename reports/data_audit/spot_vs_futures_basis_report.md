@@ -25,6 +25,11 @@
 | **BNBUSDT** | Phase_3_2026 | 1590 | 1590 | 56 | 1533 | 1 | 3.5% | 96.4% | $0.0160 | $0.2955 | **PREDOMINANTLY_SPOT_96.4PCT** |
 | **BNBUSDT** | Full_Cycle | 13404 | 13404 | 56 | 13347 | 1 | 0.4% | 99.6% | $0.0019 | $0.2540 | **PREDOMINANTLY_SPOT_99.6PCT** |
 
+> [!NOTE]
+> **Data Audit Scope & Unclassified Bar Disclosure / 核验范围与未分类 K 线披露**:
+> 1. **Comparison Scope / 核验范围**: The bar-by-bar matching audit compares **OHLC (Open, High, Low, Close)** price levels with an absolute threshold of $< 1e-4$. Volume is excluded because Binance Spot and USDS-M Futures have fundamentally different contract multiplier and turnover bases.
+> 2. **The 1 Unclassified Bar / 唯一未分类 K 线**: In Phase 3 (2026), exactly 1 bar per token at `2026-09-22 20:00:00 UTC` was classified as Unknown. Detailed inspection reveals that its Open, High, and Low matched Binance Futures 100% (delta 0.0000), but its Close differed by $< 0.05\%$ from both final Spot and Futures closes. This occurred because the earlier automated synchronization script captured a live mid-candle snapshot prior to the final 4-hour settlement. It is therefore precisely classified as an `INCOMPLETE_CLOSING_SNAPSHOT`.
+
 ---
 
 ## 2. Spot vs Futures Basis & Signal Divergence (Common Timestamps)

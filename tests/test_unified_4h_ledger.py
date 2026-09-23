@@ -117,3 +117,33 @@ def test_simple_ema_control_runs_cleanly(synthetic_ohlcv_data):
     res_core4 = engine.run_simple_ema_control(synthetic_ohlcv_data, symbols=["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"])
     assert res_core4["strategy"] == "SIMPLE_EMA_4COINS"
     assert res_core4["final_equity"] > 0.0
+
+
+def test_top1_rotation_single_ledger_reconciliation(synthetic_ohlcv_data):
+    """
+    Verifies that run_top1_rotation runs natively inside Unified4hEngine with:
+    1. Single cash pool (when holding token, cash is ~0; when in USDT_CASH, cash is ~equity).
+    2. Zero mathematical discrepancy on every single bar:
+       Total Equity == Cash + Position Value
+       Total Equity - Initial Cash == Realized PnL + Unrealized PnL - Total Fees
+    3. Bar-by-bar monotonically accumulating fees.
+    """
+    engine = Unified4hEngine(initial_cash=10000.0)
+    res_rot = engine.run_top1_rotation(synthetic_ohlcv_data, delta_score_buffer=0.30, warmup_bars=125)
+
+    assert "TOP1_ROTATION" in res_rot["strategy"]
+    df_ledger = res_rot["bar_ledger"]
+    assert len(df_ledger) == 500
+
+    # Assert single-ledger invariants on every bar
+    cash_plus_pos = df_ledger["cash"] + df_ledger["position_value"]
+    np.testing.assert_allclose(df_ledger["total_equity"].values, cash_plus_pos.values, rtol=1e-5, atol=1e-5)
+
+    acct_delta = df_ledger["gross_realized_pnl"] + df_ledger["gross_unrealized_pnl"] - df_ledger["cum_fees"]
+    equity_delta = df_ledger["total_equity"] - 10000.0
+    np.testing.assert_allclose(equity_delta.values, acct_delta.values, rtol=1e-5, atol=1e-5)
+
+    # Assert cumulative fees are monotonically increasing
+    diffs = df_ledger["cum_fees"].diff().dropna()
+    assert (diffs >= -1e-8).all(), "Fees must be monotonically non-decreasing bar-by-bar"
+

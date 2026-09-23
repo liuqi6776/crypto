@@ -19,6 +19,8 @@ from typing import Dict, Any, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 
+from crypto_quant.core.top1_decision_engine import compute_top1_decision
+
 
 class StopLossMode(Enum):
     BAR_CLOSE = "BAR_CLOSE"                       # Check Close < Stop at bar t, fill at bar t+1 Open
@@ -164,16 +166,27 @@ class Unified4hEngine:
             tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
             atr = tr.rolling(atr_period, min_periods=1).mean()
 
-            # Donchian 120 causal (shifted by 1 so bar t only sees past)
-            donchian_high = h.shift(1).rolling(lookback_bars).max()
+            # Bollinger Bands 120 causal (shifted by 1 so bar t close is evaluated against bands from t-1)
+            bb_mid = c.shift(1).rolling(lookback_bars).mean()
+            bb_std = c.shift(1).rolling(lookback_bars).std()
+            bb_upper = bb_mid + 2.0 * bb_std
+            bb_lower = bb_mid - 2.0 * bb_std
+
+            # Swing low (60-period shifted by 1)
             swing_low = l.shift(1).rolling(60).min()
-            ema120 = c.ewm(span=120, adjust=False).mean()
+
+            # EMA200 Macro Trend Gate
+            ema200 = c.shift(1).ewm(span=200).mean()
+            macro_mult = pd.Series(np.where(c.shift(1) > ema200, 1.0, 0.5), index=common_idx)
 
             indicators[s] = pd.DataFrame({
                 "atr": atr,
-                "donchian_high": donchian_high,
+                "bb_mid": bb_mid,
+                "bb_upper": bb_upper,
+                "bb_lower": bb_lower,
                 "swing_low": swing_low,
-                "ema120": ema120,
+                "ema200": ema200,
+                "macro_mult": macro_mult,
             }, index=common_idx)
 
         # Simulation state
@@ -212,7 +225,8 @@ class Unified4hEngine:
                 if act == "BUY":
                     fill_px = quote_px * (1.0 + self.execution_slippage)
                     slip_usd = (fill_px - quote_px)
-                    avail_budget = sub_cash[s]
+                    macro_m = float(p_ord.get("macro_mult", 1.0))
+                    avail_budget = sub_cash[s] * macro_m
                     # Reserve for fee
                     units = (avail_budget / fill_px) * (1.0 - self.fee_rate * 1.05)
                     notional = units * fill_px
@@ -223,9 +237,10 @@ class Unified4hEngine:
                     cum_fees += fee_usd
                     cum_slippage += units * slip_usd
 
-                    # Initialize stop levels
-                    prev_atr = float(indicators[s].loc[t, "atr"])
-                    prev_swing = float(indicators[s].loc[t, "swing_low"])
+                    # Initialize stop levels using STRICTLY prior bar (t-1) indicators!
+                    prev_t = common_idx[i - 1] if i > 0 else t
+                    prev_atr = float(indicators[s].loc[prev_t, "atr"])
+                    prev_swing = float(indicators[s].loc[prev_t, "swing_low"])
                     init_stop = max(prev_swing, fill_px - atr_mult * prev_atr)
 
                     positions[s] = Position(
@@ -387,9 +402,10 @@ class Unified4hEngine:
                 curr_c = current_closes[s]
                 curr_h = current_highs[s]
                 curr_atr = float(indicators[s].loc[t, "atr"])
-                curr_donchian = float(indicators[s].loc[t, "donchian_high"])
+                curr_bb_upper = float(indicators[s].loc[t, "bb_upper"])
+                curr_bb_mid = float(indicators[s].loc[t, "bb_mid"])
                 curr_swing_l = float(indicators[s].loc[t, "swing_low"])
-                curr_ema120 = float(indicators[s].loc[t, "ema120"])
+                curr_macro_mult = float(indicators[s].loc[t, "macro_mult"])
 
                 if s in positions:
                     pos = positions[s]
@@ -400,21 +416,32 @@ class Unified4hEngine:
 
                     # In Mode A, check bar close exit
                     if self.stop_loss_mode == StopLossMode.BAR_CLOSE:
+                        exit_long = False
+                        exit_reason = ""
                         if curr_c < pos.trailing_stop_price:
-                            pending_orders.append({
-                                "symbol": s,
-                                "action": "SELL",
-                                "reason": "BAR_CLOSE_TRAILING_STOP",
-                            })
+                            exit_long = True
+                            exit_reason = "TRAILING_STOP"
+                        elif curr_c < curr_bb_mid:
+                            exit_long = True
+                            exit_reason = "CHANNEL_EXIT"
+
+                        if exit_long:
+                            if not any(po["symbol"] == s for po in pending_orders):
+                                pending_orders.append({
+                                    "symbol": s,
+                                    "action": "SELL",
+                                    "reason": exit_reason,
+                                })
 
                 else:
-                    # Check entry signal
-                    if (curr_c > curr_donchian) and (curr_c > curr_ema120):
+                    # Check Phase 19 Bollinger Breakout entry signal
+                    if (curr_c > curr_bb_upper) and (curr_macro_mult > 0.1):
                         if not any(po["symbol"] == s for po in pending_orders):
                             pending_orders.append({
                                 "symbol": s,
                                 "action": "BUY",
-                                "reason": "DONCHIAN120_BREAKOUT",
+                                "reason": "BOLLINGER120_BREAKOUT",
+                                "macro_mult": curr_macro_mult,
                             })
 
             # -------------------------------------------------------------
@@ -751,3 +778,219 @@ class Unified4hEngine:
             "cum_fees_usd": cum_fees,
             "cum_slippage_usd": cum_slippage,
         }
+
+    def run_top1_rotation(
+        self,
+        data_dict: Dict[str, pd.DataFrame],
+        symbols: Optional[List[str]] = None,
+        delta_score_buffer: float = 0.30,
+        warmup_bars: int = 121,
+    ) -> Dict[str, Any]:
+        """
+        Executes Top-1 Cross-Sectional Rotation under the unified single-ledger engine.
+        - Single unified cash pool.
+        - Holds at most 1 token at 1.0x spot leverage, or 100% USDT cash defense.
+        - Causal decision via compute_top1_decision at bar Close.
+        - Fills at next bar Open with execution_slippage and fee_rate.
+        - Strict bar-by-bar single-ledger reconciliation:
+          Equity == Cash + Position Value == Initial Cash + Realized PnL + Unrealized PnL - Fees.
+        """
+        if symbols is None:
+            symbols = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"]
+
+        common_idx = data_dict[symbols[0]].index
+        for s in symbols[1:]:
+            common_idx = common_idx.intersection(data_dict[s].index)
+        common_idx = common_idx.sort_values()
+
+        closes_df = pd.DataFrame({s: data_dict[s].loc[common_idx, "close"] for s in symbols}, index=common_idx)
+
+        # Simulation state
+        cash = self.initial_cash
+        current_pos: Optional[Position] = None
+        pending_order: Optional[Dict[str, Any]] = None
+
+        completed_trades: List[CompletedTrade] = []
+        orders_ledger: List[TradeOrder] = []
+        bar_ledger: List[Dict[str, Any]] = []
+
+        cum_realized_pnl = 0.0
+        cum_fees = 0.0
+        cum_slippage = 0.0
+        order_counter = 0
+        trade_counter = 0
+
+        for i, t in enumerate(common_idx):
+            current_opens = {s: float(data_dict[s].loc[t, "open"]) for s in symbols}
+            current_highs = {s: float(data_dict[s].loc[t, "high"]) for s in symbols}
+            current_lows = {s: float(data_dict[s].loc[t, "low"]) for s in symbols}
+            current_closes = {s: float(data_dict[s].loc[t, "close"]) for s in symbols}
+
+            # -------------------------------------------------------------
+            # Stage 1: Execute Pending Order at Open of bar t
+            # -------------------------------------------------------------
+            if pending_order is not None and i >= warmup_bars:
+                target_sym = pending_order["target_symbol"]
+
+                # 1. If currently in a position and need to exit or rotate
+                if current_pos is not None and current_pos.symbol != target_sym:
+                    old_sym = current_pos.symbol
+                    quote_px = current_opens[old_sym]
+                    fill_px = quote_px * (1.0 - self.execution_slippage)
+                    slip_usd = (quote_px - fill_px)
+                    notional = current_pos.units * fill_px
+                    fee_usd = notional * self.fee_rate
+                    gross_pnl = (fill_px - current_pos.entry_fill_price) * current_pos.units
+
+                    cum_realized_pnl += gross_pnl
+                    cum_fees += fee_usd
+                    cum_slippage += current_pos.units * slip_usd
+                    cash += (notional - fee_usd)
+
+                    order_counter += 1
+                    orders_ledger.append(TradeOrder(
+                        order_id=order_counter,
+                        symbol=old_sym,
+                        action="SELL",
+                        bar_time=t,
+                        fill_time=t,
+                        quote_price=quote_px,
+                        fill_price=fill_px,
+                        units=current_pos.units,
+                        notional_usd=notional,
+                        fee_usd=fee_usd,
+                        slippage_usd=current_pos.units * slip_usd,
+                        reason=pending_order["reason"],
+                    ))
+
+                    trade_counter += 1
+                    completed_trades.append(CompletedTrade(
+                        trade_id=trade_counter,
+                        symbol=old_sym,
+                        entry_time=current_pos.entry_time,
+                        exit_time=t,
+                        entry_price=current_pos.entry_fill_price,
+                        exit_price=fill_px,
+                        units=current_pos.units,
+                        notional_entry_usd=current_pos.units * current_pos.entry_fill_price,
+                        notional_exit_usd=notional,
+                        gross_pnl_usd=gross_pnl,
+                        total_fee_usd=current_pos.entry_fee + fee_usd,
+                        net_pnl_usd=gross_pnl - (current_pos.entry_fee + fee_usd),
+                        net_ret_pct=(gross_pnl - (current_pos.entry_fee + fee_usd)) / (current_pos.units * current_pos.entry_fill_price),
+                        duration_bars=int((t - current_pos.entry_time) / pd.Timedelta("4h")),
+                        exit_reason=pending_order["reason"],
+                        stop_mode=self.stop_loss_mode.value,
+                    ))
+
+                    current_pos = None
+
+                # 2. If target is a token and we have cash to buy
+                if target_sym != "USDT_CASH" and current_pos is None and cash > 10.0:
+                    quote_px = current_opens[target_sym]
+                    fill_px = quote_px * (1.0 + self.execution_slippage)
+                    slip_usd = (fill_px - quote_px)
+                    # 100% of available cash minus fee reserve
+                    units = (cash / fill_px) * (1.0 - self.fee_rate * 1.05)
+                    notional = units * fill_px
+                    fee_usd = notional * self.fee_rate
+
+                    cash -= (notional + fee_usd)
+                    cum_fees += fee_usd
+                    cum_slippage += units * slip_usd
+
+                    current_pos = Position(
+                        symbol=target_sym,
+                        units=units,
+                        entry_fill_price=fill_px,
+                        entry_time=t,
+                        entry_fee=fee_usd,
+                        entry_slippage=units * slip_usd,
+                        initial_stop_price=0.0,
+                        trailing_stop_price=0.0,
+                        peak_price=fill_px,
+                    )
+
+                    order_counter += 1
+                    orders_ledger.append(TradeOrder(
+                        order_id=order_counter,
+                        symbol=target_sym,
+                        action="BUY",
+                        bar_time=t,
+                        fill_time=t,
+                        quote_price=quote_px,
+                        fill_price=fill_px,
+                        units=units,
+                        notional_usd=notional,
+                        fee_usd=fee_usd,
+                        slippage_usd=units * slip_usd,
+                        reason=pending_order["reason"],
+                    ))
+
+                pending_order = None
+
+            # -------------------------------------------------------------
+            # Stage 2: Bar Close Signals at Close of bar t
+            # -------------------------------------------------------------
+            if i >= warmup_bars:
+                sub_closes = closes_df.iloc[:i + 1]
+                curr_sym_held = current_pos.symbol if current_pos is not None else "USDT_CASH"
+                decision = compute_top1_decision(
+                    closes_df=sub_closes,
+                    current_symbol=curr_sym_held,
+                    delta_score_buffer=delta_score_buffer,
+                    use_btc_gate=True,
+                    use_asset_gate=True,
+                )
+
+                if decision.target_symbol != curr_sym_held:
+                    pending_order = {
+                        "target_symbol": decision.target_symbol,
+                        "action": decision.action,
+                        "reason": f"ROTATION_{decision.action}",
+                    }
+
+            # -------------------------------------------------------------
+            # Stage 3: Mark to Market at Close of bar t
+            # -------------------------------------------------------------
+            pos_dict = {current_pos.symbol: current_pos} if current_pos is not None else {}
+            rec = self._reconcile_bar(
+                bar_t=t,
+                cash=cash,
+                positions=pos_dict,
+                current_closes=current_closes,
+                cum_realized_pnl=cum_realized_pnl,
+                cum_fees=cum_fees,
+            )
+
+            bar_ledger.append({
+                "bar_time": t,
+                "cash": rec["cash"],
+                "position_value": rec["position_value"],
+                "total_equity": rec["total_equity"],
+                "gross_realized_pnl": rec["gross_realized_pnl"],
+                "gross_unrealized_pnl": rec["gross_unrealized_pnl"],
+                "cum_fees": rec["cum_fees"],
+                "cum_slippage": cum_slippage,
+                "active_positions_count": 1 if current_pos is not None else 0,
+                "active_symbols": current_pos.symbol if current_pos is not None else "USDT_CASH",
+            })
+
+        df_bar_ledger = pd.DataFrame(bar_ledger).set_index("bar_time")
+        df_trades = pd.DataFrame([t.__dict__ for t in completed_trades]) if completed_trades else pd.DataFrame()
+        df_orders = pd.DataFrame([o.__dict__ for o in orders_ledger]) if orders_ledger else pd.DataFrame()
+
+        return {
+            "strategy": f"TOP1_ROTATION_BUFFER_{delta_score_buffer:.2f}",
+            "symbols": symbols,
+            "bar_ledger": df_bar_ledger,
+            "trades": df_trades,
+            "orders": df_orders,
+            "initial_cash": self.initial_cash,
+            "final_equity": float(df_bar_ledger["total_equity"].iloc[-1]),
+            "total_return_pct": float((df_bar_ledger["total_equity"].iloc[-1] / self.initial_cash - 1.0) * 100.0),
+            "total_trades": len(completed_trades),
+            "cum_fees_usd": cum_fees,
+            "cum_slippage_usd": cum_slippage,
+        }
+
