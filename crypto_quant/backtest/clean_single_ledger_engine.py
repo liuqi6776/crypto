@@ -49,7 +49,9 @@ class TradeRecord:
     gross_pnl_usdt: float
     entry_fee_usdt: float
     exit_fee_usdt: float
-    slippage_cost_usdt: float
+    entry_slippage_usdt: float
+    exit_slippage_usdt: float
+    slippage_cost_usdt: float    # entry_slippage_usdt + exit_slippage_usdt
     funding_cost_usdt: float
     borrow_cost_usdt: float
     net_pnl_usdt: float          # gross_pnl - entry_fee - exit_fee - funding - borrow
@@ -186,12 +188,15 @@ class SingleLedgerSimulator:
             entry_price = float(carry_over_state['entry_price'])
             entry_time = carry_over_state['entry_time']
             entry_fee_current = float(carry_over_state.get('entry_fee_current', 0.0))
+            entry_slippage_current = float(carry_over_state.get('entry_slippage_current', 0.0))
             trade_funding_accum = float(carry_over_state.get('trade_funding_accum', 0.0))
             trade_borrow_accum = float(carry_over_state.get('trade_borrow_accum', 0.0))
             highest_price = float(carry_over_state.get('highest_price', entry_price))
             stop_price = float(carry_over_state.get('stop_price', 0.0))
             bars_held = int(carry_over_state.get('bars_held', 0))
             initial_equity_base = float(carry_over_state.get('equity', cash))
+            initial_carried_entry_fee = entry_fee_current
+            initial_carried_entry_slippage = entry_slippage_current
         else:
             cash = float(self.initial_cash)
             curr_pos = 'USDT_CASH'
@@ -199,12 +204,15 @@ class SingleLedgerSimulator:
             entry_price = 0.0
             entry_time = None
             entry_fee_current = 0.0
+            entry_slippage_current = 0.0
             trade_funding_accum = 0.0
             trade_borrow_accum = 0.0
             highest_price = 0.0
             stop_price = 0.0
             bars_held = 0
             initial_equity_base = float(self.initial_cash)
+            initial_carried_entry_fee = 0.0
+            initial_carried_entry_slippage = 0.0
 
         # Totals & Tracking
         equity_curve = []
@@ -282,8 +290,8 @@ class SingleLedgerSimulator:
                     raw_exit_p = opens.loc[t, curr_pos]
                     # Two-way execution slippage on sell market order
                     exit_p = raw_exit_p * (1.0 - self.execution_slippage)
-                    slip_cost = asset_units * (raw_exit_p - exit_p)
-                    total_slippage_cost += slip_cost
+                    exit_slip_cost = asset_units * (raw_exit_p - exit_p)
+                    total_slippage_cost += exit_slip_cost
 
                     gross_proceeds = asset_units * exit_p
                     exit_fee = gross_proceeds * self.fee_rate
@@ -294,6 +302,7 @@ class SingleLedgerSimulator:
 
                     cash = max(0.0, cash + gross_pnl - exit_fee)
                     gross_ret = (exit_p - entry_price) / entry_price * self.leverage
+                    total_trade_slippage = entry_slippage_current + exit_slip_cost
                     trades.append(TradeRecord(
                         entry_time=entry_time,
                         exit_time=t,
@@ -305,7 +314,9 @@ class SingleLedgerSimulator:
                         gross_pnl_usdt=gross_pnl,
                         entry_fee_usdt=entry_fee_current,
                         exit_fee_usdt=exit_fee,
-                        slippage_cost_usdt=slip_cost,
+                        entry_slippage_usdt=entry_slippage_current,
+                        exit_slippage_usdt=exit_slip_cost,
+                        slippage_cost_usdt=total_trade_slippage,
                         funding_cost_usdt=trade_funding_accum,
                         borrow_cost_usdt=trade_borrow_accum,
                         net_pnl_usdt=net_trade_pnl,
@@ -319,6 +330,7 @@ class SingleLedgerSimulator:
                     entry_price = 0.0
                     entry_time = None
                     entry_fee_current = 0.0
+                    entry_slippage_current = 0.0
                     trade_funding_accum = 0.0
                     trade_borrow_accum = 0.0
                     highest_price = 0.0
@@ -344,7 +356,9 @@ class SingleLedgerSimulator:
                     entry_fee_current = entry_fee
                     investable_nominal = max(0.0, nominal_target - entry_fee)
                     asset_units = investable_nominal / entry_price
-                    total_slippage_cost += (asset_units * slip_cost)
+                    entry_slip_cost = asset_units * slip_cost
+                    entry_slippage_current = entry_slip_cost
+                    total_slippage_cost += entry_slip_cost
 
                     cash = max(0.0, cash - entry_fee)
 
@@ -399,7 +413,9 @@ class SingleLedgerSimulator:
                         gross_pnl_usdt=gross_pnl,
                         entry_fee_usdt=entry_fee_current,
                         exit_fee_usdt=0.0,
-                        slippage_cost_usdt=0.0,
+                        entry_slippage_usdt=entry_slippage_current,
+                        exit_slippage_usdt=0.0,
+                        slippage_cost_usdt=entry_slippage_current,
                         funding_cost_usdt=trade_funding_accum,
                         borrow_cost_usdt=trade_borrow_accum,
                         net_pnl_usdt=net_trade_pnl,
@@ -410,6 +426,8 @@ class SingleLedgerSimulator:
                     cash = 0.0
                     asset_units = 0.0
                     curr_pos = 'USDT_CASH'
+                    entry_fee_current = 0.0
+                    entry_slippage_current = 0.0
                     equity_curve.append(0.0)
                     bar_records.append({
                         'bar_time': t,
@@ -428,8 +446,8 @@ class SingleLedgerSimulator:
                 elif stop_price > 0 and bar_o <= stop_price:
                     stop_count += 1
                     exec_exit = bar_o  # Gap down fill at Open
-                    slip_cost = asset_units * (stop_price - exec_exit)
-                    total_slippage_cost += max(0.0, slip_cost)
+                    exit_slip_cost = max(0.0, asset_units * (stop_price - exec_exit))
+                    total_slippage_cost += exit_slip_cost
 
                     gross_proceeds = asset_units * exec_exit
                     exit_fee = gross_proceeds * self.fee_rate
@@ -440,6 +458,7 @@ class SingleLedgerSimulator:
 
                     cash = max(0.0, cash + gross_pnl - exit_fee)
                     gross_ret = (exec_exit - entry_price) / entry_price * self.leverage
+                    total_trade_slippage = entry_slippage_current + exit_slip_cost
                     trades.append(TradeRecord(
                         entry_time=entry_time,
                         exit_time=t,
@@ -451,7 +470,9 @@ class SingleLedgerSimulator:
                         gross_pnl_usdt=gross_pnl,
                         entry_fee_usdt=entry_fee_current,
                         exit_fee_usdt=exit_fee,
-                        slippage_cost_usdt=slip_cost,
+                        entry_slippage_usdt=entry_slippage_current,
+                        exit_slippage_usdt=exit_slip_cost,
+                        slippage_cost_usdt=total_trade_slippage,
                         funding_cost_usdt=trade_funding_accum,
                         borrow_cost_usdt=trade_borrow_accum,
                         net_pnl_usdt=net_trade_pnl,
@@ -465,6 +486,7 @@ class SingleLedgerSimulator:
                     entry_price = 0.0
                     entry_time = None
                     entry_fee_current = 0.0
+                    entry_slippage_current = 0.0
                     trade_funding_accum = 0.0
                     trade_borrow_accum = 0.0
                     highest_price = 0.0
@@ -489,8 +511,8 @@ class SingleLedgerSimulator:
                 elif stop_price > 0 and bar_l <= stop_price:
                     stop_count += 1
                     exec_exit = min(bar_o, stop_price * (1.0 - self.stop_slippage))
-                    slip_cost = asset_units * (stop_price - exec_exit)
-                    total_slippage_cost += max(0.0, slip_cost)
+                    exit_slip_cost = max(0.0, asset_units * (stop_price - exec_exit))
+                    total_slippage_cost += exit_slip_cost
 
                     gross_proceeds = asset_units * exec_exit
                     exit_fee = gross_proceeds * self.fee_rate
@@ -501,6 +523,7 @@ class SingleLedgerSimulator:
 
                     cash = max(0.0, cash + gross_pnl - exit_fee)
                     gross_ret = (exec_exit - entry_price) / entry_price * self.leverage
+                    total_trade_slippage = entry_slippage_current + exit_slip_cost
                     trades.append(TradeRecord(
                         entry_time=entry_time,
                         exit_time=t,
@@ -512,7 +535,9 @@ class SingleLedgerSimulator:
                         gross_pnl_usdt=gross_pnl,
                         entry_fee_usdt=entry_fee_current,
                         exit_fee_usdt=exit_fee,
-                        slippage_cost_usdt=slip_cost,
+                        entry_slippage_usdt=entry_slippage_current,
+                        exit_slippage_usdt=exit_slip_cost,
+                        slippage_cost_usdt=total_trade_slippage,
                         funding_cost_usdt=trade_funding_accum,
                         borrow_cost_usdt=trade_borrow_accum,
                         net_pnl_usdt=net_trade_pnl,
@@ -526,6 +551,7 @@ class SingleLedgerSimulator:
                     entry_price = 0.0
                     entry_time = None
                     entry_fee_current = 0.0
+                    entry_slippage_current = 0.0
                     trade_funding_accum = 0.0
                     trade_borrow_accum = 0.0
                     highest_price = 0.0
@@ -562,7 +588,9 @@ class SingleLedgerSimulator:
                         gross_pnl_usdt=gross_pnl,
                         entry_fee_usdt=entry_fee_current,
                         exit_fee_usdt=0.0,
-                        slippage_cost_usdt=0.0,
+                        entry_slippage_usdt=entry_slippage_current,
+                        exit_slippage_usdt=0.0,
+                        slippage_cost_usdt=entry_slippage_current,
                         funding_cost_usdt=trade_funding_accum,
                         borrow_cost_usdt=trade_borrow_accum,
                         net_pnl_usdt=net_trade_pnl,
@@ -573,6 +601,8 @@ class SingleLedgerSimulator:
                     cash = 0.0
                     asset_units = 0.0
                     curr_pos = 'USDT_CASH'
+                    entry_fee_current = 0.0
+                    entry_slippage_current = 0.0
                     equity_curve.append(0.0)
                     bar_records.append({
                         'bar_time': t,
@@ -628,7 +658,9 @@ class SingleLedgerSimulator:
                             gross_pnl_usdt=asset_units * (bar_c - entry_price),
                             entry_fee_usdt=entry_fee_current,
                             exit_fee_usdt=0.0,
-                            slippage_cost_usdt=0.0,
+                            entry_slippage_usdt=entry_slippage_current,
+                            exit_slippage_usdt=0.0,
+                            slippage_cost_usdt=entry_slippage_current,
                             funding_cost_usdt=trade_funding_accum,
                             borrow_cost_usdt=trade_borrow_accum,
                             net_pnl_usdt=-initial_equity_base,
@@ -639,6 +671,8 @@ class SingleLedgerSimulator:
                         cash = 0.0
                         asset_units = 0.0
                         curr_pos = 'USDT_CASH'
+                        entry_fee_current = 0.0
+                        entry_slippage_current = 0.0
                         equity_curve.append(0.0)
                         bar_records.append({
                             'bar_time': t,
@@ -706,9 +740,36 @@ class SingleLedgerSimulator:
 
         # Open Position at Simulation End
         open_unrealized_pnl = 0.0
+        open_pos_entry_fee = 0.0
+        open_pos_entry_slippage = 0.0
+        open_pos_friction = 0.0
         if curr_pos != 'USDT_CASH' and asset_units > 0 and not liquidated:
             final_c = closes.loc[eval_idx[-1], curr_pos]
             open_unrealized_pnl = asset_units * (final_c - entry_price)
+            open_pos_entry_fee = entry_fee_current
+            open_pos_entry_slippage = entry_slippage_current
+            open_pos_friction = open_pos_entry_fee + open_pos_entry_slippage
+
+        closed_trades_entry_fees = sum(tr.entry_fee_usdt for tr in trades)
+        closed_trades_exit_fees = sum(tr.exit_fee_usdt for tr in trades)
+        closed_trades_total_fees = closed_trades_entry_fees + closed_trades_exit_fees
+        closed_trades_slippage = sum(tr.slippage_cost_usdt for tr in trades)
+        closed_trades_friction = closed_trades_total_fees + closed_trades_slippage
+
+        # Strict identity assertions for fees and slippage
+        fee_recon_err = abs((total_entry_fees + initial_carried_entry_fee) - (closed_trades_entry_fees + open_pos_entry_fee))
+        assert fee_recon_err < 1e-4, f"Entry fee mismatch: engine={total_entry_fees + initial_carried_entry_fee}, trades={closed_trades_entry_fees}, open={open_pos_entry_fee}"
+        
+        exit_fee_recon_err = abs(total_exit_fees - closed_trades_exit_fees)
+        assert exit_fee_recon_err < 1e-4, f"Exit fee mismatch: engine={total_exit_fees}, trades={closed_trades_exit_fees}"
+
+        slip_recon_err = abs((total_slippage_cost + initial_carried_entry_slippage) - (closed_trades_slippage + open_pos_entry_slippage))
+        assert slip_recon_err < 1e-4, f"Slippage mismatch: engine={total_slippage_cost + initial_carried_entry_slippage}, trades={closed_trades_slippage}, open={open_pos_entry_slippage}"
+
+        total_friction_calc = total_entry_fees + total_exit_fees + total_slippage_cost
+        initial_carried_friction = initial_carried_entry_fee + initial_carried_entry_slippage
+        friction_recon_err = abs((total_friction_calc + initial_carried_friction) - (closed_trades_friction + open_pos_friction))
+        assert friction_recon_err < 1e-4, f"Total friction mismatch: engine={total_friction_calc + initial_carried_friction}, sum={closed_trades_friction + open_pos_friction}"
 
         sum_gross_pnl = sum(tr.gross_pnl_usdt for tr in trades)
 
@@ -741,6 +802,7 @@ class SingleLedgerSimulator:
             'entry_price': entry_price,
             'entry_time': entry_time,
             'entry_fee_current': entry_fee_current,
+            'entry_slippage_current': entry_slippage_current,
             'trade_funding_accum': trade_funding_accum,
             'trade_borrow_accum': trade_borrow_accum,
             'highest_price': highest_price,
@@ -768,6 +830,13 @@ class SingleLedgerSimulator:
             'total_exit_fees': round(total_exit_fees, 2),
             'total_fees': round(total_entry_fees + total_exit_fees, 2),
             'total_slippage': round(total_slippage_cost, 2),
+            'total_friction': round(total_friction_calc, 2),
+            'closed_trades_fees': round(closed_trades_total_fees, 2),
+            'closed_trades_slippage': round(closed_trades_slippage, 2),
+            'closed_trades_friction': round(closed_trades_friction, 2),
+            'open_position_fee': round(open_pos_entry_fee, 2),
+            'open_position_slippage': round(open_pos_entry_slippage, 2),
+            'open_position_friction': round(open_pos_friction, 2),
             'total_funding': round(total_funding_cost, 2),
             'total_borrow': round(total_borrow_cost, 2),
             'open_unrealized_pnl': round(open_unrealized_pnl, 2),

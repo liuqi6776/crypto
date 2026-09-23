@@ -257,6 +257,8 @@ def main():
             "gross_pnl_usdt": tr.gross_pnl_usdt,
             "entry_fee_usdt": tr.entry_fee_usdt,
             "exit_fee_usdt": tr.exit_fee_usdt,
+            "entry_slippage_usdt": getattr(tr, "entry_slippage_usdt", 0.0),
+            "exit_slippage_usdt": getattr(tr, "exit_slippage_usdt", 0.0),
             "slippage_cost_usdt": tr.slippage_cost_usdt,
             "funding_cost_usdt": tr.funding_cost_usdt,
             "borrow_cost_usdt": tr.borrow_cost_usdt,
@@ -297,6 +299,13 @@ def main():
         "min_distance_to_liq_pct": sim_res["min_distance_to_liq_pct"],
         "total_fees": sim_res["total_fees"],
         "total_slippage": sim_res["total_slippage"],
+        "total_friction": round(sim_res["total_fees"] + sim_res["total_slippage"], 2),
+        "closed_trades_fees": sim_res.get("closed_trades_fees", sim_res["total_fees"]),
+        "closed_trades_slippage": sim_res.get("closed_trades_slippage", sim_res["total_slippage"]),
+        "closed_trades_friction": sim_res.get("closed_trades_friction", round(sim_res["total_fees"] + sim_res["total_slippage"], 2)),
+        "open_position_fee": sim_res.get("open_position_fee", 0.0),
+        "open_position_slippage": sim_res.get("open_position_slippage", 0.0),
+        "open_position_friction": sim_res.get("open_position_friction", 0.0),
         "total_funding": sim_res["total_funding"],
         "total_borrow": sim_res["total_borrow"],
         "is_perfectly_reconciled": sim_res["is_perfectly_reconciled"],
@@ -328,22 +337,23 @@ def main():
         for r_name, r_start, r_end in annual_regimes:
             sub = df_ledger.loc[r_start:r_end]
             if len(sub) >= 2:
-                s_eq = float(sub["equity"].iloc[0])
-                f_eq = float(sub["equity"].iloc[-1])
-                ret_pct = ((f_eq / s_eq) - 1.0) * 100.0 if s_eq > 0 else 0.0
+                is_fc = (r_name == "Full Cycle")
+                s_eq = float(sim_res["initial_equity"]) if is_fc else float(sub["equity"].iloc[0])
+                f_eq = float(sim_res["final_equity"]) if is_fc else float(sub["equity"].iloc[-1])
+                ret_pct = float(sim_res["total_ret_pct"]) if is_fc else (((f_eq / s_eq) - 1.0) * 100.0 if s_eq > 0 else 0.0)
 
                 cummax = sub["equity"].cummax()
                 dd = (cummax - sub["equity"]) / cummax
-                m_dd = float(dd.max() * 100.0)
+                m_dd = float(sim_res["max_dd_pct"]) if is_fc else float(dd.max() * 100.0)
 
                 bar_rets = sub["equity"].pct_change().dropna()
                 mean_r = bar_rets.mean()
                 std_r = bar_rets.std()
-                sh = float((mean_r / std_r) * np.sqrt(2190)) if std_r > 1e-12 else 0.0
+                sh = float(sim_res["sharpe"]) if is_fc else (float((mean_r / std_r) * np.sqrt(2190)) if std_r > 1e-12 else 0.0)
 
                 dur_years = (sub.index[-1] - sub.index[0]).total_seconds() / (365.25 * 86400)
-                cagr = ((f_eq / s_eq) ** (1.0 / dur_years) - 1.0) * 100.0 if (dur_years > 0.1 and f_eq > 0 and s_eq > 0) else ret_pct
-                calm = (cagr / m_dd) if m_dd > 0.001 else 0.0
+                cagr = float(sim_res["cagr_pct"]) if is_fc else (((f_eq / s_eq) ** (1.0 / dur_years) - 1.0) * 100.0 if (dur_years > 0.1 and f_eq > 0 and s_eq > 0) else ret_pct)
+                calm = float(sim_res["calmar"]) if is_fc else ((cagr / m_dd) if m_dd > 0.001 else 0.0)
 
                 sub_tr = [
                     t for t in trades_list
@@ -356,7 +366,7 @@ def main():
 
                 p_fees = sum(t.entry_fee_usdt + t.exit_fee_usdt for t in sub_tr)
                 p_slip = sum(t.slippage_cost_usdt for t in sub_tr)
-                p_fric = p_fees + p_slip
+                p_fric = float(sim_res["total_fees"] + sim_res["total_slippage"]) if is_fc else (p_fees + p_slip)
 
                 cash_pct = float((sub["curr_pos"] == "USDT_CASH").astype(float).mean() * 100.0)
 
@@ -372,16 +382,27 @@ def main():
                     "sharpe": sh,
                     "calmar": calm,
                     "avg_cash_pct": cash_pct,
-                    "trade_count": tr_cnt,
-                    "stop_count": st_cnt,
-                    "win_rate": wr,
+                    "trade_count": tr_cnt if not is_fc else sim_res["trade_count"],
+                    "stop_count": st_cnt if not is_fc else sim_res["stop_count"],
+                    "win_rate": wr if not is_fc else sim_res["win_rate"],
                     "total_friction_usdt": p_fric,
                 })
 
         if annual_breakdowns:
-            pd.DataFrame(annual_breakdowns).to_csv(out_dir / "annual_breakdown.csv", index=False)
+            df_annual = pd.DataFrame(annual_breakdowns)
+            df_annual.to_csv(out_dir / "annual_breakdown.csv", index=False)
             with open(out_dir / "annual_breakdown.json", "w", encoding="utf-8") as f:
                 json.dump(annual_breakdowns, f, indent=2, ensure_ascii=False)
+
+            # Automated cross-report assertions
+            fc_rows = df_annual[df_annual["regime"] == "Full Cycle"]
+            if not fc_rows.empty:
+                fc_row = fc_rows.iloc[0]
+                ret_diff = abs(fc_row["net_ret_pct"] - sim_res["total_ret_pct"])
+                fric_diff = abs(fc_row["total_friction_usdt"] - (sim_res["total_fees"] + sim_res["total_slippage"]))
+                assert ret_diff < 1e-4, f"Cross-report return mismatch: {fc_row['net_ret_pct']} vs {sim_res['total_ret_pct']}"
+                assert fric_diff < 0.05, f"Cross-report friction mismatch: {fc_row['total_friction_usdt']} vs {sim_res['total_fees'] + sim_res['total_slippage']}"
+                print(f"  Cross-report assertions PASSED: Return diff {ret_diff:.6f}, Friction diff ${fric_diff:.2f}")
 
     summary_md = f"""# Quantitative Research Experiment Summary / 实验总结报告
 - **Experiment ID / 实验编号**: `{run_id}`
