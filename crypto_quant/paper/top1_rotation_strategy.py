@@ -324,10 +324,12 @@ class Top1RotationStrategy:
             if state.active_symbol != "USDT_CASH" and state.asset_units > 0:
                 if live_prices and state.active_symbol in live_prices:
                     prev_price = float(live_prices[state.active_symbol])
+                elif state.active_symbol in klines_dict and not klines_dict[state.active_symbol].empty:
+                    prev_price = float(klines_dict[state.active_symbol]["close"].iloc[-1])
                 elif state.active_symbol == top_cand:
                     prev_price = curr_price
                 else:
-                    prev_price = state.current_price
+                    prev_price = state.current_price if state.current_price > 0 else state.entry_price
                 gross_proceeds = state.asset_units * prev_price
                 sell_fee = gross_proceeds * self.one_way_fee_rate
                 cost_basis = state.asset_units * state.entry_price
