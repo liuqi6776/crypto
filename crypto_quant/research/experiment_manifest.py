@@ -41,7 +41,7 @@ def get_git_info() -> Dict[str, Any]:
 
     try:
         status = subprocess.check_output(
-            ["git", "status", "--porcelain"], stderr=subprocess.DEVNULL
+            ["git", "status", "--porcelain", "-uno"], stderr=subprocess.DEVNULL
         ).decode().strip()
         is_dirty = bool(status)
     except Exception:
