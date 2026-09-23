@@ -58,7 +58,7 @@
 >    - **Regime 2 (Shared 3.0 ATR Stop Only, No Mid-Band Exit)**: Both variants exit strictly on trailing stop. Bollinger 120 achieves **+2,559.86%** (Sharpe 1.44, 157 trades) vs Donchian 120 at **+1,556.41%** (Sharpe 1.30, 183 trades). Observed Difference: **+1,003.45 percentage points (个百分点)**.
 >    - **Regime 3 (Mode B Intrabar 3.0 ATR Stop Touch)**: Exit occurs solely when intrabar Low touches the prior-bar stop. Bollinger 120 achieves **+860.05%** (Sharpe 1.12, 205 trades) vs Donchian 120 at **+190.89%** (Sharpe 0.68, 229 trades). Observed Difference: **+669.16 percentage points (个百分点)**.
 > 3. **Trade Frequency, Friction Amount, and Return Divergence / 交易频次、摩擦金额与收益分歧定性**:
->    - 在三个固定退场对照中，唐奇安通道触发了更多交易笔数（多 24 至 26 笔），但其全周期**累计摩擦金额反而更低**（例如共享布林中轨下为 $15,750，低于布林带的 $20,333；无中轨止损退出下为 $15,709，低于布林带的 $23,178；Mode B 下为 $7,545，低于布林带的 $17,889）。这是因为手续费和滑点与账户名义权益成正比，当策略净值复合增长较低时，后续单笔交易的名义金额与摩擦绝对值更小。因此，**交易笔数更多绝不等于总摩擦金额更高**。
+>    - 在三个固定退场对照中，唐奇安通道触发了更多交易笔数（多 24 至 26 笔），但其全周期**累计摩擦金额反而更低**（例如共享布林中轨下为 $15,750，低于布林带的 $20,333；无中轨止损退出下为 $15,709，低于布林带的 $23,178；Mode B 下为 $7,545，低于布林带的 $17,889）。实证表明：**在变动权益回测中，交易笔数更多绝不必然导致更高的累计摩擦金额**。“策略净值复合增长较低导致后续单笔名义开仓金额与摩擦变小”是一个合理解释/假说，但仅凭总摩擦汇总表尚不能确认主导原因，仍须结合逐笔成交金额与换手数据做进一步实证核实。
 >    - 唐奇安版本在本次回测中表现较弱的直接表现是胜率较低（38.4%~42.6% 对比 42.4%~46.5%）和盈亏比更低（1.31~1.89 对比 1.64~2.06）。导致这两组入场触发时点盈亏分歧的深层机理，不能简单推断为摩擦损耗，而需要未来进一步开展逐笔交易的微观收益拆解。此外，上述收益差（如 660.10 个百分点）均为本次特定历史样本的条件对照结果，不能当作未来交易的确定性超额。
 
 ### 3.2 Standalone EMA200 Macro Sizing Ablation (Fixed Bollinger 120 Channel)
@@ -202,8 +202,8 @@
 ### 轮动扣掉多出的换手成本后，是否真正超过简单 EMA 对照？
 
 - In a unified single ledger, Top-1 rotation candidate (Buffer 0.30) achieves **+37,852.01%** net return with an average cash ratio of **48.5%**.
-- Incremental annual friction incurred in 2026 is **$471,467.22**, and total full-cycle friction is **$1,742,428.48**. The strategy generates sufficient cross-sectional alpha to more than overcome turnover friction, but capacity constraints become binding above $250k portfolio size.
-- 单账本纠偏后，Top-1 轮动策略 2026 年实际发生的增量摩擦成本为 47.1 万美元（全周期累计为 174.2 万美元），平均现金仓位为 48.5%。其截面动量超额在扣费后依然超越被动基准与简单趋势，但在大资金体量下会受到盘口容量耗尽的制约。
+- Incremental annual friction incurred in 2026 is **$471,467.22**, and total full-cycle friction is **$1,742,428.48**. The strategy generates sufficient cross-sectional alpha to more than overcome turnover friction. However, capacity constraints are estimated to become binding above ~$250k portfolio size; this threshold must be treated as an unverified rough estimate derived from static orderbook snapshots, rather than a proven hard ceiling during live trade execution.
+- 单账本纠偏后，Top-1 轮动策略 2026 年实际发生的增量摩擦成本为 47.1 万美元（全周期累计为 174.2 万美元），平均现金仓位为 48.5%。其截面动量超额在扣费后依然超越被动基准与简单趋势；但在大资金体量下可能受到盘口容量耗尽的制约——需要说明的是，“资金规模超过约 25 万美元时容量受限”仅为基于单次静态盘口快照的**初步待验证估计**，因快照无法代表交易瞬间的动态成交容量，确切资金容量仍需依赖前向持续深度实测核实。
 
 ### (C) Top-3 Winning Trades Dependency & Fragility
 ### 去掉最大的三笔盈利交易，或漏掉一笔关键趋势交易后，还赚钱吗？
