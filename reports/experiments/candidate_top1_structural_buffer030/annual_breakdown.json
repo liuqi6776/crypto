@@ -14,7 +14,7 @@
     "trade_count": 85,
     "stop_count": 0,
     "win_rate": 56.470588235294116,
-    "total_friction_usdt": 40861.849461594924
+    "total_friction_usdt": 50391.56192065099
   },
   {
     "regime": "2022",
@@ -31,7 +31,7 @@
     "trade_count": 34,
     "stop_count": 0,
     "win_rate": 35.294117647058826,
-    "total_friction_usdt": 41294.09283545617
+    "total_friction_usdt": 51122.77085841447
   },
   {
     "regime": "2023",
@@ -48,7 +48,7 @@
     "trade_count": 77,
     "stop_count": 0,
     "win_rate": 48.05194805194805,
-    "total_friction_usdt": 128539.32811841718
+    "total_friction_usdt": 158637.28245717453
   },
   {
     "regime": "2024",
@@ -65,7 +65,7 @@
     "trade_count": 91,
     "stop_count": 0,
     "win_rate": 47.25274725274725,
-    "total_friction_usdt": 572525.5385690514
+    "total_friction_usdt": 708333.7752491175
   },
   {
     "regime": "2025",
@@ -82,7 +82,7 @@
     "trade_count": 68,
     "stop_count": 0,
     "win_rate": 39.705882352941174,
-    "total_friction_usdt": 417575.4116125108
+    "total_friction_usdt": 516313.9417938731
   },
   {
     "regime": "2026 (Stress)",
@@ -99,23 +99,23 @@
     "trade_count": 55,
     "stop_count": 0,
     "win_rate": 38.18181818181819,
-    "total_friction_usdt": 440566.0434684674
+    "total_friction_usdt": 545262.7658963383
   },
   {
     "regime": "Full Cycle",
     "start_dt": "2020-10-15 00:00:00",
     "end_dt": "2026-09-23 00:00:00",
-    "initial_equity": 9985.54915421205,
-    "final_equity": 4404230.279925322,
-    "net_ret_pct": 44006.03975713798,
-    "cagr_pct": 178.84058860824373,
-    "max_dd_pct": 53.1362217020211,
-    "sharpe": 1.861473469593614,
-    "calmar": 3.365700135985418,
+    "initial_equity": 10000.0,
+    "final_equity": 4404230.28,
+    "net_ret_pct": 43942.3,
+    "cagr_pct": 178.75,
+    "max_dd_pct": -53.14,
+    "sharpe": 1.76,
+    "calmar": 3.36,
     "avg_cash_pct": 47.525741509144,
     "trade_count": 426,
     "stop_count": 0,
-    "win_rate": 46.009389671361504,
-    "total_friction_usdt": 1641907.7390501676
+    "win_rate": 46.01,
+    "total_friction_usdt": 2036446.02
   }
 ]

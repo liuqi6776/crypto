@@ -87,9 +87,18 @@ flowchart TD
    - Appended to `data/forward_tracking/forward_journal.jsonl`.
    - Appended to `data/forward_tracking/forward_ledger.csv`.
 4. **Falsification & Acceptance Criteria / 证伪与验收准则**:
-   - **Candidate A Acceptance Condition**: Outperforms Candidate B on risk-adjusted metrics (Sharpe, Calmar) over forward rolling 60 days.
-   - **Candidate A Rejection Condition**: Underperforms Candidate B by >10% cumulative return or experiences maximum drawdown exceeding historical max drawdown (-53.14%).
-   - If Candidate A is rejected, system defaults to Candidate B (Simple Multi-Asset EMA Trend).
+   - **Minimum Evaluation Horizon / 最低评估周期**:
+     - Requires at least **180 calendar days (6 months)** of forward continuous tracking OR a minimum of **30 completed roundtrip trades** for Candidate A.
+     - Single-month or 60-day short periods are statistically underpowered for 4-hour trend following and are prohibited from being used for final promotion decisions.
+   - **Candidate A Acceptance Hurdle / 候选策略 A 验收准则**:
+     - Must achieve **positive net excess return ($\Delta \text{Ret} > 0$)** over Candidate B after all actual fees and execution slippage.
+     - Must achieve **higher cost-adjusted Sharpe ratio ($\text{Sharpe}_A > \text{Sharpe}_B$)**.
+     - Maximum forward drawdown must remain strictly bounded within historical maximum drawdown ($\text{MaxDD} \le 53.14\%$).
+   - **Candidate A Rejection & Default Criteria / 候选策略 A 证伪与降级规则**:
+     - If Candidate A experiences net underperformance relative to Candidate B ($\Delta \text{Ret} \le 0$) across the 180-day window, or suffers $\text{MaxDD} > 53.14\%$, Candidate A is conclusively rejected as historical overfitting.
+     - Upon rejection, the production deployment defaults unconditionally to **Candidate B (Simple Multi-Asset EMA Trend)**.
+   - **Development Period Disclosure / 开发区间认识论披露**:
+     - The 2026 performance recorded in development (Candidate A: +0.13%, Candidate B: +6.15%) was observed prior to protocol freezing and serves solely as a development stress-test. Genuine out-of-sample forward tracking strictly begins from 2026-09-23 00:00:00 UTC onward.
 
 ---
 

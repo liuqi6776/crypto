@@ -1,5 +1,5 @@
 {
-  "run_id": "exp_core4_L1x_all_fresh_20260923_034831",
+  "run_id": "exp_core4_L1x_all_fresh_20260923_041424",
   "role": "HYPOTHESIS_EXPERIMENT",
   "universe": [
     "BTCUSDT",
@@ -26,6 +26,13 @@
   "min_distance_to_liq_pct": 81.71,
   "total_fees": 1253389.99,
   "total_slippage": 783056.03,
+  "total_friction": 2036446.02,
+  "closed_trades_fees": 1249873.11,
+  "closed_trades_slippage": 780860.84,
+  "closed_trades_friction": 2030733.95,
+  "open_position_fee": 3516.87,
+  "open_position_slippage": 2195.19,
+  "open_position_friction": 5712.06,
   "total_funding": 0.0,
   "total_borrow": 0.0,
   "is_perfectly_reconciled": true,
