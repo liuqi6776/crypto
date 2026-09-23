@@ -2,21 +2,31 @@
 """
 CLI Runner for Dual Forward Paper Simulation (Candidate A vs Candidate B)
 ========================================================================
-Usage Examples:
-  # Initialize pristine forward tracking state:
-  python scripts/run_forward_dual_paper.py --init
+Operational Modes:
+  # Initialize or reset forward tracking state:
+  python scripts/run_forward_dual_paper.py --reset
 
-  # Seed forward ledger with the latest 20 4-hour bars:
-  python scripts/run_forward_dual_paper.py --backfill-bars 20
+  # Seed historical demonstration replay (isolated as DEMO_REPLAY in demo_replay_ledger.csv):
+  python scripts/run_forward_dual_paper.py --seed-demo --bars 20
 
-  # Print current forward tracking comparison status:
+  # Check & process the latest completed 4h candle from Binance live:
+  python scripts/run_forward_dual_paper.py --live-step
+
+  # Run continuous live polling daemon:
+  python scripts/run_forward_dual_paper.py --live-poll --interval 60
+
+  # Print current tracking comparison status:
   python scripts/run_forward_dual_paper.py --status
 """
 
 import sys
 import os
 import argparse
+import time
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
+from typing import Dict, Any, List, Optional
+import requests
 import pandas as pd
 import numpy as np
 
@@ -26,10 +36,48 @@ if str(repo_root) not in sys.path:
     sys.path.insert(0, str(repo_root))
 
 from crypto_quant.paper.forward_dual_runner import ForwardDualRunner, CORE4_SYMBOLS
+from crypto_quant.paper.market_data import MarketDataFetcher
+
+BINANCE_PUBLIC_API_URLS = [
+    "https://api.binance.com",
+    "https://api1.binance.com",
+    "https://api2.binance.com",
+    "https://api3.binance.com",
+    "https://data-api.binance.vision",
+]
+
+OOS_CUTOFF_UTC = pd.Timestamp("2026-09-23 00:00:00")
 
 
-def load_market_data(symbols=CORE4_SYMBOLS):
-    """Loads 4h parquet data for symbols and aligns on common timestamp index."""
+def fetch_live_book_ticker(symbols: List[str] = CORE4_SYMBOLS) -> Dict[str, Dict[str, float]]:
+    """
+    Fetches real-time top-of-book quotes (bidPrice, bidQty, askPrice, askQty)
+    from Binance public REST endpoint.
+    """
+    quotes = {}
+    for base_url in BINANCE_PUBLIC_API_URLS:
+        url = f"{base_url}/api/v3/ticker/bookTicker"
+        try:
+            resp = requests.get(url, timeout=5)
+            if resp.status_code == 200:
+                for item in resp.json():
+                    sym = item.get("symbol")
+                    if sym in symbols:
+                        quotes[sym] = {
+                            "bid": float(item.get("bidPrice", 0.0)),
+                            "bid_qty": float(item.get("bidQty", 0.0)),
+                            "ask": float(item.get("askPrice", 0.0)),
+                            "ask_qty": float(item.get("askQty", 0.0)),
+                        }
+                if len(quotes) >= len(symbols):
+                    return quotes
+        except Exception:
+            continue
+    return quotes
+
+
+def load_local_market_data(symbols: List[str] = CORE4_SYMBOLS):
+    """Loads local 4h parquet data for symbols and aligns on common timestamp index."""
     raw_dfs = {}
     for s in symbols:
         p = repo_root / "data" / f"{s}_4h_2020_2026.parquet"
@@ -48,11 +96,180 @@ def load_market_data(symbols=CORE4_SYMBOLS):
     return raw_dfs, common_idx
 
 
+def seed_demo_replay(runner: ForwardDualRunner, n_bars: int = 20):
+    """Seeds historical demonstration replay explicitly tagged as DEMO_REPLAY."""
+    raw_dfs, common_idx = load_local_market_data()
+    target_idx = common_idx[-n_bars:]
+    print(f"[DEMO REPLAY] Processing {len(target_idx)} bars from {target_idx[0]} to {target_idx[-1]}...")
+
+    closes_df = pd.DataFrame({s: raw_dfs[s]["close"] for s in CORE4_SYMBOLS}, index=common_idx)
+
+    # Precompute ATR 14
+    df_atrs = pd.DataFrame(index=common_idx, columns=CORE4_SYMBOLS, dtype=float)
+    for s in CORE4_SYMBOLS:
+        df_s = raw_dfs[s].reindex(common_idx)
+        tr1 = df_s["high"] - df_s["low"]
+        tr2 = (df_s["high"] - df_s["close"].shift(1)).abs()
+        tr3 = (df_s["low"] - df_s["close"].shift(1)).abs()
+        tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+        df_atrs[s] = tr.rolling(14).mean()
+
+    for t in target_idx:
+        i_loc = common_idx.get_loc(t)
+        hist_closes = closes_df.iloc[:i_loc]
+        hist_atrs = {s: float(df_atrs.loc[t, s]) for s in CORE4_SYMBOLS if not np.isnan(df_atrs.loc[t, s])}
+
+        open_prices = {s: float(raw_dfs[s].loc[t, "open"]) for s in CORE4_SYMBOLS}
+        close_prices = {s: float(raw_dfs[s].loc[t, "close"]) for s in CORE4_SYMBOLS}
+
+        runner.process_bar(
+            bar_time=t,
+            open_prices=open_prices,
+            close_prices=close_prices,
+            historical_closes=hist_closes,
+            historical_atrs=hist_atrs,
+            regime="DEMO_REPLAY",
+        )
+
+    print(f"[DEMO REPLAY] Successfully saved demonstration replay to {runner.demo_ledger_file}.")
+
+
+def run_live_step(runner: ForwardDualRunner) -> Dict[str, Any]:
+    """
+    Checks Binance for the latest completed 4h candle, fetches live order book quotes,
+    and executes genuine forward step if new.
+    """
+    fetcher = MarketDataFetcher()
+    now_utc = datetime.now(timezone.utc)
+    arrival_time_str = now_utc.strftime("%Y-%m-%d %H:%M:%S UTC")
+
+    # Fetch latest closed candles for all Core-4 symbols
+    klines_dict = {}
+    for s in CORE4_SYMBOLS:
+        try:
+            df_k = fetcher.fetch_closed_klines(symbol=s, interval="4h", limit=250, check_freshness=False)
+            klines_dict[s] = df_k
+        except Exception as e:
+            print(f"[LIVE STEP ERROR] Failed to fetch {s}: {e}")
+            return {"status": "ERROR", "message": str(e)}
+
+    # Verify common index
+    common_idx = klines_dict[CORE4_SYMBOLS[0]].index
+    for s in CORE4_SYMBOLS[1:]:
+        common_idx = common_idx.intersection(klines_dict[s].index)
+    common_idx = common_idx.sort_values()
+
+    latest_bar_t = common_idx[-1]
+    candle_close_t = latest_bar_t + timedelta(hours=4)
+    candle_close_str = candle_close_t.strftime("%Y-%m-%d %H:%M:%S UTC")
+
+    t_clean = latest_bar_t.tz_convert(None) if latest_bar_t.tzinfo is not None else latest_bar_t
+    cutoff_clean = OOS_CUTOFF_UTC.tz_convert(None) if getattr(OOS_CUTOFF_UTC, "tzinfo", None) is not None else OOS_CUTOFF_UTC
+    regime = "FORWARD_OOS_LIVE" if t_clean >= cutoff_clean else "DEMO_REPLAY"
+    bar_key = f"{regime}:{latest_bar_t}"
+
+    if bar_key in runner.processed_bars:
+        print(f"[LIVE STEP] Bar {latest_bar_t} ({regime}) already processed. No new closed bar. Current time: {arrival_time_str}")
+        return {
+            "status": "ALREADY_PROCESSED",
+            "latest_bar": str(latest_bar_t),
+            "regime": regime,
+            "current_time": arrival_time_str,
+        }
+
+    # Fetch real obtainable top-of-book quotes
+    actual_quotes = fetch_live_book_ticker(CORE4_SYMBOLS)
+    quote_arrival_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+    # Closes up to bar T-1 for signals
+    closes_df = pd.DataFrame({s: klines_dict[s]["close"] for s in CORE4_SYMBOLS}, index=common_idx)
+    i_loc = common_idx.get_loc(latest_bar_t)
+    hist_closes = closes_df.iloc[:i_loc]
+
+    # Compute ATRs
+    df_atrs = pd.DataFrame(index=common_idx, columns=CORE4_SYMBOLS, dtype=float)
+    for s in CORE4_SYMBOLS:
+        df_s = klines_dict[s].reindex(common_idx)
+        tr1 = df_s["high"] - df_s["low"]
+        tr2 = (df_s["high"] - df_s["close"].shift(1)).abs()
+        tr3 = (df_s["low"] - df_s["close"].shift(1)).abs()
+        tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+        df_atrs[s] = tr.rolling(14).mean()
+    hist_atrs = {s: float(df_atrs.loc[latest_bar_t, s]) for s in CORE4_SYMBOLS if not np.isnan(df_atrs.loc[latest_bar_t, s])}
+
+    open_prices = {s: float(klines_dict[s].loc[latest_bar_t, "open"]) for s in CORE4_SYMBOLS}
+    close_prices = {s: float(klines_dict[s].loc[latest_bar_t, "close"]) for s in CORE4_SYMBOLS}
+
+    print(f"[LIVE STEP] Processing newly closed bar {latest_bar_t} under {regime}...")
+    res = runner.process_bar(
+        bar_time=latest_bar_t,
+        open_prices=open_prices,
+        close_prices=close_prices,
+        historical_closes=hist_closes,
+        historical_atrs=hist_atrs,
+        actual_quotes=actual_quotes,
+        candle_close_time_utc=candle_close_str,
+        data_arrival_time_utc=arrival_time_str,
+        quote_arrival_time_utc=quote_arrival_str,
+        regime=regime,
+    )
+
+    print(f"[LIVE STEP COMPLETE] Status={res['status']} | Latency={res.get('arrival_latency_sec')}s | Candidate A={res.get('candidate_a')} | Candidate B={res.get('candidate_b')}")
+    return res
+
+
+def run_live_poll_daemon(runner: ForwardDualRunner, interval_seconds: int = 60):
+    """Continuous polling daemon that monitors Binance for new closed 4h candles."""
+    print(f"[LIVE POLL DAEMON] Starting continuous listener (polling every {interval_seconds}s)...")
+    print(f"[LIVE POLL DAEMON] Target cutoff for OOS: >= {OOS_CUTOFF_UTC} UTC")
+    while True:
+        try:
+            run_live_step(runner)
+        except Exception as e:
+            print(f"[LIVE POLL EXCEPTION] Error during step: {e}")
+        time.sleep(interval_seconds)
+
+
+def print_status(runner: ForwardDualRunner):
+    """Displays comprehensive forward paper tracking status."""
+    st = runner.state
+    cA = st["candidate_a"]
+    cB = st["candidate_b"]
+    init_c = st["initial_cash"]
+    ret_a = ((cA["equity"] / init_c) - 1.0) * 100.0
+    ret_b = ((cB["total_equity"] / init_c) - 1.0) * 100.0
+
+    print("=" * 80)
+    print(" DUAL FORWARD PAPER TRACKING AUDIT STATUS")
+    print("=" * 80)
+    print(f"Genuine OOS Bars (>= 2026-09-23): {st.get('total_live_bars_processed', 0)}")
+    print(f"Demo Replay Bars (< 2026-09-23):  {st.get('total_demo_bars_processed', 0)}")
+    print(f"Last Processed Live Bar:         {st.get('last_processed_live_bar') or 'Awaiting first live bar'}")
+    print(f"Initial Capital:                 ${init_c:,.2f} USDT each\n")
+    print(f"[Candidate A: Top-1 Buffer 0.30]")
+    print(f"  Current Equity: ${cA['equity']:,.2f} ({ret_a:+.2f}%)")
+    print(f"  Position: {cA['curr_pos']} | Cash: ${cA['cash']:,.2f}")
+    print(f"  Max Drawdown: {cA['max_drawdown_pct']:.2f}% | Completed Trades: {cA['trade_count']}")
+    print(f"  Fees: ${cA['total_fees']:,.2f} | Slippage: ${cA['total_slippage']:,.2f}\n")
+    print(f"[Candidate B: Simple EMA Trend]")
+    print(f"  Current Equity: ${cB['total_equity']:,.2f} ({ret_b:+.2f}%)")
+    active_b = [s for s, sub in cB["sub_portfolios"].items() if sub["in_pos"]]
+    print(f"  Active Tokens: {active_b or '100% Cash'} | Cash: ${cB['total_cash']:,.2f}")
+    print(f"  Max Drawdown: {cB['max_drawdown_pct']:.2f}% | Completed Trades: {cB['trade_count']}")
+    print(f"  Fees: ${cB['total_fees']:,.2f} | Slippage: ${cB['total_slippage']:,.2f}\n")
+    print(f"Alpha Spread (A - B): {ret_a - ret_b:+.2f}%")
+    print("=" * 80)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Dual Forward Paper Tracking CLI")
-    parser.add_argument("--init", action="store_true", help="Initialize or reset forward tracking ledgers")
-    parser.add_argument("--backfill-bars", type=int, default=0, help="Number of recent 4h bars to backfill/seed")
-    parser.add_argument("--status", action="store_true", help="Print current tracking status")
+    parser.add_argument("--reset", action="store_true", help="Reset forward tracking state")
+    parser.add_argument("--seed-demo", action="store_true", help="Seed historical demonstration replay")
+    parser.add_argument("--bars", type=int, default=20, help="Number of bars for demo replay")
+    parser.add_argument("--live-step", action="store_true", help="Execute single live check for latest closed candle")
+    parser.add_argument("--live-poll", action="store_true", help="Run continuous live polling daemon")
+    parser.add_argument("--interval", type=int, default=60, help="Polling interval in seconds")
+    parser.add_argument("--status", action="store_true", help="Print current status")
     parser.add_argument("--output-dir", type=str, default="data/forward_tracking", help="Tracking output directory")
     parser.add_argument("--initial-cash", type=float, default=10000.0, help="Initial cash for each model")
 
@@ -63,76 +280,21 @@ def main():
         initial_cash=args.initial_cash,
     )
 
-    if args.init:
+    if args.reset:
         runner.reset()
-        print("Initialized forward paper tracking state.")
+        print("Forward tracking state has been cleanly reset.")
 
-    if args.backfill_bars > 0:
-        raw_dfs, common_idx = load_market_data()
-        n_bars = args.backfill_bars
-        if n_bars > len(common_idx) - 200:
-            n_bars = len(common_idx) - 200
+    if args.seed_demo:
+        seed_demo_replay(runner, n_bars=args.bars)
 
-        target_idx = common_idx[-n_bars:]
-        print(f"Seeding forward paper ledger across {len(target_idx)} bars from {target_idx[0]} to {target_idx[-1]}...")
+    if args.live_step:
+        run_live_step(runner)
 
-        # Precompute closes dataframe
-        closes_df = pd.DataFrame({s: raw_dfs[s]["close"] for s in CORE4_SYMBOLS}, index=common_idx)
+    if args.live_poll:
+        run_live_poll_daemon(runner, interval_seconds=args.interval)
 
-        # Precompute ATR 14 for each symbol
-        df_atrs = pd.DataFrame(index=common_idx, columns=CORE4_SYMBOLS, dtype=float)
-        for s in CORE4_SYMBOLS:
-            df_s = raw_dfs[s].reindex(common_idx)
-            tr1 = df_s["high"] - df_s["low"]
-            tr2 = (df_s["high"] - df_s["close"].shift(1)).abs()
-            tr3 = (df_s["low"] - df_s["close"].shift(1)).abs()
-            tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
-            df_atrs[s] = tr.rolling(14).mean()
-
-        for t in target_idx:
-            i_loc = common_idx.get_loc(t)
-            hist_closes = closes_df.iloc[:i_loc]
-            hist_atrs = {s: float(df_atrs.loc[t, s]) for s in CORE4_SYMBOLS if not np.isnan(df_atrs.loc[t, s])}
-
-            open_prices = {s: float(raw_dfs[s].loc[t, "open"]) for s in CORE4_SYMBOLS}
-            close_prices = {s: float(raw_dfs[s].loc[t, "close"]) for s in CORE4_SYMBOLS}
-
-            runner.process_bar(
-                bar_time=t,
-                open_prices=open_prices,
-                close_prices=close_prices,
-                historical_closes=hist_closes,
-                historical_atrs=hist_atrs,
-            )
-
-        print(f"Successfully processed {len(target_idx)} forward bars.")
-
-    if args.status or (not args.init and args.backfill_bars == 0):
-        st = runner.state
-        cA = st["candidate_a"]
-        cB = st["candidate_b"]
-        init_c = st["initial_cash"]
-        ret_a = ((cA["equity"] / init_c) - 1.0) * 100.0
-        ret_b = ((cB["total_equity"] / init_c) - 1.0) * 100.0
-
-        print("=" * 80)
-        print(" DUAL FORWARD PAPER TRACKING STATUS")
-        print("=" * 80)
-        print(f"Total Bars Tracked: {st['total_bars_processed']} | Last Bar: {st['last_processed_bar']}")
-        print(f"Initial Cash: ${init_c:,.2f} each\n")
-        print(f"[Candidate A: Top-1 Buffer 0.30]")
-        print(f"  Current Equity: ${cA['equity']:,.2f} ({ret_a:+.2f}%)")
-        print(f"  Position: {cA['curr_pos']} | Cash: ${cA['cash']:,.2f}")
-        print(f"  Max Drawdown: {cA['max_drawdown_pct']:.2f}% | Trades: {cA['trade_count']}")
-        print(f"  Fees: ${cA['total_fees']:,.2f} | Slippage: ${cA['total_slippage']:,.2f}\n")
-        print(f"[Candidate B: Simple EMA Trend]")
-        print(f"  Current Equity: ${cB['total_equity']:,.2f} ({ret_b:+.2f}%)")
-        active_b = [s for s, sub in cB["sub_portfolios"].items() if sub["in_pos"]]
-        print(f"  Active Tokens: {active_b or '100% Cash'} | Cash: ${cB['total_cash']:,.2f}")
-        print(f"  Max Drawdown: {cB['max_drawdown_pct']:.2f}% | Trades: {cB['trade_count']}")
-        print(f"  Fees: ${cB['total_fees']:,.2f} | Slippage: ${cB['total_slippage']:,.2f}\n")
-        print(f"Alpha Spread (A - B): {ret_a - ret_b:+.2f}%")
-        print("=" * 80)
+    if args.status or (not args.reset and not args.seed_demo and not args.live_step and not args.live_poll):
+        print_status(runner)
 
 
 if __name__ == "__main__":

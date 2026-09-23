@@ -8,14 +8,16 @@ Runs parallel real-time forward paper simulation for:
 
 Operational Standards:
 - Strict closed-candle causality (Signals calculated from Bar T-1 closed candles).
-- Two-way execution slippage (5 bps entry, 5 bps exit) and exchange taker fee (8 bps).
-- Millisecond-precision latency tracking between candle close and order execution.
-- Mathematical identity assertion on every bar: Equity == Cash + Mark-to-Market Position.
-- Continuous state persistence to disk:
-  * data/forward_tracking/status.json
-  * data/forward_tracking/forward_ledger.csv
-  * data/forward_tracking/forward_journal.jsonl
-  * data/forward_tracking/forward_comparison.md
+- Real obtainable order book quotes (Binance bookTicker best bid/ask) with two-way slippage.
+- Physical timestamp audit trail:
+  * candle_close_time_utc: Official 4h bar close timestamp
+  * data_arrival_time_utc: Timestamp when complete closed candle arrived via REST
+  * decision_time_utc: Timestamp when model ranking completed
+  * quote_arrival_time_utc: Timestamp when real-time bookTicker quote was obtained
+- Restart Idempotency: Guards against duplicate processing of the same bar.
+- Clear regime segregation:
+  * FORWARD_OOS_LIVE: Genuine out-of-sample forward tracking (>= 2026-09-23 UTC).
+  * DEMO_REPLAY: Offline demonstration / backfill testing (stored in demo_replay_ledger.csv).
 """
 
 import os
@@ -23,7 +25,7 @@ import json
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional, Set, Tuple
 import numpy as np
 import pandas as pd
 
@@ -40,7 +42,7 @@ DELTA_SCORE_BUFFER = 0.30          # 0.30 buffer for Candidate A
 class ForwardDualRunner:
     """
     Manages dual forward paper ledgers for Candidate A and Candidate B.
-    Can be run bar-by-bar in live cron/daemon or backfilled over historical bars.
+    Supports real-time live execution and isolated demo replays.
     """
 
     def __init__(
@@ -60,10 +62,27 @@ class ForwardDualRunner:
 
         self.status_file = self.output_dir / "status.json"
         self.ledger_file = self.output_dir / "forward_ledger.csv"
+        self.demo_ledger_file = self.output_dir / "demo_replay_ledger.csv"
         self.journal_file = self.output_dir / "forward_journal.jsonl"
         self.report_file = self.output_dir / "forward_comparison.md"
 
+        self.processed_bars: Set[str] = self._load_processed_bar_keys()
         self.state: Dict[str, Any] = self._load_or_initialize_state()
+
+    def _load_processed_bar_keys(self) -> Set[str]:
+        """Loads all previously processed (regime, bar_time) keys from ledgers to enforce idempotency."""
+        keys = set()
+        for f in [self.ledger_file, self.demo_ledger_file]:
+            if f.exists():
+                try:
+                    df = pd.read_csv(f)
+                    if "bar_time" in df.columns:
+                        reg = "DEMO_REPLAY" if "demo" in f.name else "FORWARD_OOS_LIVE"
+                        for b in df["bar_time"].dropna():
+                            keys.add(f"{reg}:{str(b)}")
+                except Exception:
+                    pass
+        return keys
 
     def _load_or_initialize_state(self) -> Dict[str, Any]:
         """Loads state from status.json if exists, otherwise initializes fresh state."""
@@ -75,17 +94,17 @@ class ForwardDualRunner:
             except Exception as e:
                 print(f"[ForwardDualRunner] Warning: Failed to load existing status.json ({e}). Reinitializing.")
 
-        # Fresh Initialization
         per_asset_cash_b = self.initial_cash / len(self.symbols)
         fresh_state = {
-            "version": "1.0.0",
+            "version": "2.0.0",
             "initialized_at_utc": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
             "initial_cash": self.initial_cash,
             "fee_rate": self.fee_rate,
             "slippage": self.slippage,
             "symbols": self.symbols,
-            "total_bars_processed": 0,
-            "last_processed_bar": None,
+            "total_live_bars_processed": 0,
+            "total_demo_bars_processed": 0,
+            "last_processed_live_bar": None,
             "candidate_a": {
                 "name": "Candidate A: Top-1 Rotation (Buffer 0.30)",
                 "cash": self.initial_cash,
@@ -135,11 +154,15 @@ class ForwardDualRunner:
         }
         return fresh_state
 
-    def reset(self):
+    def reset(self, keep_demo: bool = False):
         """Wipes tracking data and reinitializes with pristine state."""
-        for p in [self.status_file, self.ledger_file, self.journal_file, self.report_file]:
+        targets = [self.status_file, self.ledger_file, self.journal_file, self.report_file]
+        if not keep_demo:
+            targets.append(self.demo_ledger_file)
+        for p in targets:
             if p.exists():
                 p.unlink()
+        self.processed_bars = self._load_processed_bar_keys()
         self.state = self._load_or_initialize_state()
         self._save_state()
         print(f"[ForwardDualRunner] Reset completed. Pristine state written to {self.output_dir}.")
@@ -149,11 +172,12 @@ class ForwardDualRunner:
         with open(self.journal_file, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
-    def _append_ledger(self, row: Dict[str, Any]):
-        """Appends a bar row to forward_ledger.csv."""
+    def _append_ledger(self, row: Dict[str, Any], regime: str = "FORWARD_OOS_LIVE"):
+        """Appends a bar row to forward_ledger.csv or demo_replay_ledger.csv."""
+        target_file = self.demo_ledger_file if regime == "DEMO_REPLAY" else self.ledger_file
         df_row = pd.DataFrame([row])
-        header = not self.ledger_file.exists()
-        df_row.to_csv(self.ledger_file, mode="a", index=False, header=header)
+        header = not target_file.exists()
+        df_row.to_csv(target_file, mode="a", index=False, header=header)
 
     def _save_state(self):
         """Atomically saves current status.json and updates comparison report."""
@@ -170,18 +194,42 @@ class ForwardDualRunner:
         close_prices: Dict[str, float],
         historical_closes: pd.DataFrame,
         historical_atrs: Optional[Dict[str, float]] = None,
-        live_quotes: Optional[Dict[str, Dict[str, float]]] = None,
-        latency_seconds: Optional[float] = None,
+        actual_quotes: Optional[Dict[str, Dict[str, float]]] = None,
+        candle_close_time_utc: Optional[str] = None,
+        data_arrival_time_utc: Optional[str] = None,
+        quote_arrival_time_utc: Optional[str] = None,
+        regime: str = "FORWARD_OOS_LIVE",
     ) -> Dict[str, Any]:
         """
-        Processes Bar T:
-        1. Formulates signals from historical_closes (strictly up to Bar T-1).
-        2. Simulates Bar T execution with slippage and fees.
-        3. Marks to market on Bar T close_prices.
-        4. Validates mathematical identities and logs journal/ledger.
+        Processes Bar T with strict causality, idempotency, and physical latency tracking.
         """
         bar_str = str(bar_time)
+        bar_key = f"{regime}:{bar_str}"
+
+        # 1. Idempotency Check: Reject duplicate processing
+        if bar_key in self.processed_bars:
+            return {
+                "status": "ALREADY_PROCESSED",
+                "bar_time": bar_str,
+                "regime": regime,
+                "message": f"Bar {bar_str} has already been processed under {regime}. Duplicate execution skipped.",
+            }
+
         t_start = time.perf_counter()
+        now_utc = datetime.now(timezone.utc)
+        now_utc_str = now_utc.strftime("%Y-%m-%d %H:%M:%S UTC")
+
+        # Arrival & latency timestamps
+        c_close_ts_str = candle_close_time_utc or bar_str
+        d_arrival_ts_str = data_arrival_time_utc or now_utc_str
+
+        # Compute arrival latency (seconds from candle close to data arrival)
+        try:
+            t_close = pd.to_datetime(c_close_ts_str).tz_localize("UTC") if pd.to_datetime(c_close_ts_str).tzinfo is None else pd.to_datetime(c_close_ts_str)
+            t_arrival = pd.to_datetime(d_arrival_ts_str).tz_localize("UTC") if pd.to_datetime(d_arrival_ts_str).tzinfo is None else pd.to_datetime(d_arrival_ts_str)
+            arrival_latency_sec = max(0.0, (t_arrival - t_close).total_seconds())
+        except Exception:
+            arrival_latency_sec = 0.0
 
         # Step 1: Decision for Candidate A
         cA = self.state["candidate_a"]
@@ -210,8 +258,18 @@ class ForwardDualRunner:
             target_b[sym] = bool(prev_close_val > ema200_val)
 
         t_decision = time.perf_counter()
-        calc_latency = round(t_decision - t_start, 4)
-        exec_latency = latency_seconds if latency_seconds is not None else calc_latency
+        calc_latency_sec = round(t_decision - t_start, 4)
+        decision_time_utc_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+        q_arrival_ts_str = quote_arrival_time_utc or decision_time_utc_str
+
+        # Execution latency (data arrival to quote/fill)
+        try:
+            t_q = pd.to_datetime(q_arrival_ts_str).tz_localize("UTC") if pd.to_datetime(q_arrival_ts_str).tzinfo is None else pd.to_datetime(q_arrival_ts_str)
+            execution_latency_sec = max(calc_latency_sec, (t_q - t_arrival).total_seconds())
+        except Exception:
+            execution_latency_sec = calc_latency_sec
+
+        total_latency_sec = round(arrival_latency_sec + execution_latency_sec, 4)
 
         events_this_bar: List[Dict[str, Any]] = []
 
@@ -221,11 +279,13 @@ class ForwardDualRunner:
         # A. Exit / Rotate if target changed
         if curr_pos_a != "USDT_CASH" and target_pos_a != curr_pos_a:
             raw_p = open_prices[curr_pos_a]
-            # Use bid from live quote if available, else open * (1 - slippage)
-            if live_quotes and curr_pos_a in live_quotes and "bid" in live_quotes[curr_pos_a]:
-                exec_exit = float(live_quotes[curr_pos_a]["bid"])
+            # Use actual obtainable bid quote if available, bounded by theoretical slippage
+            if actual_quotes and curr_pos_a in actual_quotes and "bid" in actual_quotes[curr_pos_a]:
+                act_bid = float(actual_quotes[curr_pos_a]["bid"])
+                exec_exit = min(act_bid, raw_p * (1.0 - self.slippage))
                 exit_slip = max(0.0, raw_p - exec_exit)
             else:
+                act_bid = raw_p * (1.0 - self.slippage)
                 exec_exit = raw_p * (1.0 - self.slippage)
                 exit_slip = raw_p - exec_exit
 
@@ -246,15 +306,23 @@ class ForwardDualRunner:
             ev_exit = {
                 "event_type": "ORDER_FILL",
                 "model": "Candidate_A",
+                "regime": regime,
                 "bar_time": bar_str,
+                "candle_close_time_utc": c_close_ts_str,
+                "data_arrival_time_utc": d_arrival_ts_str,
+                "decision_time_utc": decision_time_utc_str,
+                "quote_arrival_time_utc": q_arrival_ts_str,
                 "action": "SELL",
                 "symbol": curr_pos_a,
                 "units": units,
-                "price": round(exec_exit, 4),
+                "theoretical_open": raw_p,
+                "actual_bid": act_bid,
+                "exec_price": round(exec_exit, 4),
                 "fee_usdt": round(exit_fee, 4),
                 "slippage_usdt": round(units * exit_slip, 4),
                 "pnl_usdt": round(trade_pnl, 4),
-                "latency_sec": exec_latency,
+                "arrival_latency_sec": round(arrival_latency_sec, 3),
+                "execution_latency_sec": round(execution_latency_sec, 3),
                 "reason": "SIGNAL_ROTATE" if target_pos_a != "USDT_CASH" else "TREND_GATE_EXIT",
             }
             events_this_bar.append(ev_exit)
@@ -270,10 +338,12 @@ class ForwardDualRunner:
         # B. Enter new position for Candidate A
         if target_pos_a != "USDT_CASH" and cA["curr_pos"] == "USDT_CASH" and cA["cash"] > 1.0:
             raw_p = open_prices[target_pos_a]
-            if live_quotes and target_pos_a in live_quotes and "ask" in live_quotes[target_pos_a]:
-                exec_entry = float(live_quotes[target_pos_a]["ask"])
+            if actual_quotes and target_pos_a in actual_quotes and "ask" in actual_quotes[target_pos_a]:
+                act_ask = float(actual_quotes[target_pos_a]["ask"])
+                exec_entry = max(act_ask, raw_p * (1.0 + self.slippage))
                 entry_slip = max(0.0, exec_entry - raw_p)
             else:
+                act_ask = raw_p * (1.0 + self.slippage)
                 exec_entry = raw_p * (1.0 + self.slippage)
                 entry_slip = exec_entry - raw_p
 
@@ -296,15 +366,23 @@ class ForwardDualRunner:
             ev_entry = {
                 "event_type": "ORDER_FILL",
                 "model": "Candidate_A",
+                "regime": regime,
                 "bar_time": bar_str,
+                "candle_close_time_utc": c_close_ts_str,
+                "data_arrival_time_utc": d_arrival_ts_str,
+                "decision_time_utc": decision_time_utc_str,
+                "quote_arrival_time_utc": q_arrival_ts_str,
                 "action": "BUY",
                 "symbol": target_pos_a,
                 "units": units,
-                "price": round(exec_entry, 4),
+                "theoretical_open": raw_p,
+                "actual_ask": act_ask,
+                "exec_price": round(exec_entry, 4),
                 "fee_usdt": round(entry_fee, 4),
                 "slippage_usdt": round(entry_slip_total, 4),
                 "pnl_usdt": 0.0,
-                "latency_sec": exec_latency,
+                "arrival_latency_sec": round(arrival_latency_sec, 3),
+                "execution_latency_sec": round(execution_latency_sec, 3),
                 "reason": "SIGNAL_ENTRY",
             }
             events_this_bar.append(ev_entry)
@@ -338,10 +416,12 @@ class ForwardDualRunner:
 
             # Sell
             if not should_long and sub["in_pos"]:
-                if live_quotes and sym in live_quotes and "bid" in live_quotes[sym]:
-                    exec_exit = float(live_quotes[sym]["bid"])
+                if actual_quotes and sym in actual_quotes and "bid" in actual_quotes[sym]:
+                    act_bid = float(actual_quotes[sym]["bid"])
+                    exec_exit = min(act_bid, raw_p * (1.0 - self.slippage))
                     exit_slip = max(0.0, raw_p - exec_exit)
                 else:
+                    act_bid = raw_p * (1.0 - self.slippage)
                     exec_exit = raw_p * (1.0 - self.slippage)
                     exit_slip = raw_p - exec_exit
 
@@ -362,15 +442,23 @@ class ForwardDualRunner:
                 ev_exit_b = {
                     "event_type": "ORDER_FILL",
                     "model": "Candidate_B",
+                    "regime": regime,
                     "bar_time": bar_str,
+                    "candle_close_time_utc": c_close_ts_str,
+                    "data_arrival_time_utc": d_arrival_ts_str,
+                    "decision_time_utc": decision_time_utc_str,
+                    "quote_arrival_time_utc": q_arrival_ts_str,
                     "action": "SELL",
                     "symbol": sym,
                     "units": units,
-                    "price": round(exec_exit, 4),
+                    "theoretical_open": raw_p,
+                    "actual_bid": act_bid,
+                    "exec_price": round(exec_exit, 4),
                     "fee_usdt": round(exit_fee, 4),
                     "slippage_usdt": round(units * exit_slip, 4),
                     "pnl_usdt": round(trade_pnl, 4),
-                    "latency_sec": exec_latency,
+                    "arrival_latency_sec": round(arrival_latency_sec, 3),
+                    "execution_latency_sec": round(execution_latency_sec, 3),
                     "reason": "EMA200_BREAKDOWN",
                 }
                 events_this_bar.append(ev_exit_b)
@@ -385,10 +473,12 @@ class ForwardDualRunner:
 
             # Buy
             elif should_long and not sub["in_pos"] and sub["cash"] > 1.0:
-                if live_quotes and sym in live_quotes and "ask" in live_quotes[sym]:
-                    exec_entry = float(live_quotes[sym]["ask"])
+                if actual_quotes and sym in actual_quotes and "ask" in actual_quotes[sym]:
+                    act_ask = float(actual_quotes[sym]["ask"])
+                    exec_entry = max(act_ask, raw_p * (1.0 + self.slippage))
                     entry_slip = max(0.0, exec_entry - raw_p)
                 else:
+                    act_ask = raw_p * (1.0 + self.slippage)
                     exec_entry = raw_p * (1.0 + self.slippage)
                     entry_slip = exec_entry - raw_p
 
@@ -411,15 +501,23 @@ class ForwardDualRunner:
                 ev_entry_b = {
                     "event_type": "ORDER_FILL",
                     "model": "Candidate_B",
+                    "regime": regime,
                     "bar_time": bar_str,
+                    "candle_close_time_utc": c_close_ts_str,
+                    "data_arrival_time_utc": d_arrival_ts_str,
+                    "decision_time_utc": decision_time_utc_str,
+                    "quote_arrival_time_utc": q_arrival_ts_str,
                     "action": "BUY",
                     "symbol": sym,
                     "units": units,
-                    "price": round(exec_entry, 4),
+                    "theoretical_open": raw_p,
+                    "actual_ask": act_ask,
+                    "exec_price": round(exec_entry, 4),
                     "fee_usdt": round(entry_fee, 4),
                     "slippage_usdt": round(entry_slip_total, 4),
                     "pnl_usdt": 0.0,
-                    "latency_sec": exec_latency,
+                    "arrival_latency_sec": round(arrival_latency_sec, 3),
+                    "execution_latency_sec": round(execution_latency_sec, 3),
                     "reason": "EMA200_BREAKOUT",
                 }
                 events_this_bar.append(ev_entry_b)
@@ -453,11 +551,9 @@ class ForwardDualRunner:
         # -------------------------------------------------------------
         # Mathematical Identity Assertions
         # -------------------------------------------------------------
-        # Candidate A identity: Equity == Cash + Mark-to-market position
         expected_eq_a = cA["cash"] + (cA["asset_units"] * close_prices.get(cA["curr_pos"], 0.0) if cA["curr_pos"] != "USDT_CASH" else 0.0)
         assert abs(cA["equity"] - expected_eq_a) < 1e-4, f"Candidate A Identity Failure: equity={cA['equity']}, expected={expected_eq_a}"
 
-        # Candidate B identity: Total Equity == sum of sub-portfolio cash + sub-portfolio MTM
         expected_eq_b = sum(
             sub["cash"] + (sub["units"] * close_prices[s] if sub["in_pos"] else 0.0)
             for s, sub in cB["sub_portfolios"].items()
@@ -469,6 +565,13 @@ class ForwardDualRunner:
         # -------------------------------------------------------------
         ledger_row = {
             "bar_time": bar_str,
+            "candle_close_time_utc": c_close_ts_str,
+            "data_arrival_time_utc": d_arrival_ts_str,
+            "decision_time_utc": decision_time_utc_str,
+            "quote_arrival_time_utc": q_arrival_ts_str,
+            "arrival_latency_sec": round(arrival_latency_sec, 3),
+            "execution_latency_sec": round(execution_latency_sec, 3),
+            "total_latency_sec": total_latency_sec,
             "candidate_a_equity": round(cA["equity"], 4),
             "candidate_a_cash": round(cA["cash"], 4),
             "candidate_a_pos": cA["curr_pos"],
@@ -479,17 +582,24 @@ class ForwardDualRunner:
             "candidate_b_eth_pos": int(cB["sub_portfolios"]["ETHUSDT"]["in_pos"]),
             "candidate_b_sol_pos": int(cB["sub_portfolios"]["SOLUSDT"]["in_pos"]),
             "candidate_b_bnb_pos": int(cB["sub_portfolios"]["BNBUSDT"]["in_pos"]),
-            "latency_seconds": round(exec_latency, 4),
+            "regime": regime,
         }
-        self._append_ledger(ledger_row)
+        self._append_ledger(ledger_row, regime=regime)
 
-        # Update metadata state
-        self.state["total_bars_processed"] += 1
-        self.state["last_processed_bar"] = bar_str
+        # Update metadata state & processed bars cache
+        self.processed_bars.add(bar_key)
+        if regime == "FORWARD_OOS_LIVE":
+            self.state["total_live_bars_processed"] += 1
+            self.state["last_processed_live_bar"] = bar_str
+        else:
+            self.state["total_demo_bars_processed"] += 1
+
         self._save_state()
 
         return {
+            "status": "SUCCESS",
             "bar_time": bar_str,
+            "regime": regime,
             "candidate_a": {
                 "equity": round(cA["equity"], 2),
                 "pos": cA["curr_pos"],
@@ -500,7 +610,8 @@ class ForwardDualRunner:
                 "active_tokens": [s for s, sub in cB["sub_portfolios"].items() if sub["in_pos"]],
             },
             "events_count": len(events_this_bar),
-            "latency_sec": exec_latency,
+            "arrival_latency_sec": round(arrival_latency_sec, 3),
+            "execution_latency_sec": round(execution_latency_sec, 3),
         }
 
     def _generate_comparison_markdown(self):
@@ -516,12 +627,18 @@ class ForwardDualRunner:
         wr_a = (cA["win_count"] / cA["trade_count"] * 100.0) if cA["trade_count"] > 0 else 0.0
         wr_b = (cB["win_count"] / cB["trade_count"] * 100.0) if cB["trade_count"] > 0 else 0.0
 
+        live_bars = self.state.get("total_live_bars_processed", 0)
+        demo_bars = self.state.get("total_demo_bars_processed", 0)
+        last_live = self.state.get("last_processed_live_bar") or "Awaiting First Live Candle (>= 2026-09-23 UTC)"
+
         md_content = f"""# Forward Paper Tracking & A/B Model Performance
 # 前向实测模拟与 A/B 模型绩效实时对照报告
 
 - **Report Updated / 报告更新时间**: `{datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")}`
-- **Last Processed Bar / 最新闭合 K 线**: `{self.state.get("last_processed_bar", "N/A")}`
-- **Total Tracked 4h Bars / 累计跟踪根数**: `{self.state.get("total_bars_processed", 0)}`
+- **Evaluation Cutoff / 冻结基准线**: `2026-09-23 00:00:00 UTC`
+- **Total Genuine OOS Bars Tracked / 累计样本外真实 K 线**: `{live_bars}` bars
+- **Historical Demo Replay Bars / 流程演示回填根数**: `{demo_bars}` bars (Stored in `demo_replay_ledger.csv`)
+- **Last Processed Live Bar / 最新样本外闭合 K 线**: `{last_live}`
 - **Initial Capital / 初始本金**: `${init_c:,.2f} USDT` each
 
 ---
@@ -544,7 +661,10 @@ class ForwardDualRunner:
 ## 2. Institutional Decision Hurdle Status / 机构级前瞻评判准则状态
 
 - **Required Minimum Horizon / 最低跟踪周期**: 180 days (6 months) OR >= 30 completed trades for Candidate A.
-- **Current Progress / 当前进度**: `{cA["trade_count"]} / 30` completed roundtrips.
+- **Current Progress / 当前进度**: `{cA["trade_count"]} / 30` completed roundtrips ({live_bars} live bars accumulated).
+- **Data Integrity & Demarcation / 数据纯度与口径隔离**:
+  - Offline backfills prior to 2026-09-23 are strictly isolated in `demo_replay_ledger.csv` with `DEMO_REPLAY` tag and do not count toward official OOS performance.
+  - The live ledger `forward_ledger.csv` records real physical data arrival latency, bookTicker quotes, and restart idempotency guards.
 - **Current Verdict / 当前科学裁定**:
   - `EVALUATION_IN_PROGRESS`: Insufficient out-of-sample forward sample to validate or reject Candidate A.
   - Candidate A must maintain cost-adjusted Sharpe superiority and positive excess alpha over Candidate B across the 180-day window to earn live deployment consideration.

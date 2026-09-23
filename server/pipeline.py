@@ -66,6 +66,8 @@ class QuantServerPipeline:
             journal_path=V1_JOURNAL_PATH,
         )
         self.fetcher = MarketDataFetcher()
+        from crypto_quant.paper.forward_dual_runner import ForwardDualRunner
+        self.forward_runner = ForwardDualRunner(output_dir="data/forward_tracking")
         self.last_active_symbol: Optional[str] = None
         self.last_bar_time: Optional[str] = None
         self.last_cycle_time: Optional[str] = None
@@ -247,6 +249,18 @@ class QuantServerPipeline:
                 "is_stale": leaderboard["is_stale"],
             },
             "trades_history": trade_events,
+            "forward_tracking": {
+                "candidate_a_equity": self.forward_runner.state["candidate_a"]["equity"],
+                "candidate_b_equity": self.forward_runner.state["candidate_b"]["total_equity"],
+                "total_live_bars": self.forward_runner.state.get("total_live_bars_processed", 0),
+                "total_demo_bars": self.forward_runner.state.get("total_demo_bars_processed", 0),
+                "last_live_bar": self.forward_runner.state.get("last_processed_live_bar"),
+                "alpha_spread_ret_pct": round(
+                    ((self.forward_runner.state["candidate_a"]["equity"] / self.forward_runner.state["initial_cash"]) - 1.0) * 100.0
+                    - (((self.forward_runner.state["candidate_b"]["total_equity"] / self.forward_runner.state["initial_cash"]) - 1.0) * 100.0),
+                    2
+                ),
+            },
             "system": {
                 "code_commit": get_code_commit(),
                 "config_hash": CONFIG_HASH,
@@ -274,6 +288,13 @@ class QuantServerPipeline:
 
             # Step 2 & 3: Run V1 Top-1 strategy step & persist state
             v1_state, leaderboard = self.strategy.update_portfolio_step(klines, live_prices=live_prices)
+
+            # Step 3.5: Advance Dual Forward Paper Simulation (Candidate A vs Candidate B)
+            try:
+                from scripts.run_forward_dual_paper import run_live_step
+                run_live_step(self.forward_runner)
+            except Exception as e:
+                print(f"[V1 PIPELINE FORWARD DUAL EXCEPTION]: {e}")
 
             curr_active_symbol = v1_state.active_symbol
             curr_mode = v1_state.position_mode

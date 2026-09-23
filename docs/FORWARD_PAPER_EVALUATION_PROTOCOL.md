@@ -79,13 +79,17 @@ flowchart TD
 
 1. **Closed-Candle Causality / 闭合时点决策**:
    - Signals are calculated *strictly* after the 4-hour candle has officially closed in UTC. No lookahead allowed.
-2. **Order Execution at Bar $T$ Open / 开盘时点成交**:
-   - Simulated fill price $P_{fill} = P_{open} \times (1 \pm 0.0005)$ (5 bps slippage).
-   - Taker fee $Fee = Value \times 0.0008$ (8 bps taker fee).
-   - Real-time ticker price recorded to measure live market depth and slippage deviation.
-3. **Forward Audit Log Storage / 前向对账日志存储**:
-   - Appended to `data/forward_tracking/forward_journal.jsonl`.
-   - Appended to `data/forward_tracking/forward_ledger.csv`.
+2. **Order Execution & Real Obtainable Quotes / 开盘成交与真实盘口挂钩**:
+   - In forward live execution, orders are filled against real-time Binance top-of-book `bookTicker` quotes bounded by slippage:
+     - BUY Fill: $\max(\text{askPrice}, P_{\text{open}} \times (1 + \text{slippage}))$
+     - SELL Fill: $\min(\text{bidPrice}, P_{\text{open}} \times (1 - \text{slippage}))$
+   - Taker fee $Fee = Value \times 0.0008$ (8 bps exchange fee).
+   - Physical timing audit: Exact timestamps of candle close, data arrival, decision, and quote retrieval are recorded to quantify physical network arrival latency.
+3. **Forward Audit Log Storage & Regime Segregation / 前向对账日志存储与口径严格隔离**:
+   - **`DEMO_REPLAY` (演示回放)**: Historical backfills prior to 2026-09-23 are strictly isolated in `data/forward_tracking/demo_replay_ledger.csv` and excluded from official OOS evaluation.
+   - **`FORWARD_OOS_LIVE` (真实样本外实测)**: Only newly closed live bars $\ge \text{2026-09-23 00:00:00 UTC}$ are recorded into `data/forward_tracking/forward_ledger.csv`.
+   - **Restart Idempotency (重启防重保护)**: The runner enforces bar-key deduplication (`{regime}:{bar_time}`) to guarantee that service or runner restarts never execute duplicate orders or corrupt ledger balances.
+   - Continuous event journal appended to `data/forward_tracking/forward_journal.jsonl`.
 4. **Falsification & Acceptance Criteria / 证伪与验收准则**:
    - **Minimum Evaluation Horizon / 最低评估周期**:
      - Requires at least **180 calendar days (6 months)** of forward continuous tracking OR a minimum of **30 completed roundtrip trades** for Candidate A.
