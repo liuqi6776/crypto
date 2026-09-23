@@ -1,13 +1,13 @@
 {
   "manifest_version": "1.1.0",
-  "experiment_id": "exp_core4_L1x_all_fresh_20260923_034629",
+  "experiment_id": "exp_core4_L1x_all_fresh_20260923_034721",
   "experiment_role": "HYPOTHESIS_EXPERIMENT",
   "description": "Quantitative research evaluation of core4 at 1.0x leverage under fresh mode.",
   "pre_registered_hypothesis": "Candidate reproduction: Structural EMA exit + 0.30 momentum buffer",
-  "created_at_utc": "2026-09-23 03:46:29 UTC",
+  "created_at_utc": "2026-09-23 03:47:21 UTC",
   "command_line": "scripts/run_research_experiment.py --universe core4 --leverage 1.0 --period all --no-atr-stop --delta-score-buffer 0.30 --role HYPOTHESIS_EXPERIMENT --hypothesis Candidate reproduction: Structural EMA exit + 0.30 momentum buffer --output-dir reports/experiments/candidate_top1_structural_buffer030",
   "code_environment": {
-    "git_commit": "718e9078035e1773f3c676dc73c9dd081146fee0",
+    "git_commit": "1b9c7f70ff88eb14bac0767f6a8e53fecd92d0c2",
     "git_branch": "main",
     "git_dirty": false,
     "python_version": "3.9.13",
@@ -38,7 +38,12 @@
     "BNBUSDT": "b2c6ba3ee1bb668199edb76aaa91fd0d8ebb1897327391281da2a623eb3cf58d",
     "funding": "82c7b10cfa3893a26a66feff0600fde6eb0f37be749f6d4b21bed8079cb2d078"
   },
-  "output_hashes": {},
+  "output_hashes": {
+    "trades.csv": "00f2d20cfebea0e0e1652069722be8c162be934d2883bec1876cad68e2afdf87",
+    "bar_ledger.csv": "7c992a580c9ead6dfc2db6b77fd776cc710aa39350a0121c4f549ab6a9553f0c",
+    "summary.json": "c56396d1ebaff83c5b30669f72a5e83a91457155bbe064531cbd32a1865f848c",
+    "data_admission_report.json": "f7bf8d18abb9fd58b88c045284e28c48890524ee66c96f8dd19c756054b829c7"
+  },
   "time_interval": {
     "eval_start_dt": "2020-10-15 00:00:00",
     "eval_end_dt": "2026-09-23 00:00:00",

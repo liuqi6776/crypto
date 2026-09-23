@@ -110,7 +110,10 @@ def compute_output_hashes(output_dir: str, filenames: Optional[List[str]] = None
     if not out_path.exists():
         return {}
     if filenames is None:
-        filenames = ["trades.csv", "bar_ledger.csv", "summary.json", "data_admission_report.json"]
+        filenames = [
+            "trades.csv", "bar_ledger.csv", "summary.json", "data_admission_report.json",
+            "annual_breakdown.csv", "annual_breakdown.json",
+        ]
     hashes = {}
     for fname in filenames:
         fpath = out_path / fname
