@@ -54,11 +54,12 @@
 > **Methodological Clarifications & Empirical Observations / 方法论澄清与实证观察**:
 > 1. **Accurate Definition of Donchian Upper / 唐奇安上轨准确定义**: In code, Donchian upper is calculated as `c.shift(1).rolling(120).max()`, which represents the 120-period rolling **highest Close (最高收盘价)**, NOT highest High. Lower band is 120-period lowest Low.
 > 2. **Fixed-Exit Pure Entry Controls / 退场规则完全固定的纯入场对照**:
->    - **Regime 1 (Shared BB Mid & 3.0 ATR Stop)**: Both variants exit strictly when `Close < bb_mid` (120-period MA) or trailing stop. Bollinger 120 achieves **+2,220.31%** (Sharpe 1.40, 158 trades) vs Donchian 120 at **+1,560.21%** (Sharpe 1.30, 183 trades). Observed Delta: **+660.10%**.
->    - **Regime 2 (Shared 3.0 ATR Stop Only, No Mid-Band Exit)**: Both variants exit strictly on trailing stop. Bollinger 120 achieves **+2,559.86%** (Sharpe 1.44, 157 trades) vs Donchian 120 at **+1,556.41%** (Sharpe 1.30, 183 trades). Observed Delta: **+1,003.45%**.
->    - **Regime 3 (Mode B Intrabar 3.0 ATR Stop Touch)**: Exit occurs solely when intrabar Low touches the prior-bar stop. Bollinger 120 achieves **+860.05%** (Sharpe 1.12, 205 trades) vs Donchian 120 at **+190.89%** (Sharpe 0.68, 229 trades). Observed Delta: **+669.16%**.
-> 3. **Trade Frequency & Divergence Interpretation / 交易频次与分歧定性**:
->    Across all regimes, the Donchian channel triggered 24 to 26 additional trades because prices periodically exceeded the rolling 120-bar highest close during consolidations. In this backtest, these additional breakout signals incurred additional transaction friction and experienced lower win rates (38.4%~42.6% vs 42.4%~46.5%), leading to the observed performance difference. We refrain from asserting that all additional trades were invalid, but note that the volatility-scaled barrier of Bollinger Bands ($2\sigma$) coincided with higher risk-adjusted returns across the sample.
+>    - **Regime 1 (Shared BB Mid & 3.0 ATR Stop)**: Both variants exit strictly when `Close < bb_mid` (120-period MA) or trailing stop. Bollinger 120 achieves **+2,220.31%** (Sharpe 1.40, 158 trades) vs Donchian 120 at **+1,560.21%** (Sharpe 1.30, 183 trades). Observed Difference: **+660.10 percentage points (个百分点)**.
+>    - **Regime 2 (Shared 3.0 ATR Stop Only, No Mid-Band Exit)**: Both variants exit strictly on trailing stop. Bollinger 120 achieves **+2,559.86%** (Sharpe 1.44, 157 trades) vs Donchian 120 at **+1,556.41%** (Sharpe 1.30, 183 trades). Observed Difference: **+1,003.45 percentage points (个百分点)**.
+>    - **Regime 3 (Mode B Intrabar 3.0 ATR Stop Touch)**: Exit occurs solely when intrabar Low touches the prior-bar stop. Bollinger 120 achieves **+860.05%** (Sharpe 1.12, 205 trades) vs Donchian 120 at **+190.89%** (Sharpe 0.68, 229 trades). Observed Difference: **+669.16 percentage points (个百分点)**.
+> 3. **Trade Frequency, Friction Amount, and Return Divergence / 交易频次、摩擦金额与收益分歧定性**:
+>    - 在三个固定退场对照中，唐奇安通道触发了更多交易笔数（多 24 至 26 笔），但其全周期**累计摩擦金额反而更低**（例如共享布林中轨下为 $15,750，低于布林带的 $20,333；无中轨止损退出下为 $15,709，低于布林带的 $23,178；Mode B 下为 $7,545，低于布林带的 $17,889）。这是因为手续费和滑点与账户名义权益成正比，当策略净值复合增长较低时，后续单笔交易的名义金额与摩擦绝对值更小。因此，**交易笔数更多绝不等于总摩擦金额更高**。
+>    - 唐奇安版本在本次回测中表现较弱的直接表现是胜率较低（38.4%~42.6% 对比 42.4%~46.5%）和盈亏比更低（1.31~1.89 对比 1.64~2.06）。导致这两组入场触发时点盈亏分歧的深层机理，不能简单推断为摩擦损耗，而需要未来进一步开展逐笔交易的微观收益拆解。此外，上述收益差（如 660.10 个百分点）均为本次特定历史样本的条件对照结果，不能当作未来交易的确定性超额。
 
 ### 3.2 Standalone EMA200 Macro Sizing Ablation (Fixed Bollinger 120 Channel)
 ### 3.2 独立 EMA200 宏观定仓单变量消融（固定布林带 120 通道）
@@ -72,12 +73,13 @@
 | Binary_Macro_Gate (1.0 / 0.0)  | Mode_A_Close     | Bollinger_120  |          2217.94 |              37.48 |                1.4  |           1.86 |            156 |           46.8 |            1.95 |              21899.6 |
 | Binary_Macro_Gate (1.0 / 0.0)  | Mode_B_Intrabar  | Bollinger_120  |           814.03 |              31.05 |                1.09 |           1.45 |            202 |           43.1 |            1.58 |              18241.6 |
 
-> **Empirical Sizing Contribution / 宏观定仓规则独立贡献分析**:
+> **Empirical Sizing Contribution & Mechanistic Clarification / 宏观定仓规则独立贡献与机制准确定性**:
 > - Holding the Bollinger 120 channel and stop rules strictly identical:
->   - **Mode A (Bar-Close Exit)**: Fixed Full Sizing (1.0 constant) yields **+2,113.72%** (Sharpe 1.39, Max DD 40.39%). EMA200 Half Sizing (1.0 / 0.5) achieves **+2,220.31%** (Sharpe 1.40, Max DD 39.71%). Isolated lift: **+106.59%**, with drawdown reduced by 0.68%.
->   - **Mode B (Intrabar Touch)**: Fixed Full Sizing yields **+791.83%** (Sharpe 1.09, Max DD 33.71%). EMA200 Half Sizing achieves **+860.05%** (Sharpe 1.12, Max DD 32.44%). Isolated lift: **+68.22%**, with drawdown reduced by 1.27%.
->   - **Binary Macro Gate (1.0 / 0.0)**: Yields **+2,217.94%** (Max DD 37.48%) in Mode A and **+814.03%** (Max DD 31.05%) in Mode B, demonstrating that cutting exposure below EMA200 improves drawdown mitigation at a slight cost to compounding in early recoveries.
-> - **Conclusion / 归因裁决**: EMA200 macro sizing provides a modest, verifiable positive contribution (+68% to +106% return lift, 0.7% to 1.3% drawdown reduction) by reducing exposure during unfavorable macro regimes. However, it accounts for only a modest fraction of the broader return profile and cannot be treated as the sole explanation for historical version differences.
+>   - **Mode A (Bar-Close Exit)**: Fixed Full Sizing (1.0 constant) yields **+2,113.72%** (Sharpe 1.39, Max DD 40.39%). EMA200 Half Sizing (1.0 / 0.5) achieves **+2,220.31%** (Sharpe 1.40, Max DD 39.71%). Observed Difference: **+106.59 percentage points (个百分点)**, with drawdown reduced by 0.68 percentage points (个百分点).
+>   - **Mode B (Intrabar Touch)**: Fixed Full Sizing yields **+791.83%** (Sharpe 1.09, Max DD 33.71%). EMA200 Half Sizing achieves **+860.05%** (Sharpe 1.12, Max DD 32.44%). Observed Difference: **+68.22 percentage points (个百分点)**, with drawdown reduced by 1.27 percentage points (个百分点).
+>   - **Binary Macro Gate (1.0 / 0.0)**: Yields **+2,217.94%** (Max DD 37.48%) in Mode A and **+814.03%** (Max DD 31.05%) in Mode B, demonstrating that blocking entry below EMA200 improves drawdown mitigation at a slight cost to compounding in early recoveries.
+> - **Mechanistic Precision / 机制实现准确定性**: In code, the EMA200 `macro_mult` (1.0 / 0.5) applies **strictly at new trade entry** to determine target order notional. Once opened, if price drops below EMA200 during the trade, the existing position is **NOT** automatically reduced retroactively (it is held until trailing stop or mid-line exit). Therefore, this rule operates strictly by **reducing new position capital allocation when entering below EMA200 (低于 EMA200 时减少新仓投入)**, rather than dynamically scaling down portfolio exposure mid-trade.
+> - **Conclusion / 归因裁决**: In this historical sample, reducing new position sizing when below EMA200 provided a modest positive difference (+68.22 to +106.59 percentage points; 0.68 to 1.27 percentage points drawdown improvement). This is a conditional backtest observation on the historical dataset and cannot be treated as a forecast of future performance, nor does it account for the entire divergence across broader strategy iterations.
 
 ---
 
