@@ -252,9 +252,9 @@ class QuantServerPipeline:
             "forward_tracking": {
                 "candidate_a_equity": self.forward_runner.state["candidate_a"]["equity"],
                 "candidate_b_equity": self.forward_runner.state["candidate_b"]["total_equity"],
-                "total_live_bars": self.forward_runner.state.get("total_live_bars_processed", 0),
-                "total_demo_bars": self.forward_runner.state.get("total_demo_bars_processed", 0),
-                "last_live_bar": self.forward_runner.state.get("last_processed_live_bar"),
+                "total_live_bars": self.forward_runner.state.get("total_bars_processed", 0),
+                "last_live_bar": self.forward_runner.state.get("last_processed_bar"),
+                "anomalies_count": self.forward_runner.state.get("anomalies_count", 0),
                 "alpha_spread_ret_pct": round(
                     ((self.forward_runner.state["candidate_a"]["equity"] / self.forward_runner.state["initial_cash"]) - 1.0) * 100.0
                     - (((self.forward_runner.state["candidate_b"]["total_equity"] / self.forward_runner.state["initial_cash"]) - 1.0) * 100.0),

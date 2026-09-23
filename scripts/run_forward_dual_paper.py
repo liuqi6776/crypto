@@ -3,10 +3,10 @@
 CLI Runner for Dual Forward Paper Simulation (Candidate A vs Candidate B)
 ========================================================================
 Operational Modes:
-  # Initialize or reset forward tracking state:
+  # Initialize or reset live forward tracking state (pristine $10,000 cash each):
   python scripts/run_forward_dual_paper.py --reset
 
-  # Seed historical demonstration replay (isolated as DEMO_REPLAY in demo_replay_ledger.csv):
+  # Seed historical demonstration replay (isolated completely as DEMO_REPLAY):
   python scripts/run_forward_dual_paper.py --seed-demo --bars 20
 
   # Check & process the latest completed 4h candle from Binance live:
@@ -35,7 +35,7 @@ repo_root = Path(__file__).resolve().parent.parent
 if str(repo_root) not in sys.path:
     sys.path.insert(0, str(repo_root))
 
-from crypto_quant.paper.forward_dual_runner import ForwardDualRunner, CORE4_SYMBOLS
+from crypto_quant.paper.forward_dual_runner import ForwardDualRunner, CORE4_SYMBOLS, DEFAULT_MAX_STALENESS_SEC
 from crypto_quant.paper.market_data import MarketDataFetcher
 
 BINANCE_PUBLIC_API_URLS = [
@@ -96,11 +96,17 @@ def load_local_market_data(symbols: List[str] = CORE4_SYMBOLS):
     return raw_dfs, common_idx
 
 
-def seed_demo_replay(runner: ForwardDualRunner, n_bars: int = 20):
-    """Seeds historical demonstration replay explicitly tagged as DEMO_REPLAY."""
+def seed_demo_replay(output_dir: str = "data/forward_tracking", n_bars: int = 20):
+    """
+    Seeds historical demonstration replay completely isolated from live OOS.
+    Uses is_demo=True writing strictly to demo_replay_ledger.csv and demo_status.json.
+    """
+    demo_runner = ForwardDualRunner(output_dir=output_dir, is_demo=True)
+    demo_runner.reset()
+
     raw_dfs, common_idx = load_local_market_data()
     target_idx = common_idx[-n_bars:]
-    print(f"[DEMO REPLAY] Processing {len(target_idx)} bars from {target_idx[0]} to {target_idx[-1]}...")
+    print(f"[DEMO REPLAY] Processing {len(target_idx)} bars from {target_idx[0]} to {target_idx[-1]} in DEMO mode...")
 
     closes_df = pd.DataFrame({s: raw_dfs[s]["close"] for s in CORE4_SYMBOLS}, index=common_idx)
 
@@ -122,22 +128,33 @@ def seed_demo_replay(runner: ForwardDualRunner, n_bars: int = 20):
         open_prices = {s: float(raw_dfs[s].loc[t, "open"]) for s in CORE4_SYMBOLS}
         close_prices = {s: float(raw_dfs[s].loc[t, "close"]) for s in CORE4_SYMBOLS}
 
-        runner.process_bar(
+        # In offline demo, synthetic quotes based on open price with slight spread
+        synthetic_quotes = {
+            s: {"bid": open_prices[s] * 0.9999, "ask": open_prices[s] * 1.0001}
+            for s in CORE4_SYMBOLS
+        }
+
+        demo_runner.process_bar(
             bar_time=t,
             open_prices=open_prices,
             close_prices=close_prices,
             historical_closes=hist_closes,
             historical_atrs=hist_atrs,
+            actual_quotes=synthetic_quotes,
+            candle_close_time_utc=str(t),
+            data_arrival_time_utc=str(t),
+            quote_arrival_time_utc=str(t),
             regime="DEMO_REPLAY",
+            allow_stale=True,
         )
 
-    print(f"[DEMO REPLAY] Successfully saved demonstration replay to {runner.demo_ledger_file}.")
+    print(f"[DEMO REPLAY] Successfully saved demonstration replay to {demo_runner.ledger_file}.")
 
 
-def run_live_step(runner: ForwardDualRunner) -> Dict[str, Any]:
+def run_live_step(runner: ForwardDualRunner, allow_stale: bool = False) -> Dict[str, Any]:
     """
     Checks Binance for the latest completed 4h candle, fetches live order book quotes,
-    and executes genuine forward step if new.
+    verifies freshness, and executes genuine forward step if new.
     """
     fetcher = MarketDataFetcher()
     now_utc = datetime.now(timezone.utc)
@@ -163,17 +180,14 @@ def run_live_step(runner: ForwardDualRunner) -> Dict[str, Any]:
     candle_close_t = latest_bar_t + timedelta(hours=4)
     candle_close_str = candle_close_t.strftime("%Y-%m-%d %H:%M:%S UTC")
 
-    t_clean = latest_bar_t.tz_convert(None) if latest_bar_t.tzinfo is not None else latest_bar_t
-    cutoff_clean = OOS_CUTOFF_UTC.tz_convert(None) if getattr(OOS_CUTOFF_UTC, "tzinfo", None) is not None else OOS_CUTOFF_UTC
-    regime = "FORWARD_OOS_LIVE" if t_clean >= cutoff_clean else "DEMO_REPLAY"
-    bar_key = f"{regime}:{latest_bar_t}"
+    bar_key = f"{runner.regime}:{latest_bar_t}"
 
     if bar_key in runner.processed_bars:
-        print(f"[LIVE STEP] Bar {latest_bar_t} ({regime}) already processed. No new closed bar. Current time: {arrival_time_str}")
+        print(f"[LIVE STEP] Bar {latest_bar_t} ({runner.regime}) already processed. No new closed bar. Current time: {arrival_time_str}")
         return {
             "status": "ALREADY_PROCESSED",
             "latest_bar": str(latest_bar_t),
-            "regime": regime,
+            "regime": runner.regime,
             "current_time": arrival_time_str,
         }
 
@@ -200,7 +214,7 @@ def run_live_step(runner: ForwardDualRunner) -> Dict[str, Any]:
     open_prices = {s: float(klines_dict[s].loc[latest_bar_t, "open"]) for s in CORE4_SYMBOLS}
     close_prices = {s: float(klines_dict[s].loc[latest_bar_t, "close"]) for s in CORE4_SYMBOLS}
 
-    print(f"[LIVE STEP] Processing newly closed bar {latest_bar_t} under {regime}...")
+    print(f"[LIVE STEP] Processing newly closed bar {latest_bar_t} under {runner.regime}...")
     res = runner.process_bar(
         bar_time=latest_bar_t,
         open_prices=open_prices,
@@ -211,17 +225,18 @@ def run_live_step(runner: ForwardDualRunner) -> Dict[str, Any]:
         candle_close_time_utc=candle_close_str,
         data_arrival_time_utc=arrival_time_str,
         quote_arrival_time_utc=quote_arrival_str,
-        regime=regime,
+        regime=runner.regime,
+        allow_stale=allow_stale,
     )
 
-    print(f"[LIVE STEP COMPLETE] Status={res['status']} | Latency={res.get('arrival_latency_sec')}s | Candidate A={res.get('candidate_a')} | Candidate B={res.get('candidate_b')}")
+    print(f"[LIVE STEP COMPLETE] Status={res['status']} | Latency={res.get('arrival_latency_sec')}s | Trades={res.get('trades_executed', 0)} | Anomaly={res.get('anomaly')}")
     return res
 
 
 def run_live_poll_daemon(runner: ForwardDualRunner, interval_seconds: int = 60):
     """Continuous polling daemon that monitors Binance for new closed 4h candles."""
     print(f"[LIVE POLL DAEMON] Starting continuous listener (polling every {interval_seconds}s)...")
-    print(f"[LIVE POLL DAEMON] Target cutoff for OOS: >= {OOS_CUTOFF_UTC} UTC")
+    print(f"[LIVE POLL DAEMON] Regime: {runner.regime} | Target cutoff: >= {OOS_CUTOFF_UTC} UTC")
     while True:
         try:
             run_live_step(runner)
@@ -240,12 +255,12 @@ def print_status(runner: ForwardDualRunner):
     ret_b = ((cB["total_equity"] / init_c) - 1.0) * 100.0
 
     print("=" * 80)
-    print(" DUAL FORWARD PAPER TRACKING AUDIT STATUS")
+    print(f" DUAL FORWARD PAPER TRACKING AUDIT STATUS ({runner.regime})")
     print("=" * 80)
-    print(f"Genuine OOS Bars (>= 2026-09-23): {st.get('total_live_bars_processed', 0)}")
-    print(f"Demo Replay Bars (< 2026-09-23):  {st.get('total_demo_bars_processed', 0)}")
-    print(f"Last Processed Live Bar:         {st.get('last_processed_live_bar') or 'Awaiting first live bar'}")
-    print(f"Initial Capital:                 ${init_c:,.2f} USDT each\n")
+    print(f"Genuine OOS Bars Processed:      {st.get('total_bars_processed', 0)}")
+    print(f"Last Processed Bar:              {st.get('last_processed_bar') or 'Awaiting first live bar'}")
+    print(f"Anomalies Recorded:              {st.get('anomalies_count', 0)}")
+    print(f"Initial Capital:                 ${init_c:,.2f} USDT each (Pure Cash Start)\n")
     print(f"[Candidate A: Top-1 Buffer 0.30]")
     print(f"  Current Equity: ${cA['equity']:,.2f} ({ret_a:+.2f}%)")
     print(f"  Position: {cA['curr_pos']} | Cash: ${cA['cash']:,.2f}")
@@ -263,10 +278,11 @@ def print_status(runner: ForwardDualRunner):
 
 def main():
     parser = argparse.ArgumentParser(description="Dual Forward Paper Tracking CLI")
-    parser.add_argument("--reset", action="store_true", help="Reset forward tracking state")
-    parser.add_argument("--seed-demo", action="store_true", help="Seed historical demonstration replay")
+    parser.add_argument("--reset", action="store_true", help="Reset live forward tracking state (pristine $10k cash each)")
+    parser.add_argument("--seed-demo", action="store_true", help="Seed historical demonstration replay (isolated in demo files)")
     parser.add_argument("--bars", type=int, default=20, help="Number of bars for demo replay")
     parser.add_argument("--live-step", action="store_true", help="Execute single live check for latest closed candle")
+    parser.add_argument("--allow-stale", action="store_true", help="Allow execution even if data arrived after staleness threshold (testing only)")
     parser.add_argument("--live-poll", action="store_true", help="Run continuous live polling daemon")
     parser.add_argument("--interval", type=int, default=60, help="Polling interval in seconds")
     parser.add_argument("--status", action="store_true", help="Print current status")
@@ -275,20 +291,22 @@ def main():
 
     args = parser.parse_args()
 
+    # Default runner is live OOS
     runner = ForwardDualRunner(
         output_dir=args.output_dir,
         initial_cash=args.initial_cash,
+        is_demo=False,
     )
 
     if args.reset:
         runner.reset()
-        print("Forward tracking state has been cleanly reset.")
+        print("Live forward tracking state has been cleanly reset to pristine cash.")
 
     if args.seed_demo:
-        seed_demo_replay(runner, n_bars=args.bars)
+        seed_demo_replay(output_dir=args.output_dir, n_bars=args.bars)
 
     if args.live_step:
-        run_live_step(runner)
+        run_live_step(runner, allow_stale=args.allow_stale)
 
     if args.live_poll:
         run_live_poll_daemon(runner, interval_seconds=args.interval)

@@ -3,6 +3,16 @@
 
 ---
 
+> [!CAUTION]
+> ### Accurate Scientific Positioning & Research Nature / 准确科学定位与研究性质声明
+> **The system is currently an operational quantitative research and paper-trading simulation platform. It is NOT yet an empirically forward-verified basis for risking real capital.**
+> **本系统当前为一个可试运行的量化研究与前向模拟交易系统，但还不是经前向验证、可据此判断会赚钱并投入真实资金的交易依据。严禁直接依照信号投入真实资金！**
+> 
+> All historical backtesting findings (including the +43,942.30% in-sample discovery) were derived by observing the full 2020–2026 historical dataset. True out-of-sample forward validation has only just commenced. No capital allocation decisions may be made until the completion of the 180-day / 30-trade forward evaluation horizon under this frozen protocol.
+> 所有历史回测发现（包括 +43,942.30% 的全周期开发结果）均是基于对 2020–2026 全量历史数据进行观察消融后得出的历史发现。真正的样本外前瞻检验刚刚开始。在完成本协议规定的 180 天或 30 笔完整交易的前瞻检验周期之前，任何人不得将本系统作为实盘交易决策依据。
+
+---
+
 ## 1. Executive Protocol & Epistemological Status / 协议宗旨与科学认识论定位
 
 Following the rigorous completion of:
@@ -14,12 +24,6 @@ Following the rigorous completion of:
 
 We now declare the historical development and stress-test data (**2020-10-15 to 2026-09-23**) **OFFICIALLY FROZEN**.
 No further parameter tuning, indicator fitting, or model selection will be conducted on historical data.
-
-> [!WARNING]
-> ### Scientific Tone & Epistemological Calibration / 科学定位与认知校准
-> **The historical return of +43,942.30% is an IN-SAMPLE DEVELOPMENT AND BACKTESTING FINDING, NOT an expected forward return rate!**
-> 去除 ATR 止损并引入 $\Delta \text{score} = 0.30$ 动量换仓缓冲阀是基于已观察的 2020–2026 全量历史数据进行归因消融后选出的；其“帕累托改进”目前仅在已观察历史中成立。
-> 严禁将回测发现当作对未来的确定性收益预期。真正的科学样本外检验，必须且只能依靠在未来实时 4 小时闭合 K 线上进行前瞻模拟跟踪。
 
 ---
 
@@ -41,72 +45,87 @@ To prevent sample-specific optimization bias, we establish **two parallel forwar
 
 ---
 
-## 3. Audited Historical Reference Matrix / 经审计历史逐年对照矩阵
+## 3. Strict 5-Step Causal Execution Pipeline / 严密5步因果执行时序
 
-All metrics below are automatically sourced from official experiment artifacts:
-- Baseline Top-1 & Candidate B: `reports/experiments/advantage_attribution/advantage_attribution_table.csv`
-- Candidate A: `reports/experiments/candidate_top1_structural_buffer030/annual_breakdown.csv`
-
-| Regime / 评估周期 | Candidate A Net Ret (Top-1 Buffer) | Candidate B Net Ret (Simple EMA) | Baseline Top-1 Net Ret (Tight SL) | BTC Buy & Hold | Core-4 Equal-Weight |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **2021 (Bull Expansion)** | **+2,815.71%** (DD 53.1%) | +760.91% (DD 41.9%) | +776.04% (DD 51.7%) | +59.89% (DD 54.1%) | +1,535.66% (DD 56.0%) |
-| **2022 (Secular Bear)** | **-8.32%** (DD 39.3%) | -34.46% (DD 46.3%) | -14.05% (DD 41.3%) | -64.68% (DD 67.2%) | -84.02% (DD 84.9%) |
-| **2023 (Recovery)** | **+256.84%** (DD 33.0%) | +203.99% (DD 35.3%) | +80.49% (DD 45.0%) | +156.04% (DD 21.2%) | +281.40% (DD 33.6%) |
-| **2024 (Choppy ETF)** | **+41.56%** (DD 37.0%) | +24.89% (DD 38.5%) | -13.54% (DD 58.3%) | +121.68% (DD 30.0%) | +90.18% (DD 39.7%) |
-| **2025 (Modern Cycle)** | **+57.03%** (DD 42.4%) | +19.81% (DD 24.3%) | +10.52% (DD 44.2%) | -6.39% (DD 34.4%) | -19.97% (DD 57.4%) |
-| **2026 (Stress / Dev)** | **+0.13%** (DD 29.1%) | +6.15% (DD 35.7%) | -14.95% (DD 35.3%) | -2.06% (DD 40.0%) | -6.53% (DD 51.0%) |
-| **Full Cycle (2020-2026)** | **+43,942.30%** (DD 53.1%) | **+4,040.14%** (DD 54.0%) | **+1,121.52%** (DD 70.0%) | **+652.54%** (DD 77.0%) | **+2,185.45%** (DD 89.1%) |
-
----
-
-## 4. Forward Paper Tracking Workflow & Decision Rules / 前向执行流水线与判定准则
-
-For every forward 4-hour bar (00:00, 04:00, 08:00, 12:00, 16:00, 20:00 UTC):
+Every 4-hour forward bar (00:00, 04:00, 08:00, 12:00, 16:00, 20:00 UTC) strictly adheres to the following chronological sequence:
 
 ```mermaid
 flowchart TD
-    A["Live Bar T-1 Closes (UTC)<br/>4h K线闭合"] --> B["Compute Signals for Both Candidates<br/>双模型并行独立计算信号"]
-    B --> C["Candidate A: Top-1 Score with 0.30 Buffer<br/>计算截面得分与缓冲门槛"]
-    B --> D["Candidate B: Individual Close > EMA200<br/>计算四币独立均线门槛"]
-    C --> E["Execute Bar T Open Order<br/>按开盘价+滑点成交 Candidate A"]
-    D --> F["Execute Bar T Open Order<br/>按开盘价+滑点成交 Candidate B"]
-    E --> G["Record Forward Ledger & Live Depth<br/>记录前向流水与盘口深度"]
-    F --> G
-    G --> H["Mathematical Identity Assertion<br/>逐笔断言恒等式: Equity == Cash + Pos"]
+    S1["1. Closed Candle Arrival<br/>4h 闭合 K 线通过 REST 到达"] --> S2{"2. Freshness Gate<br/>数据新鲜度检查<br/>(Arrival Latency <= 900s?)"}
+    S2 -- "No (Latency > 900s)" --> E1["Log DATA_EXPIRED Anomaly<br/>记录过期异常并跳过模拟成交"]
+    S2 -- "Yes (Fresh)" --> S3["3. Compute Model Signals<br/>基于闭合行情独立计算双模型信号"]
+    S3 --> S4{"4. Top-of-Book Quote Gate<br/>实时盘口获取与校验<br/>(/api/v3/ticker/bookTicker)"}
+    S4 -- "Missing / Error" --> E2["Log QUOTE_MISSING Anomaly<br/>记录报价缺失异常并跳过模拟成交"]
+    S4 -- "Valid Quotes" --> S5["5. Execute at Obtainable Quote<br/>BUY: ask * (1+slip)<br/>SELL: bid * (1-slip)"]
+    S5 --> S6["6. Post-Execution MTM & Ledger<br/>按成交时刻后可获得的市价记账并断言恒等式"]
+    E1 --> S6
+    E2 --> S6
 ```
 
-### 4.1 Step-by-Step Forward Audit Checklist / 逐根前向审计清单
+### 3.1 Step Details / 时序环节技术细节
 
-1. **Closed-Candle Causality / 闭合时点决策**:
-   - Signals are calculated *strictly* after the 4-hour candle has officially closed in UTC. No lookahead allowed.
-2. **Order Execution & Real Obtainable Quotes / 开盘成交与真实盘口挂钩**:
-   - In forward live execution, orders are filled against real-time Binance top-of-book `bookTicker` quotes bounded by slippage:
-     - BUY Fill: $\max(\text{askPrice}, P_{\text{open}} \times (1 + \text{slippage}))$
-     - SELL Fill: $\min(\text{bidPrice}, P_{\text{open}} \times (1 - \text{slippage}))$
-   - Taker fee $Fee = Value \times 0.0008$ (8 bps exchange fee).
-   - Physical timing audit: Exact timestamps of candle close, data arrival, decision, and quote retrieval are recorded to quantify physical network arrival latency.
-3. **Forward Audit Log Storage & Regime Segregation / 前向对账日志存储与口径严格隔离**:
-   - **`DEMO_REPLAY` (演示回放)**: Historical backfills prior to 2026-09-23 are strictly isolated in `data/forward_tracking/demo_replay_ledger.csv` and excluded from official OOS evaluation.
-   - **`FORWARD_OOS_LIVE` (真实样本外实测)**: Only newly closed live bars $\ge \text{2026-09-23 00:00:00 UTC}$ are recorded into `data/forward_tracking/forward_ledger.csv`.
-   - **Restart Idempotency (重启防重保护)**: The runner enforces bar-key deduplication (`{regime}:{bar_time}`) to guarantee that service or runner restarts never execute duplicate orders or corrupt ledger balances.
-   - Continuous event journal appended to `data/forward_tracking/forward_journal.jsonl`.
-4. **Falsification & Acceptance Criteria / 证伪与验收准则**:
-   - **Minimum Evaluation Horizon / 最低评估周期**:
-     - Requires at least **180 calendar days (6 months)** of forward continuous tracking OR a minimum of **30 completed roundtrip trades** for Candidate A.
-     - Single-month or 60-day short periods are statistically underpowered for 4-hour trend following and are prohibited from being used for final promotion decisions.
-   - **Candidate A Acceptance Hurdle / 候选策略 A 验收准则**:
-     - Must achieve **positive net excess return ($\Delta \text{Ret} > 0$)** over Candidate B after all actual fees and execution slippage.
-     - Must achieve **higher cost-adjusted Sharpe ratio ($\text{Sharpe}_A > \text{Sharpe}_B$)**.
-     - Maximum forward drawdown must remain strictly bounded within historical maximum drawdown ($\text{MaxDD} \le 53.14\%$).
-   - **Candidate A Rejection & Default Criteria / 候选策略 A 证伪与降级规则**:
-     - If Candidate A experiences net underperformance relative to Candidate B ($\Delta \text{Ret} \le 0$) across the 180-day window, or suffers $\text{MaxDD} > 53.14\%$, Candidate A is conclusively rejected as historical overfitting.
-     - Upon rejection, the production deployment defaults unconditionally to **Candidate B (Simple Multi-Asset EMA Trend)**.
-   - **Development Period Disclosure / 开发区间认识论披露**:
-     - The 2026 performance recorded in development (Candidate A: +0.13%, Candidate B: +6.15%) was observed prior to protocol freezing and serves solely as a development stress-test. Genuine out-of-sample forward tracking strictly begins from 2026-09-23 00:00:00 UTC onward.
+1. **Step 1: Closed Candle Arrival & Timestamping / 闭合K线到达**:
+   - The runner detects newly closed 4h candles via REST API.
+   - Logs `candle_close_time_utc` and physical `data_arrival_time_utc`.
+2. **Step 2: Freshness Gate & Staleness Timeout / 新鲜度核验与超时保护**:
+   - Computes $\text{latency} = \text{data\_arrival\_time} - \text{candle\_close\_time}$.
+   - If $\text{latency} > \text{MAX\_DATA\_STALENESS\_SEC}$ (default 900s / 15 minutes):
+     - Logs `DATA_EXPIRED` anomaly into `forward_journal.jsonl`.
+     - **Skips simulated order execution entirely** to prevent trading on severely lagged prices.
+3. **Step 3: Model Decision on Closed History / 基于闭合行情的纯函数决策**:
+   - Candidate A evaluates `compute_top1_decision(hist_closes, current_symbol=curr_pos_a)`.
+   - Candidate B evaluates `prev_close > ema200` for all Core-4 assets independently.
+4. **Step 4: Top-of-Book Quote Gate / 实时盘口抓取与有效性核验**:
+   - If a signal transition is triggered (BUY, SELL, or ROTATE), immediately queries Binance `/api/v3/ticker/bookTicker` for best `bidPrice` and `askPrice`.
+   - If quotes are missing, null, or disconnected:
+     - Logs `QUOTE_MISSING` anomaly into `forward_journal.jsonl`.
+     - **Skips simulated order execution entirely**.
+5. **Step 5: Obtainable Quote Execution / 挂钩真实盘口的保守撮合**:
+   - Historical open prices from 4 hours ago are strictly forbidden from determining fill prices in live execution!
+   - BUY: $\text{exec\_price} = \text{askPrice} \times (1.0 + \text{slippage})$
+   - SELL: $\text{exec\_price} = \text{bidPrice} \times (1.0 - \text{slippage})$
+   - Deducts taker fee (8 bps) and records slippage relative to top of book.
+6. **Step 6: Post-Execution Mark-to-Market Accounting / 成交后真实价格盯市与记账**:
+   - When a trade occurs, the position is valued at the prevailing obtainable market price (`actual_bid` or mid-price).
+   - If no trade occurs, position is valued at `close_price`.
+   - Enforces strict single-ledger accounting identities on every bar.
 
 ---
 
-## 5. Summary / 总结
+## 4. Total Demarcation: Demo Replay vs Genuine Out-of-Sample / 演示回放与真实样本外完全隔离
 
-By freezing both **Candidate A (Top-1 Structural + Buffer 0.30)** and **Candidate B (Simple Multi-Asset EMA Trend)** side-by-side, we establish a robust, falsifiable, and un-cherry-picked quantitative foundation. The system eliminates premature claims of victory and adheres to strict scientific verification.
-通过将候选策略 A 与对照策略 B 并行固化，本系统确立了可证伪、不挑拣结果的科学研究规范，杜绝过早宣称回测胜利，全面转入实盘前瞻验证阶段。
+To prevent historical artifacts from polluting forward statistics:
+
+1. **Independent Account Initialization / 纯净独立初始账户**:
+   - Candidate A starts at `2026-09-23 00:00:00 UTC` with **\$10,000.00 pure cash**, `curr_pos = "USDT_CASH"`, 0 asset units.
+   - Candidate B starts at `2026-09-23 00:00:00 UTC` with **\$10,000.00 pure cash (\$2,500.00 per token)**, 0 asset units.
+   - Zero carried-over positions or pre-existing returns from historical demonstration.
+2. **Physical File Segregation / 物理文件完全独立**:
+   - **Genuine Live Forward Tracking**:
+     - `data/forward_tracking/status.json`
+     - `data/forward_tracking/forward_ledger.csv`
+     - `data/forward_tracking/forward_journal.jsonl`
+     - `data/forward_tracking/forward_comparison.md`
+   - **Offline Demo Replay (Demonstration Only)**:
+     - `data/forward_tracking/demo_status.json`
+     - `data/forward_tracking/demo_replay_ledger.csv`
+     - `data/forward_tracking/demo_journal.jsonl`
+     - `data/forward_tracking/demo_comparison.md`
+3. **Restart Idempotency / 重启防重幂等机制**:
+   - Keyed by `{regime}:{bar_time}` in memory and on disk.
+   - Daemon restarts never execute duplicate orders or corrupt cash balances.
+
+---
+
+## 5. Falsification & Acceptance Criteria / 证伪与验收准则
+
+1. **Minimum Evaluation Horizon / 最低评估周期**:
+   - Minimum **180 calendar days (6 months)** of forward continuous tracking OR a minimum of **30 completed roundtrip trades** for Candidate A.
+   - Single-month or 60-day short periods are prohibited from being used for capital allocation decisions.
+2. **Candidate A Acceptance Hurdle / 候选策略 A 验收准则**:
+   - Positive net excess return over Candidate B ($\Delta \text{Ret} = \text{Ret}_A - \text{Ret}_B > 0$).
+   - Higher cost-adjusted Sharpe ratio ($\text{Sharpe}_A > \text{Sharpe}_B$).
+   - Forward maximum drawdown strictly $\le 53.14\%$.
+3. **Candidate A Rejection & Default Criteria / 候选策略 A 证伪与降级规则**:
+   - If Candidate A underperforms Candidate B forward ($\Delta \text{Ret} \le 0$) or suffers $\text{MaxDD} > 53.14\%$, Candidate A is conclusively rejected as historical overfitting.
+   - Upon rejection, the production deployment defaults unconditionally to **Candidate B (Simple Multi-Asset EMA Trend)**.

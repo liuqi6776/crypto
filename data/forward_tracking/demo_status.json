@@ -1,0 +1,90 @@
+{
+  "version": "2.1.0",
+  "mode": "DEMO_REPLAY",
+  "initialized_at_utc": "2026-09-23 05:29:26 UTC",
+  "initial_cash": 10000.0,
+  "fee_rate": 0.0008,
+  "slippage": 0.0005,
+  "max_staleness_sec": 900.0,
+  "symbols": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT",
+    "BNBUSDT"
+  ],
+  "total_bars_processed": 20,
+  "last_processed_bar": "2026-09-22 20:00:00",
+  "anomalies_count": 0,
+  "candidate_a": {
+    "name": "Candidate A: Top-1 Rotation (Buffer 0.30)",
+    "cash": 0.0,
+    "equity": 10420.85862233886,
+    "curr_pos": "BTCUSDT",
+    "asset_units": 0.12096418179277896,
+    "entry_price": 85928.93073386999,
+    "entry_time": "2026-09-21 16:00:00",
+    "entry_fee_current": 8.322115931586037,
+    "entry_slippage_current": 5.194564117215719,
+    "trade_count": 1,
+    "win_count": 1,
+    "realized_pnl": 402.6449144825456,
+    "unrealized_pnl": 26.535823787899062,
+    "total_fees": 24.650894886335873,
+    "total_slippage": 15.396158257755175,
+    "peak_equity": 10472.921606182472,
+    "max_drawdown_pct": 2.5785587967828363,
+    "bars_in_cash": 0,
+    "bars_in_token": 20
+  },
+  "candidate_b": {
+    "name": "Candidate B: Simple Multi-Asset EMA Trend",
+    "total_cash": 0.0,
+    "total_equity": 10455.517826252433,
+    "sub_portfolios": {
+      "BTCUSDT": {
+        "cash": 0.0,
+        "units": 0.030591012927379417,
+        "in_pos": true,
+        "entry_price": 81657.96948045,
+        "entry_time": "2026-09-19 16:00:00",
+        "entry_fee_current": 2.0,
+        "entry_slippage_current": 1.248375812093971
+      },
+      "ETHUSDT": {
+        "cash": 0.0,
+        "units": 0.945648269118636,
+        "in_pos": true,
+        "entry_price": 2641.5741259994993,
+        "entry_time": "2026-09-19 16:00:00",
+        "entry_fee_current": 2.0,
+        "entry_slippage_current": 1.2483758120937025
+      },
+      "SOLUSDT": {
+        "cash": 0.0,
+        "units": 22.368085063977308,
+        "in_pos": true,
+        "entry_price": 111.6769715805,
+        "entry_time": "2026-09-19 16:00:00",
+        "entry_fee_current": 2.0,
+        "entry_slippage_current": 1.2483758120938186
+      },
+      "BNBUSDT": {
+        "cash": 0.0,
+        "units": 3.252813683553541,
+        "in_pos": true,
+        "entry_price": 767.9505323745,
+        "entry_time": "2026-09-19 16:00:00",
+        "entry_fee_current": 2.0,
+        "entry_slippage_current": 1.2483758120939938
+      }
+    },
+    "trade_count": 0,
+    "win_count": 0,
+    "realized_pnl": 0.0,
+    "unrealized_pnl": 463.5178262524323,
+    "total_fees": 8.0,
+    "total_slippage": 4.993503248375486,
+    "peak_equity": 10532.884533843433,
+    "max_drawdown_pct": 2.486189924399514
+  }
+}
