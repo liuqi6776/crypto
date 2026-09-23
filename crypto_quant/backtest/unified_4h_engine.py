@@ -140,10 +140,12 @@ class Unified4hEngine:
         atr_period: int = 14,
         atr_mult: float = 3.0,
         allocation_ratio: float = 0.5,
+        channel_type: str = "bollinger",
     ) -> Dict[str, Any]:
         """
         Runs Structural Trend strategy on specified symbols (e.g. ETH/SOL 50/50).
         Supports both BAR_CLOSE and conservative INTRABAR_STOP_TOUCH exit modes.
+        Supports channel_type='bollinger' (Phase 19 standard) and 'donchian' (controlled ablation).
         """
         # Determine common timestamp index
         common_idx = data_dict[symbols[0]].index
@@ -166,11 +168,22 @@ class Unified4hEngine:
             tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
             atr = tr.rolling(atr_period, min_periods=1).mean()
 
-            # Bollinger Bands 120 causal (shifted by 1 so bar t close is evaluated against bands from t-1)
+            # Channel computation causal (shifted by 1 so bar t close is evaluated against bands from t-1)
             bb_mid = c.shift(1).rolling(lookback_bars).mean()
             bb_std = c.shift(1).rolling(lookback_bars).std()
             bb_upper = bb_mid + 2.0 * bb_std
             bb_lower = bb_mid - 2.0 * bb_std
+
+            if channel_type == "donchian":
+                don_upper = c.shift(1).rolling(lookback_bars).max()
+                don_lower = l.shift(1).rolling(lookback_bars).min()
+                channel_upper = don_upper
+                channel_lower = don_lower
+                channel_mid = (don_upper + don_lower) / 2.0
+            else:
+                channel_upper = bb_upper
+                channel_lower = bb_lower
+                channel_mid = bb_mid
 
             # Swing low (60-period shifted by 1)
             swing_low = l.shift(1).rolling(60).min()
@@ -181,6 +194,9 @@ class Unified4hEngine:
 
             indicators[s] = pd.DataFrame({
                 "atr": atr,
+                "channel_mid": channel_mid,
+                "channel_upper": channel_upper,
+                "channel_lower": channel_lower,
                 "bb_mid": bb_mid,
                 "bb_upper": bb_upper,
                 "bb_lower": bb_lower,
@@ -402,8 +418,8 @@ class Unified4hEngine:
                 curr_c = current_closes[s]
                 curr_h = current_highs[s]
                 curr_atr = float(indicators[s].loc[t, "atr"])
-                curr_bb_upper = float(indicators[s].loc[t, "bb_upper"])
-                curr_bb_mid = float(indicators[s].loc[t, "bb_mid"])
+                curr_channel_upper = float(indicators[s].loc[t, "channel_upper"])
+                curr_channel_mid = float(indicators[s].loc[t, "channel_mid"])
                 curr_swing_l = float(indicators[s].loc[t, "swing_low"])
                 curr_macro_mult = float(indicators[s].loc[t, "macro_mult"])
 
@@ -421,7 +437,7 @@ class Unified4hEngine:
                         if curr_c < pos.trailing_stop_price:
                             exit_long = True
                             exit_reason = "TRAILING_STOP"
-                        elif curr_c < curr_bb_mid:
+                        elif curr_c < curr_channel_mid:
                             exit_long = True
                             exit_reason = "CHANNEL_EXIT"
 
@@ -434,13 +450,13 @@ class Unified4hEngine:
                                 })
 
                 else:
-                    # Check Phase 19 Bollinger Breakout entry signal
-                    if (curr_c > curr_bb_upper) and (curr_macro_mult > 0.1):
+                    # Check channel breakout entry signal
+                    if (curr_c > curr_channel_upper) and (curr_macro_mult > 0.1):
                         if not any(po["symbol"] == s for po in pending_orders):
                             pending_orders.append({
                                 "symbol": s,
                                 "action": "BUY",
-                                "reason": "BOLLINGER120_BREAKOUT",
+                                "reason": f"{channel_type.upper()}120_BREAKOUT",
                                 "macro_mult": curr_macro_mult,
                             })
 
@@ -470,6 +486,9 @@ class Unified4hEngine:
             })
 
         df_bar_ledger = pd.DataFrame(bar_ledger).set_index("bar_time")
+        df_bar_ledger["bar_fee"] = df_bar_ledger["cum_fees"].diff().fillna(df_bar_ledger["cum_fees"].iloc[0] if not df_bar_ledger.empty else 0.0)
+        df_bar_ledger["bar_slippage"] = df_bar_ledger["cum_slippage"].diff().fillna(df_bar_ledger["cum_slippage"].iloc[0] if not df_bar_ledger.empty else 0.0)
+        df_bar_ledger["bar_friction"] = df_bar_ledger["bar_fee"] + df_bar_ledger["bar_slippage"]
         df_trades = pd.DataFrame([t.__dict__ for t in completed_trades]) if completed_trades else pd.DataFrame()
         df_orders = pd.DataFrame([o.__dict__ for o in orders_ledger]) if orders_ledger else pd.DataFrame()
 
@@ -677,6 +696,9 @@ class Unified4hEngine:
             })
 
         df_bar_ledger = pd.DataFrame(bar_ledger).set_index("bar_time")
+        df_bar_ledger["bar_fee"] = df_bar_ledger["cum_fees"].diff().fillna(df_bar_ledger["cum_fees"].iloc[0] if not df_bar_ledger.empty else 0.0)
+        df_bar_ledger["bar_slippage"] = df_bar_ledger["cum_slippage"].diff().fillna(df_bar_ledger["cum_slippage"].iloc[0] if not df_bar_ledger.empty else 0.0)
+        df_bar_ledger["bar_friction"] = df_bar_ledger["bar_fee"] + df_bar_ledger["bar_slippage"]
         df_trades = pd.DataFrame([t.__dict__ for t in completed_trades]) if completed_trades else pd.DataFrame()
         df_orders = pd.DataFrame([o.__dict__ for o in orders_ledger]) if orders_ledger else pd.DataFrame()
 
@@ -766,6 +788,9 @@ class Unified4hEngine:
             })
 
         df_bar_ledger = pd.DataFrame(bar_ledger).set_index("bar_time")
+        df_bar_ledger["bar_fee"] = df_bar_ledger["cum_fees"].diff().fillna(df_bar_ledger["cum_fees"].iloc[0] if not df_bar_ledger.empty else 0.0)
+        df_bar_ledger["bar_slippage"] = df_bar_ledger["cum_slippage"].diff().fillna(df_bar_ledger["cum_slippage"].iloc[0] if not df_bar_ledger.empty else 0.0)
+        df_bar_ledger["bar_friction"] = df_bar_ledger["bar_fee"] + df_bar_ledger["bar_slippage"]
         return {
             "strategy": f"BUY_AND_HOLD_{'_'.join(symbols)}",
             "bar_ledger": df_bar_ledger,
@@ -977,6 +1002,9 @@ class Unified4hEngine:
             })
 
         df_bar_ledger = pd.DataFrame(bar_ledger).set_index("bar_time")
+        df_bar_ledger["bar_fee"] = df_bar_ledger["cum_fees"].diff().fillna(df_bar_ledger["cum_fees"].iloc[0] if not df_bar_ledger.empty else 0.0)
+        df_bar_ledger["bar_slippage"] = df_bar_ledger["cum_slippage"].diff().fillna(df_bar_ledger["cum_slippage"].iloc[0] if not df_bar_ledger.empty else 0.0)
+        df_bar_ledger["bar_friction"] = df_bar_ledger["bar_fee"] + df_bar_ledger["bar_slippage"]
         df_trades = pd.DataFrame([t.__dict__ for t in completed_trades]) if completed_trades else pd.DataFrame()
         df_orders = pd.DataFrame([o.__dict__ for o in orders_ledger]) if orders_ledger else pd.DataFrame()
 

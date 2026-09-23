@@ -1,8 +1,8 @@
 model_key,strategy_name,role,net_return_pct,max_drawdown_pct,annualized_sharpe,calmar_ratio,avg_cash_pct,total_trades,win_rate_pct,profit_factor,top3_trades_profit_share_pct,max_dd_recovery_days,final_equity_usd,total_friction_usd
 M1A_Structural_Trend_Close,"Structural Trend (ETH/SOL 50/50, Mode A Bar-Close)",DEVELOPMENT_STRESS_TEST,2220.31,39.71,1.4,1.76,81.5,158,46.2,2.04,51.0,610,232030.56,20332.81
 M1B_Structural_Trend_Intrabar,"Structural Trend (ETH/SOL 50/50, Mode B Intrabar Stop Touch)",STRESS_TEST_SCENARIO,860.05,32.44,1.12,1.43,84.3,205,42.4,1.64,60.0,460,96004.51,17888.81
-M2_Simple_EMA_ETHSOL,"Simple EMA Control (ETH/SOL 50/50, No Rotation)",CONTROL_BENCHMARK,7675.96,67.85,1.44,1.59,49.1,408,15.7,1.36,134.2,797,777595.93,195874.01
-M3_Simple_EMA_Core4,"Simple EMA Control (Core-4 25% Each, No Rotation)",CONTROL_BENCHMARK,4476.73,55.87,1.45,1.62,48.7,822,15.8,1.36,113.1,797,457672.72,125241.71
+M2_Simple_EMA_ETHSOL,"Price > EMA200 Control (ETH/SOL 50/50, No Rotation)",CONTROL_BENCHMARK,7675.96,67.85,1.44,1.59,49.1,408,15.7,1.36,134.2,797,777595.93,195874.01
+M3_Simple_EMA_Core4,"Price > EMA200 Control (Core-4 25% Each, No Rotation)",CONTROL_BENCHMARK,4476.73,55.87,1.45,1.62,48.7,822,15.8,1.36,113.1,797,457672.72,125241.71
 M4_Top1_Rotation_Candidate,"Top-1 Rotation Candidate (Buffer 0.30, Unified Ledger)",HYPOTHESIS_EXPERIMENT,37852.01,53.14,1.73,3.23,48.5,426,46.2,1.38,46.3,564,3795201.23,1742428.48
 M5_BTC_Buy_Hold,BTC Buy & Hold (Market Beta),MARKET_BENCHMARK,658.36,77.04,0.88,0.53,0.0,0,0.0,0.0,0.0,850,75835.91,12.99
 M6_Core4_EW_Buy_Hold,Core-4 Equal-Weight Buy & Hold (Market Beta),MARKET_BENCHMARK,2204.39,89.05,1.06,0.78,0.0,0,0.0,0.0,0.0,1111,230438.96,12.99

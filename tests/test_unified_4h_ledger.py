@@ -147,3 +147,29 @@ def test_top1_rotation_single_ledger_reconciliation(synthetic_ohlcv_data):
     diffs = df_ledger["cum_fees"].diff().dropna()
     assert (diffs >= -1e-8).all(), "Fees must be monotonically non-decreasing bar-by-bar"
 
+
+def test_channel_ablation_bollinger_vs_donchian(synthetic_ohlcv_data):
+    """
+    Verifies that run_structural_trend supports both channel_type='bollinger' and 'donchian',
+    and that bar_friction columns exist and reconcile exactly.
+    """
+    engine = Unified4hEngine(initial_cash=10000.0)
+
+    # 1. Bollinger
+    res_b = engine.run_structural_trend(synthetic_ohlcv_data, symbols=["ETHUSDT", "SOLUSDT"], channel_type="bollinger")
+    ledger_b = res_b["bar_ledger"]
+    assert "bar_friction" in ledger_b.columns
+    np.testing.assert_allclose(ledger_b["bar_friction"].sum(), ledger_b["cum_fees"].iloc[-1] + ledger_b["cum_slippage"].iloc[-1], rtol=1e-5)
+
+    # 2. Donchian
+    res_d = engine.run_structural_trend(synthetic_ohlcv_data, symbols=["ETHUSDT", "SOLUSDT"], channel_type="donchian")
+    ledger_d = res_d["bar_ledger"]
+    assert "bar_friction" in ledger_d.columns
+    np.testing.assert_allclose(ledger_d["bar_friction"].sum(), ledger_d["cum_fees"].iloc[-1] + ledger_d["cum_slippage"].iloc[-1], rtol=1e-5)
+
+    # Both must preserve the mathematical ledger identity
+    for led in [ledger_b, ledger_d]:
+        cash_pos = led["cash"] + led["position_value"]
+        np.testing.assert_allclose(led["total_equity"].values, cash_pos.values, rtol=1e-5, atol=1e-5)
+
+
