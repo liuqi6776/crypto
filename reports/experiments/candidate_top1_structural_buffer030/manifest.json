@@ -1,0 +1,68 @@
+{
+  "manifest_version": "1.1.0",
+  "experiment_id": "exp_core4_L1x_all_fresh_20260923_034629",
+  "experiment_role": "HYPOTHESIS_EXPERIMENT",
+  "description": "Quantitative research evaluation of core4 at 1.0x leverage under fresh mode.",
+  "pre_registered_hypothesis": "Candidate reproduction: Structural EMA exit + 0.30 momentum buffer",
+  "created_at_utc": "2026-09-23 03:46:29 UTC",
+  "command_line": "scripts/run_research_experiment.py --universe core4 --leverage 1.0 --period all --no-atr-stop --delta-score-buffer 0.30 --role HYPOTHESIS_EXPERIMENT --hypothesis Candidate reproduction: Structural EMA exit + 0.30 momentum buffer --output-dir reports/experiments/candidate_top1_structural_buffer030",
+  "code_environment": {
+    "git_commit": "718e9078035e1773f3c676dc73c9dd081146fee0",
+    "git_branch": "main",
+    "git_dirty": false,
+    "python_version": "3.9.13",
+    "dependencies": {
+      "pandas": "2.0.3",
+      "numpy": "1.21.6",
+      "scipy": "1.9.1",
+      "pyarrow": "21.0.0",
+      "pytest": "7.1.2",
+      "flask": "1.1.2",
+      "requests": "2.32.3",
+      "pydantic": "2.10.4",
+      "matplotlib": "3.5.2",
+      "fastapi": "0.115.6",
+      "uvicorn": "0.34.0"
+    }
+  },
+  "universe": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT",
+    "BNBUSDT"
+  ],
+  "data_input_hashes": {
+    "BTCUSDT": "72af654e7325cd8403c11acb6e2747fce0fd291630ea589472d381b307215893",
+    "ETHUSDT": "8cbafbb3e169cdbfe680773cf39f60d934c91e6d81035f5e49c1be869abd5480",
+    "SOLUSDT": "fd0a0800b1a149fa8e8c9d13ed73fea774597733ce78447879a5dc11aaab2810",
+    "BNBUSDT": "b2c6ba3ee1bb668199edb76aaa91fd0d8ebb1897327391281da2a623eb3cf58d",
+    "funding": "82c7b10cfa3893a26a66feff0600fde6eb0f37be749f6d4b21bed8079cb2d078"
+  },
+  "output_hashes": {},
+  "time_interval": {
+    "eval_start_dt": "2020-10-15 00:00:00",
+    "eval_end_dt": "2026-09-23 00:00:00",
+    "semantics": "[eval_start_dt, eval_end_dt) UTC half-open interval"
+  },
+  "parameters": {
+    "universe_name": "core4",
+    "symbols": [
+      "BTCUSDT",
+      "ETHUSDT",
+      "SOLUSDT",
+      "BNBUSDT"
+    ],
+    "leverage": 1.0,
+    "period": "all",
+    "mode": "fresh",
+    "fee_rate": 0.0008,
+    "execution_slippage": 0.0005,
+    "stop_slippage": 0.0015,
+    "sl_atr_mult": 1.5,
+    "hysteresis": 0.005,
+    "delta_score_buffer": 0.3,
+    "enable_atr_stop": false,
+    "initial_cash": 10000.0
+  },
+  "extra_metadata": {}
+}

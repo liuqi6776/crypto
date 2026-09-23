@@ -25,6 +25,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 import pandas as pd
+import numpy as np
 
 # Add repo root to sys.path
 ROOT_DIR = Path(__file__).resolve().parent.parent
