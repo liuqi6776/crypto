@@ -1,0 +1,71 @@
+{
+  "manifest_version": "1.1.0",
+  "experiment_id": "exp_core4_L1x_2020_2024_fresh_20260923_030446",
+  "experiment_role": "OFFICIAL_BASELINE",
+  "description": "Quantitative research evaluation of core4 at 1.0x leverage under fresh mode.",
+  "pre_registered_hypothesis": null,
+  "created_at_utc": "2026-09-23 03:04:46 UTC",
+  "command_line": "scripts/run_research_experiment.py --universe core4 --leverage 1.0 --period 2020-2024 --role OFFICIAL_BASELINE",
+  "code_environment": {
+    "git_commit": "1b0c1ff8ad3ca90a9450521ea8a94ea23bde4e46",
+    "git_branch": "main",
+    "git_dirty": false,
+    "python_version": "3.9.13",
+    "dependencies": {
+      "pandas": "2.0.3",
+      "numpy": "1.21.6",
+      "scipy": "1.9.1",
+      "pyarrow": "21.0.0",
+      "pytest": "7.1.2",
+      "flask": "1.1.2",
+      "requests": "2.32.3",
+      "pydantic": "2.10.4",
+      "matplotlib": "3.5.2",
+      "fastapi": "0.115.6",
+      "uvicorn": "0.34.0"
+    }
+  },
+  "universe": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT",
+    "BNBUSDT"
+  ],
+  "data_input_hashes": {
+    "BTCUSDT": "72af654e7325cd8403c11acb6e2747fce0fd291630ea589472d381b307215893",
+    "ETHUSDT": "8cbafbb3e169cdbfe680773cf39f60d934c91e6d81035f5e49c1be869abd5480",
+    "SOLUSDT": "fd0a0800b1a149fa8e8c9d13ed73fea774597733ce78447879a5dc11aaab2810",
+    "BNBUSDT": "b2c6ba3ee1bb668199edb76aaa91fd0d8ebb1897327391281da2a623eb3cf58d",
+    "funding": "82c7b10cfa3893a26a66feff0600fde6eb0f37be749f6d4b21bed8079cb2d078"
+  },
+  "output_hashes": {
+    "trades.csv": "82495533fec33158b247e8c892b27d88e26de3fc49c1397783a4a8c5348ad760",
+    "bar_ledger.csv": "12eb41318ae2f20084f11683c1810aea8ad24b47cafedadeb0d910e8104f8502",
+    "summary.json": "f97df4692f3949c28d57ca03463827fc5fa69a1cb4986bc80be0b3cb56261e2a",
+    "data_admission_report.json": "f7bf8d18abb9fd58b88c045284e28c48890524ee66c96f8dd19c756054b829c7"
+  },
+  "time_interval": {
+    "eval_start_dt": "2020-10-15 00:00:00",
+    "eval_end_dt": "2025-01-01 00:00:00",
+    "semantics": "[eval_start_dt, eval_end_dt) UTC half-open interval"
+  },
+  "parameters": {
+    "universe_name": "core4",
+    "symbols": [
+      "BTCUSDT",
+      "ETHUSDT",
+      "SOLUSDT",
+      "BNBUSDT"
+    ],
+    "leverage": 1.0,
+    "period": "2020-2024",
+    "mode": "fresh",
+    "fee_rate": 0.0008,
+    "execution_slippage": 0.0005,
+    "stop_slippage": 0.0015,
+    "sl_atr_mult": 1.5,
+    "hysteresis": 0.005,
+    "initial_cash": 10000.0
+  },
+  "extra_metadata": {}
+}

@@ -71,6 +71,9 @@ def parse_args():
     parser.add_argument("--stop-slippage", type=float, default=0.0015, help="Stop-out slippage (default 0.0015 = 15 bps)")
     parser.add_argument("--sl-atr-mult", type=float, default=1.5, help="ATR multiplier for stop loss (default 1.5)")
     parser.add_argument("--hysteresis", type=float, default=0.005, help="Hysteresis buffer around EMA200 (default 0.005 = 0.5%)")
+    parser.add_argument("--delta-score-buffer", type=float, default=0.0, help="Momentum switching buffer (default 0.0, candidate uses 0.30)")
+    parser.add_argument("--enable-atr-stop", dest="enable_atr_stop", action="store_true", default=True, help="Enable ATR stop loss (default True)")
+    parser.add_argument("--no-atr-stop", dest="enable_atr_stop", action="store_false", help="Disable ATR stop loss (rely purely on structural trend exit)")
     parser.add_argument("--initial-cash", type=float, default=10000.0, help="Initial cash in USDT")
     parser.add_argument("--role", type=str, default=None, help="Experiment role (OFFICIAL_BASELINE, HYPOTHESIS_EXPERIMENT, DEVELOPMENT_STRESS_TEST)")
     parser.add_argument("--hypothesis", type=str, default=None, help="Pre-registered hypothesis for ablation or research experiments")
@@ -181,6 +184,8 @@ def main():
         "stop_slippage": args.stop_slippage,
         "sl_atr_mult": args.sl_atr_mult,
         "hysteresis": args.hysteresis,
+        "delta_score_buffer": args.delta_score_buffer,
+        "enable_atr_stop": args.enable_atr_stop,
         "initial_cash": args.initial_cash,
     }
     manifest = generate_experiment_manifest(
@@ -208,6 +213,8 @@ def main():
         stop_slippage=args.stop_slippage,
         sl_atr_mult=args.sl_atr_mult,
         hysteresis_pct=args.hysteresis,
+        delta_score_buffer=args.delta_score_buffer,
+        enable_atr_stop=args.enable_atr_stop,
         initial_cash=args.initial_cash,
     )
 
@@ -300,6 +307,81 @@ def main():
     with open(out_dir / "summary.json", "w", encoding="utf-8") as f:
         json.dump(summary_metrics, f, indent=2, ensure_ascii=False)
 
+    # D. Annual Breakdown CSV (if multi-year / full cycle)
+    df_ledger = pd.DataFrame(bar_records)
+    annual_breakdowns = []
+    if not df_ledger.empty and "bar_time" in df_ledger.columns:
+        df_ledger["bar_time"] = pd.to_datetime(df_ledger["bar_time"])
+        df_ledger.set_index("bar_time", inplace=True)
+
+        annual_regimes = [
+            ("2021", "2021-01-01 00:00:00", "2022-01-01 00:00:00"),
+            ("2022", "2022-01-01 00:00:00", "2023-01-01 00:00:00"),
+            ("2023", "2023-01-01 00:00:00", "2024-01-01 00:00:00"),
+            ("2024", "2024-01-01 00:00:00", "2025-01-01 00:00:00"),
+            ("2025", "2025-01-01 00:00:00", "2026-01-01 00:00:00"),
+            ("2026 (Stress)", "2026-01-01 00:00:00", "2026-09-23 00:00:00"),
+            ("Full Cycle", start_dt, end_dt),
+        ]
+
+        for r_name, r_start, r_end in annual_regimes:
+            sub = df_ledger.loc[r_start:r_end]
+            if len(sub) >= 2:
+                s_eq = float(sub["equity"].iloc[0])
+                f_eq = float(sub["equity"].iloc[-1])
+                ret_pct = ((f_eq / s_eq) - 1.0) * 100.0 if s_eq > 0 else 0.0
+
+                cummax = sub["equity"].cummax()
+                dd = (cummax - sub["equity"]) / cummax
+                m_dd = float(dd.max() * 100.0)
+
+                bar_rets = sub["equity"].pct_change().dropna()
+                mean_r = bar_rets.mean()
+                std_r = bar_rets.std()
+                sh = float((mean_r / std_r) * np.sqrt(2190)) if std_r > 1e-12 else 0.0
+
+                dur_years = (sub.index[-1] - sub.index[0]).total_seconds() / (365.25 * 86400)
+                cagr = ((f_eq / s_eq) ** (1.0 / dur_years) - 1.0) * 100.0 if (dur_years > 0.1 and f_eq > 0 and s_eq > 0) else ret_pct
+                calm = (cagr / m_dd) if m_dd > 0.001 else 0.0
+
+                sub_tr = [
+                    t for t in trades_list
+                    if str(t.entry_time) >= r_start and str(t.entry_time) < r_end
+                ]
+                tr_cnt = len(sub_tr)
+                st_cnt = len([t for t in sub_tr if t.exit_reason == "STOP_LOSS"])
+                win_cnt = len([t for t in sub_tr if t.net_pnl_usdt > 0])
+                wr = (win_cnt / tr_cnt * 100.0) if tr_cnt > 0 else 0.0
+
+                p_fees = sum(t.entry_fee_usdt + t.exit_fee_usdt for t in sub_tr)
+                p_slip = sum(t.slippage_cost_usdt for t in sub_tr)
+                p_fric = p_fees + p_slip
+
+                cash_pct = float((sub["curr_pos"] == "USDT_CASH").astype(float).mean() * 100.0)
+
+                annual_breakdowns.append({
+                    "regime": r_name,
+                    "start_dt": r_start,
+                    "end_dt": r_end,
+                    "initial_equity": s_eq,
+                    "final_equity": f_eq,
+                    "net_ret_pct": ret_pct,
+                    "cagr_pct": cagr,
+                    "max_dd_pct": m_dd,
+                    "sharpe": sh,
+                    "calmar": calm,
+                    "avg_cash_pct": cash_pct,
+                    "trade_count": tr_cnt,
+                    "stop_count": st_cnt,
+                    "win_rate": wr,
+                    "total_friction_usdt": p_fric,
+                })
+
+        if annual_breakdowns:
+            pd.DataFrame(annual_breakdowns).to_csv(out_dir / "annual_breakdown.csv", index=False)
+            with open(out_dir / "annual_breakdown.json", "w", encoding="utf-8") as f:
+                json.dump(annual_breakdowns, f, indent=2, ensure_ascii=False)
+
     summary_md = f"""# Quantitative Research Experiment Summary / 实验总结报告
 - **Experiment ID / 实验编号**: `{run_id}`
 - **Role / 实验定位**: `{role}`
@@ -337,6 +419,23 @@ def main():
 - **Total Borrow Cost / 累计借贷利息**: \${sim_res['total_borrow']:,.2f} USDT
 - **Ledger Reconciled / 账本数学闭环**: **{'PERFECT MATCH (误差 < 1e-4)' if sim_res['is_perfectly_reconciled'] else 'FAILED'}** (Error: {sim_res['reconciliation_error']:.6f})
 """
+
+    if annual_breakdowns:
+        summary_md += """
+---
+
+## Annual & Regime Performance Breakdown / 逐年与分周期表现
+
+| Regime / 周期 | Initial Equity | Final Equity | Net Return / 净收益 | Max DD / 最大回撤 | Sharpe / 夏普 | Win Rate / 胜率 | Trades / 笔数 | Stops / 止损 | Friction / 摩擦 |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+"""
+        for ab in annual_breakdowns:
+            summary_md += (
+                f"| **{ab['regime']}** | \${ab['initial_equity']:,.2f} | \${ab['final_equity']:,.2f} | "
+                f"**{ab['net_ret_pct']:+.2f}%** | {ab['max_dd_pct']:.2f}% | {ab['sharpe']:.2f} | "
+                f"{ab['win_rate']:.1f}% | {ab['trade_count']} | {ab['stop_count']} | \${ab['total_friction_usdt']:,.2f} |\n"
+            )
+
     with open(out_dir / "summary.md", "w", encoding="utf-8") as f:
         f.write(summary_md)
 

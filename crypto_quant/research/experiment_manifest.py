@@ -24,7 +24,12 @@ import json
 
 
 def get_git_info() -> Dict[str, Any]:
-    """Retrieves current Git commit hash, branch, and working tree dirty status."""
+    """
+    Retrieves current Git commit hash, branch, and working tree dirty status.
+    Strictly checks both:
+    1. Modified or staged tracked files.
+    2. Any untracked source code files (.py, .sh, .bat, .vbs, .c, .cpp, .rs, .go).
+    """
     try:
         commit = subprocess.check_output(
             ["git", "rev-parse", "HEAD"], stderr=subprocess.DEVNULL
@@ -39,11 +44,27 @@ def get_git_info() -> Dict[str, Any]:
     except Exception:
         branch = "UNKNOWN"
 
+    untracked_source_files = []
     try:
-        status = subprocess.check_output(
+        # 1. Check for modified/staged tracked files
+        status_tracked = subprocess.check_output(
             ["git", "status", "--porcelain", "-uno"], stderr=subprocess.DEVNULL
         ).decode().strip()
-        is_dirty = bool(status)
+        has_modified_tracked = bool(status_tracked)
+
+        # 2. Check for untracked source code files
+        status_all = subprocess.check_output(
+            ["git", "status", "--porcelain"], stderr=subprocess.DEVNULL
+        ).decode().splitlines()
+
+        code_exts = (".py", ".sh", ".bat", ".vbs", ".c", ".cpp", ".rs", ".go")
+        for line in status_all:
+            if line.startswith("??"):
+                fpath = line[3:].strip()
+                if any(fpath.endswith(ext) for ext in code_exts):
+                    untracked_source_files.append(fpath)
+
+        is_dirty = has_modified_tracked or bool(untracked_source_files)
     except Exception:
         is_dirty = False
 
@@ -51,6 +72,7 @@ def get_git_info() -> Dict[str, Any]:
         "commit_hash": commit,
         "branch": branch,
         "is_dirty": is_dirty,
+        "untracked_source_files": untracked_source_files,
     }
 
 

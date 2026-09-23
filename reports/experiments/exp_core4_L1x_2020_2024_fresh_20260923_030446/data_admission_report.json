@@ -1,0 +1,37 @@
+{
+  "is_valid": true,
+  "total_bars_per_symbol": {
+    "BTCUSDT": 13404,
+    "ETHUSDT": 13404,
+    "SOLUSDT": 13403,
+    "BNBUSDT": 13404
+  },
+  "earliest_bar_per_symbol": {
+    "BTCUSDT": "2020-08-11 00:00:00",
+    "ETHUSDT": "2020-08-11 00:00:00",
+    "SOLUSDT": "2020-08-11 04:00:00",
+    "BNBUSDT": "2020-08-11 00:00:00"
+  },
+  "latest_bar_per_symbol": {
+    "BTCUSDT": "2026-09-22 20:00:00",
+    "ETHUSDT": "2026-09-22 20:00:00",
+    "SOLUSDT": "2026-09-22 20:00:00",
+    "BNBUSDT": "2026-09-22 20:00:00"
+  },
+  "missing_bars_count": {
+    "BTCUSDT": 0,
+    "ETHUSDT": 0,
+    "SOLUSDT": 0,
+    "BNBUSDT": 0
+  },
+  "gap_intervals_per_symbol": {
+    "BTCUSDT": [],
+    "ETHUSDT": [],
+    "SOLUSDT": [],
+    "BNBUSDT": []
+  },
+  "funding_coverage_ratio": {},
+  "error_count": 0,
+  "warning_count": 0,
+  "issues": []
+}
