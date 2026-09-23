@@ -122,7 +122,8 @@ def seed_demo_replay(output_dir: str = "data/forward_tracking", n_bars: int = 20
 
     for t in target_idx:
         i_loc = common_idx.get_loc(t)
-        hist_closes = closes_df.iloc[:i_loc]
+        # Includes newly closed candle t so signal incorporates bar t's close
+        hist_closes = closes_df.iloc[:i_loc + 1]
         hist_atrs = {s: float(df_atrs.loc[t, s]) for s in CORE4_SYMBOLS if not np.isnan(df_atrs.loc[t, s])}
 
         open_prices = {s: float(raw_dfs[s].loc[t, "open"]) for s in CORE4_SYMBOLS}
@@ -153,14 +154,12 @@ def seed_demo_replay(output_dir: str = "data/forward_tracking", n_bars: int = 20
 
 def run_live_step(runner: ForwardDualRunner, allow_stale: bool = False) -> Dict[str, Any]:
     """
-    Checks Binance for the latest completed 4h candle, fetches live order book quotes,
-    verifies freshness, and executes genuine forward step if new.
+    Checks Binance for the latest completed 4h candle, verifies freshness after all data arrives,
+    computes model signals including the freshly closed bar, and then fetches live order book quotes.
     """
     fetcher = MarketDataFetcher()
-    now_utc = datetime.now(timezone.utc)
-    arrival_time_str = now_utc.strftime("%Y-%m-%d %H:%M:%S UTC")
 
-    # Fetch latest closed candles for all Core-4 symbols
+    # Step 1: Fetch latest closed candles for all Core-4 symbols
     klines_dict = {}
     for s in CORE4_SYMBOLS:
         try:
@@ -170,11 +169,15 @@ def run_live_step(runner: ForwardDualRunner, allow_stale: bool = False) -> Dict[
             print(f"[LIVE STEP ERROR] Failed to fetch {s}: {e}")
             return {"status": "ERROR", "message": str(e)}
 
-    # Verify common index
+    # Step 2: Verify common index across all symbols & validate data integrity
     common_idx = klines_dict[CORE4_SYMBOLS[0]].index
     for s in CORE4_SYMBOLS[1:]:
         common_idx = common_idx.intersection(klines_dict[s].index)
     common_idx = common_idx.sort_values()
+
+    # Step 3: Record data_arrival_time AFTER all K-line data has been fetched and validated!
+    now_utc = datetime.now(timezone.utc)
+    arrival_time_str = now_utc.strftime("%Y-%m-%d %H:%M:%S UTC")
 
     latest_bar_t = common_idx[-1]
     candle_close_t = latest_bar_t + timedelta(hours=4)
@@ -191,16 +194,12 @@ def run_live_step(runner: ForwardDualRunner, allow_stale: bool = False) -> Dict[
             "current_time": arrival_time_str,
         }
 
-    # Fetch real obtainable top-of-book quotes
-    actual_quotes = fetch_live_book_ticker(CORE4_SYMBOLS)
-    quote_arrival_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-
-    # Closes up to bar T-1 for signals
+    # Step 4: Include the newly closed candle in hist_closes so signal uses the freshly closed bar!
     closes_df = pd.DataFrame({s: klines_dict[s]["close"] for s in CORE4_SYMBOLS}, index=common_idx)
     i_loc = common_idx.get_loc(latest_bar_t)
-    hist_closes = closes_df.iloc[:i_loc]
+    hist_closes = closes_df.iloc[:i_loc + 1]
 
-    # Compute ATRs
+    # Compute ATRs up to and including latest_bar_t
     df_atrs = pd.DataFrame(index=common_idx, columns=CORE4_SYMBOLS, dtype=float)
     for s in CORE4_SYMBOLS:
         df_s = klines_dict[s].reindex(common_idx)
@@ -214,17 +213,17 @@ def run_live_step(runner: ForwardDualRunner, allow_stale: bool = False) -> Dict[
     open_prices = {s: float(klines_dict[s].loc[latest_bar_t, "open"]) for s in CORE4_SYMBOLS}
     close_prices = {s: float(klines_dict[s].loc[latest_bar_t, "close"]) for s in CORE4_SYMBOLS}
 
-    print(f"[LIVE STEP] Processing newly closed bar {latest_bar_t} under {runner.regime}...")
+    print(f"[LIVE STEP] Processing newly closed bar {latest_bar_t} (closed at {candle_close_str}) under {runner.regime}...")
+    # Step 5: Pass quote_fetcher callback so live quotes are fetched AFTER signal computation!
     res = runner.process_bar(
         bar_time=latest_bar_t,
         open_prices=open_prices,
         close_prices=close_prices,
         historical_closes=hist_closes,
         historical_atrs=hist_atrs,
-        actual_quotes=actual_quotes,
+        quote_fetcher=fetch_live_book_ticker,
         candle_close_time_utc=candle_close_str,
         data_arrival_time_utc=arrival_time_str,
-        quote_arrival_time_utc=quote_arrival_str,
         regime=runner.regime,
         allow_stale=allow_stale,
     )

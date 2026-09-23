@@ -210,6 +210,7 @@ class ForwardDualRunner:
         historical_closes: pd.DataFrame,
         historical_atrs: Optional[Dict[str, float]] = None,
         actual_quotes: Optional[Dict[str, Dict[str, float]]] = None,
+        quote_fetcher: Optional[Any] = None,
         candle_close_time_utc: Optional[str] = None,
         data_arrival_time_utc: Optional[str] = None,
         quote_arrival_time_utc: Optional[str] = None,
@@ -220,8 +221,8 @@ class ForwardDualRunner:
         Processes Bar T with strict temporal causality:
         1. Idempotency Check
         2. Freshness Check (arrival_latency <= max_staleness_sec) -> Log anomaly & skip on stale
-        3. Signal Decision on closed bars
-        4. Quote Availability Gate -> Log anomaly & skip on missing
+        3. Signal Decision on closed bars (records decision_time_utc)
+        4. Quote Retrieval & Availability Gate -> Fetch quotes AFTER decision if trades needed
         5. Obtainable Quote Execution: BUY at ask * (1+slip), SELL at bid * (1-slip)
         6. Post-execution MTM Accounting & Ledger Persistence
         """
@@ -330,20 +331,11 @@ class ForwardDualRunner:
 
         t_decision = time.perf_counter()
         calc_latency_sec = round(t_decision - t_start, 4)
-        decision_time_utc_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-        q_arrival_ts_str = quote_arrival_time_utc or decision_time_utc_str
-
-        # Execution latency (data arrival to quote arrival)
-        try:
-            t_q = pd.to_datetime(q_arrival_ts_str)
-            if t_q.tzinfo is None:
-                t_q = t_q.tz_localize("UTC")
-            execution_latency_sec = max(calc_latency_sec, (t_q - t_arrival).total_seconds())
-        except Exception:
-            execution_latency_sec = calc_latency_sec
+        decision_time_utc = datetime.now(timezone.utc)
+        decision_time_utc_str = decision_time_utc.strftime("%Y-%m-%d %H:%M:%S UTC")
 
         # -------------------------------------------------------------
-        # 4. Quote Availability Gate
+        # 4. Quote Retrieval (AFTER Decision) & Availability Gate
         # -------------------------------------------------------------
         a_needs_trade = (target_pos_a != curr_pos_a)
         b_needs_trade = any(target_b[s] != cB["sub_portfolios"][s]["in_pos"] for s in self.symbols)
@@ -358,6 +350,30 @@ class ForwardDualRunner:
             for s in self.symbols:
                 if target_b[s] != cB["sub_portfolios"][s]["in_pos"]:
                     symbols_needed.add(s)
+
+        # Fetch live quotes after decision if quote_fetcher provided
+        if actual_quotes is None and quote_fetcher is not None:
+            try:
+                actual_quotes = quote_fetcher(list(symbols_needed) if symbols_needed else self.symbols)
+                quote_arrival_utc = datetime.now(timezone.utc)
+                q_arrival_ts_str = quote_arrival_utc.strftime("%Y-%m-%d %H:%M:%S UTC")
+            except Exception as e:
+                print(f"[ForwardDualRunner] Warning: quote_fetcher failed: {e}")
+                actual_quotes = None
+                q_arrival_ts_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+        elif actual_quotes is not None:
+            q_arrival_ts_str = quote_arrival_time_utc or datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+        else:
+            q_arrival_ts_str = decision_time_utc_str
+
+        # Execution latency (data arrival to quote arrival)
+        try:
+            t_q = pd.to_datetime(q_arrival_ts_str)
+            if t_q.tzinfo is None:
+                t_q = t_q.tz_localize("UTC")
+            execution_latency_sec = max(calc_latency_sec, (t_q - t_arrival).total_seconds())
+        except Exception:
+            execution_latency_sec = calc_latency_sec
 
         quotes_missing = False
         missing_symbols = []

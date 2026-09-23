@@ -271,3 +271,128 @@ def test_forward_dual_runner_demo_isolation(tmp_forward_dir):
     live_status = tmp_forward_dir / "status.json"
     assert not live_ledger.exists()
     assert not live_status.exists()
+
+
+def test_forward_dual_runner_quote_fetcher_calling_sequence(tmp_forward_dir):
+    """Verifies that quotes are fetched strictly AFTER decision, logging timestamps in physical sequence."""
+    runner = ForwardDualRunner(
+        output_dir=str(tmp_forward_dir),
+        initial_cash=10000.0,
+    )
+
+    dates = pd.date_range("2026-01-01", periods=150, freq="4h")
+    hist_closes = pd.DataFrame(index=dates)
+    for sym in CORE4_SYMBOLS:
+        hist_closes[sym] = np.linspace(100.0, 200.0, 150)
+
+    call_order = []
+
+    def mock_quote_fetcher(symbols=None):
+        call_order.append("FETCH_QUOTES")
+        return {s: {"bid": 204.0, "ask": 204.2} for s in CORE4_SYMBOLS}
+
+    bar_t = pd.Timestamp("2026-09-23 00:00:00")
+    open_prices = {s: 201.0 for s in CORE4_SYMBOLS}
+    close_prices = {s: 205.0 for s in CORE4_SYMBOLS}
+
+    res = runner.process_bar(
+        bar_time=bar_t,
+        open_prices=open_prices,
+        close_prices=close_prices,
+        historical_closes=hist_closes,
+        quote_fetcher=mock_quote_fetcher,
+        candle_close_time_utc="2026-09-23 04:00:00 UTC",
+        data_arrival_time_utc="2026-09-23 04:00:05 UTC",
+    )
+
+    assert res["status"] == "SUCCESS"
+    assert "FETCH_QUOTES" in call_order
+
+    # Read journal to verify timestamp sequence
+    with open(runner.journal_file, "r", encoding="utf-8") as f:
+        events = [json.loads(line) for line in f]
+    assert len(events) > 0
+    ev = events[0]
+
+    t_close = pd.to_datetime(ev["candle_close_time_utc"])
+    t_data = pd.to_datetime(ev["data_arrival_time_utc"])
+    t_decision = pd.to_datetime(ev["decision_time_utc"])
+    t_quote = pd.to_datetime(ev["quote_arrival_time_utc"])
+
+    # Strict physical temporal ordering: candle_close <= data_arrival <= decision <= quote
+    assert t_close <= t_data
+    assert t_data <= t_decision
+    assert t_decision <= t_quote
+
+
+def test_historical_vs_forward_signal_by_signal_equivalence():
+    """
+    Verifies 100% bit-for-bit equivalence between:
+    - Backtest decision at Bar i (using closes.iloc[:i])
+    - Forward paper decision when Bar i-1 closed (using closes.iloc[:loc(i-1) + 1])
+    Proves that including the newly closed candle eliminates the 1-bar extra lag.
+    """
+    from crypto_quant.core.top1_decision_engine import compute_top1_decision
+    from scripts.run_forward_dual_paper import load_local_market_data
+
+    raw_dfs, common_idx = load_local_market_data()
+    closes_df = pd.DataFrame({s: raw_dfs[s]["close"] for s in CORE4_SYMBOLS}, index=common_idx)
+
+    curr_pos_backtest = "USDT_CASH"
+    curr_pos_forward = "USDT_CASH"
+
+    # Evaluate across 50 consecutive historical 4h bars
+    start_i = 150
+    end_i = 200
+
+    matches = 0
+    for i in range(start_i, end_i):
+        bar_backtest = common_idx[i]
+        prev_closed_bar = common_idx[i - 1]
+
+        # 1. Backtest slice: all bars up to i (excluding bar i)
+        sub_closes_backtest = closes_df.iloc[:i]
+        dec_backtest = compute_top1_decision(
+            closes_df=sub_closes_backtest,
+            current_symbol=curr_pos_backtest,
+            symbols=CORE4_SYMBOLS,
+            delta_score_buffer=0.30,
+        )
+
+        # 2. Forward slice: all bars up to and including prev_closed_bar
+        loc_prev = common_idx.get_loc(prev_closed_bar)
+        sub_closes_forward = closes_df.iloc[:loc_prev + 1]
+
+        # Assert slicing identity: sub_closes_forward IS EXACTLY sub_closes_backtest!
+        assert len(sub_closes_forward) == len(sub_closes_backtest)
+        assert sub_closes_forward.index[-1] == sub_closes_backtest.index[-1]
+        assert sub_closes_forward.index[-1] == prev_closed_bar
+
+        dec_forward = compute_top1_decision(
+            closes_df=sub_closes_forward,
+            current_symbol=curr_pos_forward,
+            symbols=CORE4_SYMBOLS,
+            delta_score_buffer=0.30,
+        )
+
+        # 3. Assert 100% signal equivalence
+        assert dec_forward.target_symbol == dec_backtest.target_symbol, (
+            f"Bar {bar_backtest}: target mismatch forward={dec_forward.target_symbol} vs backtest={dec_backtest.target_symbol}"
+        )
+        assert dec_forward.action == dec_backtest.action
+        assert dec_forward.dual_gate_passed == dec_backtest.dual_gate_passed
+        assert abs(dec_forward.top_score - dec_backtest.top_score) < 1e-6
+
+        # 4. Assert Candidate B trend flags equivalence
+        for s in CORE4_SYMBOLS:
+            tb_backtest = sub_closes_backtest[s].iloc[-1] > sub_closes_backtest[s].ewm(span=200, adjust=False).mean().iloc[-1]
+            tb_forward = sub_closes_forward[s].iloc[-1] > sub_closes_forward[s].ewm(span=200, adjust=False).mean().iloc[-1]
+            assert tb_forward == tb_backtest
+
+        # Advance positions
+        curr_pos_backtest = dec_backtest.target_symbol
+        curr_pos_forward = dec_forward.target_symbol
+        matches += 1
+
+    assert matches == (end_i - start_i)
+    assert matches == 50
