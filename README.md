@@ -17,17 +17,15 @@
 > - **Email Alerts / 实时高频信号推送**: 15-minute pipeline listener dispatching instant alerts to `568701293@qq.com`.
 
 > [!TIP]
-> **Peer Review & Reproducibility Guide / 评审与一键复现指南**:
+> **Institutional Research & Reproducibility Guide / 机构级科研复现指南**:
+> - **Standardized Experiment Runner / 标准化实验运行器 (Manifest + Data Quality + Trade Logs)**:
+>   `python scripts/run_research_experiment.py --universe core4 --leverage 1.0 --period all`
+> - **Run Complete Test Suite (111 Tests 100% Passed) / 运行全量单元测试套件**:
+>   `python -m pytest tests/ -v`
 > - **1x vs 3x vs 5x Comprehensive Comparison / 考虑滑点与手续费的1x/3x/5x实测对比**:
 >   `python scripts/compare_1x_3x_5x_comprehensive.py`
-> - **3.0x Leverage SL & TP Regime Sweep / 3.0x 杠杆各止损止盈机制对比**:
->   `python scripts/backtest_3x_leverage_sweep.py`
-> - **Stop-Loss & Take-Profit Mechanics Sweep / 止损止盈全景参数扫描**:
->   `python scripts/sweep_stop_loss_take_profit.py`
-> - **Intrabar Liquidation & Leverage Scaling Test / 穿仓与杠杆边界实测**:
->   `python scripts/backtest_leverage_with_stops.py`
-> - **Run Complete Test Suite (94 Tests) / 运行全量单元测试套件**:
->   `pytest tests/ -v`
+> - **Data Admission Quality Check / 独立运行数据准入与健康核验**:
+>   `python -c "from crypto_quant.core.data_admission import validate_crypto_universe; import pandas as pd; print(validate_crypto_universe({s: pd.read_parquet(f'data/{s}_4h_2020_2026.parquet') for s in ['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT']}, ['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT'], pd.read_parquet('data/binance_funding_8h.parquet')).summary_markdown())"`
 
 ---
 

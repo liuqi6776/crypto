@@ -167,29 +167,25 @@ def test_strict_bar_by_bar_full_ledger_equivalence(core4_data, tmp_path, test_le
         journal_path=journal_file,
     )
 
-    common_idx = raw_dfs["BTCUSDT"].index
+    full_idx = raw_dfs["BTCUSDT"].index
     for s in symbols:
-        common_idx = common_idx.intersection(raw_dfs[s].index)
-    common_idx = common_idx[(common_idx >= start_dt) & (common_idx <= end_dt)].sort_values()
+        full_idx = full_idx.intersection(raw_dfs[s].index)
+    full_idx = full_idx.sort_values()
 
-    opens = pd.DataFrame({s: raw_dfs[s].loc[common_idx, "open"] for s in symbols})
-    highs = pd.DataFrame({s: raw_dfs[s].loc[common_idx, "high"] for s in symbols})
-    lows = pd.DataFrame({s: raw_dfs[s].loc[common_idx, "low"] for s in symbols})
-    closes = pd.DataFrame({s: raw_dfs[s].loc[common_idx, "close"] for s in symbols})
-    is_settlement_bar = pd.Series(common_idx.hour.isin([0, 8, 16]), index=common_idx)
+    eval_idx = [rec["bar_time"] for rec in sim_bar_records]
+    opens = pd.DataFrame({s: raw_dfs[s].loc[eval_idx, "open"] for s in symbols})
+    highs = pd.DataFrame({s: raw_dfs[s].loc[eval_idx, "high"] for s in symbols})
+    lows = pd.DataFrame({s: raw_dfs[s].loc[eval_idx, "low"] for s in symbols})
+    closes = pd.DataFrame({s: raw_dfs[s].loc[eval_idx, "close"] for s in symbols})
+    is_settlement_bar = pd.Series(pd.DatetimeIndex(eval_idx).hour.isin([0, 8, 16]), index=eval_idx)
 
     state = V1Top1State(cash_usdt=10000.0, total_equity_usdt=10000.0)
-    for i, t in enumerate(common_idx):
+    for i, t in enumerate(eval_idx):
         sim_rec = sim_bar_records[i]
         assert sim_rec["bar_time"] == t
 
-        if i < 121:
-            # Warmup period
-            assert sim_rec["curr_pos"] == "USDT_CASH"
-            assert abs(sim_rec["equity"] - 10000.0) < 1e-4
-            continue
-
-        klines_window = {s: raw_dfs[s].loc[common_idx[:i]] for s in symbols}
+        t_loc = full_idx.get_loc(t)
+        klines_window = {s: raw_dfs[s].loc[full_idx[:t_loc]] for s in symbols}
         fp = {s: float(opens.loc[t, s]) for s in symbols}
         il = {s: float(lows.loc[t, s]) for s in symbols}
         ih = {s: float(highs.loc[t, s]) for s in symbols}

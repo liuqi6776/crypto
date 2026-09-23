@@ -138,8 +138,8 @@ def test_intrabar_liquidation():
     highs = [c * 1.01 for c in closes]
     lows = [c * 0.99 for c in closes]
 
-    opens[131] = 130.0
-    lows[131] = 50.0  # -61% drop intrabar!
+    opens[131] = 50.0  # Open gaps down directly below liquidation line (-61%)!
+    lows[131] = 50.0
     closes[131] = 60.0
 
     df = pd.DataFrame({'open': opens, 'high': highs, 'low': lows, 'close': closes, 'vol': [1000.0]*140}, index=idx)
