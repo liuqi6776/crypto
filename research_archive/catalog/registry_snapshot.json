@@ -1,0 +1,1512 @@
+{
+  "as_of": "2026-10-23",
+  "source": "crypto-leverage/research_hub/experiment_registry.json",
+  "scope": "All 25 existing registry records; not an exhaustive list of research outputs. This archive pass did not rerun market data or models.",
+  "records": [
+    {
+      "id": "channel-c1-c3-20261010",
+      "title": "MTF channel C1-C3 limited comparison",
+      "category": "strategy",
+      "market_type": "perpetual",
+      "symbols": [
+        "ETH/USDT:USDT",
+        "SOL/USDT:USDT"
+      ],
+      "timeframe": [
+        "1h/15m",
+        "4h/1h"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": "2023-01-01T00:00:00Z",
+          "end_utc": "2024-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "2023 cases; no independent validation."
+        }
+      ],
+      "sample": {
+        "sample_unit": "BASE deduplicated event",
+        "count": 18,
+        "independence_notes": "BASE has 26 trades / 18 deduplicated events. C1 is 26/18, C2 is 121/79, and C3 is 15/11 trades/deduplicated events; those version-specific counts stay in result populations and are not pooled. Shared 2023 cases are exposed."
+      },
+      "cost_and_accounting": "1000 USDT notional, max 60 minutes. Base maker/taker/slippage 0.02%/0.05%/0.02%; stress 0.04%/0.10%/0.05%, ledger revaluation. Possible C2 funding-event valuation separate; true settlement UNKNOWN. Trade/case PnL, not account return.",
+      "results": [
+        {
+          "name": "BASE base / stress",
+          "value": "-21.250132719142023 / -47.23941595737773",
+          "unit": "descriptive_ledger_pnl_sum_usdt",
+          "population": "26 trades / 18 deduplicated",
+          "notes": "Descriptive case ledger."
+        },
+        {
+          "name": "C1 base / stress",
+          "value": "-32.09709672314501 / -58.09046258353637",
+          "unit": "descriptive_ledger_pnl_sum_usdt",
+          "population": "26 trades / 18 deduplicated",
+          "notes": "C1 mean loss 1.68 to 2.33."
+        },
+        {
+          "name": "C2 base / stress",
+          "value": "-89.42437723168989 / -210.44732078220215",
+          "unit": "descriptive_ledger_pnl_sum_usdt",
+          "population": "121 trades / 79 deduplicated",
+          "notes": "Eight common fragments signaled 0.5 min earlier with 0.141 percentage point less room."
+        },
+        {
+          "name": "C3 base / stress",
+          "value": "-3.961945986831493 / -18.952325620857938",
+          "unit": "descriptive_ledger_pnl_sum_usdt",
+          "population": "15 trades / 11 deduplicated",
+          "notes": "Fast-stop count fell from 21/26 to 11/15, retaining four winners; B arm only five trades."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "recommendation": "priority_validation",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../reports/strategy_validation/mtf_channel_limited_compare_20261010_v1/root_review/ONE_PAGE_REVIEW_ZH.md",
+        "../reports/strategy_validation/mtf_channel_limited_compare_20261010_v1/delivery_v1/FULL_RESULTS_ZH.md",
+        "../reports/strategy_validation/mtf_channel_limited_compare_20261010_v1/FINAL_MANIFEST.json",
+        "../reports/strategy_validation/mtf_channel_limited_compare_20261010_v1/comparison_run_v1/comparison.json"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "longcycle-trend-12-rules",
+      "title": "Long-cycle trend catalog, twelve rules",
+      "category": "strategy",
+      "market_type": "perpetual",
+      "symbols": [
+        "BTC",
+        "ETH",
+        "SOL"
+      ],
+      "timeframe": [
+        "4h",
+        "1d"
+      ],
+      "windows": [
+        {
+          "role": "train",
+          "start_utc": "2020-09-15T00:00:00Z",
+          "end_utc": "2025-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "Training/search history; repeated legacy use."
+        },
+        {
+          "role": "validation",
+          "start_utc": "2025-01-01T00:00:00Z",
+          "end_utc": "2026-01-01T00:00:00Z",
+          "exposure_status": "reused_validation",
+          "notes": "2025 reused validation; 2026 values were not numerically read in this audit."
+        }
+      ],
+      "sample": {
+        "sample_unit": "rule arm",
+        "count": 12,
+        "independence_notes": "Twelve rule arms share data and selection history. NO_BORROW_FAIL training results are not zero."
+      },
+      "cost_and_accounting": "5 bp fee per side plus 5 bp slippage; observed funding via prior-hour mark proxy. 100000 USDT segmented wallet, fixed initial slots, no compounding; capacity and margin path absent.",
+      "results": [
+        {
+          "name": "EMA200 4h 2025 account return",
+          "value": 21.65,
+          "unit": "account_return_percent",
+          "population": "95 completed trades",
+          "notes": "Sharpe 0.759; MDD -19.86%."
+        },
+        {
+          "name": "MACD plus EMA200 4h 2025 account return",
+          "value": 14.96,
+          "unit": "account_return_percent",
+          "population": "155 trades",
+          "notes": "Sharpe 0.706; MDD -19.11%."
+        },
+        {
+          "name": "Donchian55/20 4h 2025 account return",
+          "value": 8.16,
+          "unit": "account_return_percent",
+          "population": "41 trades",
+          "notes": "Sharpe 0.433; MDD -21.69%."
+        },
+        {
+          "name": "BB120 plus EMA200 plus ATR3 4h 2025 account return",
+          "value": 16.81,
+          "unit": "account_return_percent",
+          "population": "19 completed trades",
+          "notes": "Sharpe 1.269; MDD -7.62%; ETH contributed heavily, and top three winners contributed 81.2%."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "recommendation": "retain_benchmark",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../reports/strategy_validation/longcycle_trend_catalog_v1/ACCOUNT_RESULTS_V3_20261003.md"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "d1-r3k-20261005",
+      "title": "D1 and R3K minute model first conclusion",
+      "category": "model",
+      "market_type": "perpetual",
+      "symbols": [
+        "ETH",
+        "BTC cross-input"
+      ],
+      "timeframe": [
+        "1m"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": "2022-08-01T00:00:00Z",
+          "end_utc": "2024-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "13 reset windows; 2022-2023 history exposed."
+        }
+      ],
+      "sample": {
+        "sample_unit": "seed-window trade ledger",
+        "count": 136,
+        "independence_notes": "Basic seed trade counts 74/29/33 across seeds 101/202/303; shared historical windows are dependent. Higher-cost variant selects different entries and has 19/7/6 trades, not a same-trade stress."
+      },
+      "cost_and_accounting": "10000 USDT equity / 1000 USDT notional per window; decision T+61s, fill T+120s. Reported funding is observed; execution/accounting assumptions remain incomplete. Cited summary describes 7 bp per-side fee+slippage baseline.",
+      "results": [
+        {
+          "name": "Basic PnL seeds 101/202/303",
+          "value": "-17.29 / +89.67 / -34.13",
+          "unit": "reset_window_pnl_sum_usdt",
+          "population": "74 / 29 / 33 trades",
+          "notes": "Seeds share market history."
+        },
+        {
+          "name": "Higher-cost-selection variant PnL",
+          "value": "+169.85 / +61.55 / +35.81",
+          "unit": "reset_window_pnl_sum_usdt",
+          "population": "19 / 7 / 6 trades",
+          "notes": "Changed entry set; cannot be described as same-trade cost stress improvement."
+        },
+        {
+          "name": "Transformer vs Ridge H5 corrected p",
+          "value": 0.00069993,
+          "unit": "p_value",
+          "population": "reported corrected comparison",
+          "notes": "Standardized loss better; raw MSE slightly worse than zero baseline."
+        },
+        {
+          "name": "H7 BTC daily linear relative result",
+          "value": -0.2141,
+          "unit": "return_difference_percentage_points",
+          "population": "reported H7 result",
+          "notes": "Average weekly return difference; worse by 0.2141 percentage points."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "recommendation": "pause_current_version",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../reports/EMA_IV_FIRST_CONCLUSION_CN_20261005.md",
+        "../reports/strategy_validation/r3k_20261005/d1_r3k_20261005.md"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "ridge-1h24-risk-2021",
+      "title": "Ridge 1h/24 risk prediction arithmetic audit",
+      "category": "model",
+      "market_type": "perpetual",
+      "symbols": [
+        "BTC",
+        "ETH",
+        "SOL",
+        "BNB"
+      ],
+      "timeframe": [
+        "1h prediction, 24h target"
+      ],
+      "windows": [
+        {
+          "role": "train",
+          "start_utc": "2021-01-01T00:00:00Z",
+          "end_utc": "2021-07-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "7-day embargo before validation."
+        },
+        {
+          "role": "validation",
+          "start_utc": "2021-07-08T00:00:00Z",
+          "end_utc": "2022-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "Historical validation; no position PnL evidence."
+        }
+      ],
+      "sample": {
+        "sample_unit": "overlapping forecast origin",
+        "count": 4228,
+        "independence_notes": "4248 prediction rows, 4228 scored; forecast origins overlap and are dependent."
+      },
+      "cost_and_accounting": "Prediction-only arithmetic audit; no position sizing, funding account cashflows, or PnL evidence.",
+      "results": [
+        {
+          "name": "Pooled MSE improvement versus EWMA",
+          "value": 13.7937,
+          "unit": "prediction_metric",
+          "population": "4228 scored overlapping origins",
+          "notes": "BTC did not improve; 75 arithmetic checks."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "recommendation": "priority_validation",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../reports/strategy_validation/trend_vol_1h_risk2021_v1/derived_arithmetic_audit_v1r3.json",
+        "../reports/strategy_validation/trend_vol_1h_risk2021_v1/core_run_contract.json"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "c3-x3-overlay-2023",
+      "title": "C3/X3 volatility overlay",
+      "category": "strategy",
+      "market_type": "perpetual",
+      "symbols": [
+        "BTC",
+        "ETH"
+      ],
+      "timeframe": [
+        "unknown from limited summary"
+      ],
+      "windows": [
+        {
+          "role": "train",
+          "start_utc": "2023-06-20T00:00:00Z",
+          "end_utc": "2023-09-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "Constants trained; 7-day embargo."
+        },
+        {
+          "role": "validation",
+          "start_utc": "2023-09-08T00:00:00Z",
+          "end_utc": "2023-10-24T00:00:00Z",
+          "exposure_status": "reused_validation",
+          "notes": "Validation window reused."
+        }
+      ],
+      "sample": {
+        "sample_unit": "common trade",
+        "count": 3,
+        "independence_notes": "Only three common trades; all positive results derive from one BTC winner."
+      },
+      "cost_and_accounting": "Primary fee 5 bp and slippage 5 bp; funding uses prior-hour mark proxy, publication-time availability unknown. ATM reduced winner while leaving full size on losses.",
+      "results": [
+        {
+          "name": "E0 return",
+          "value": 1.70464,
+          "unit": "account_return_percent",
+          "population": "three common trades",
+          "notes": "Reported overlay result."
+        },
+        {
+          "name": "EWMA return",
+          "value": 1.56018,
+          "unit": "account_return_percent",
+          "population": "three common trades",
+          "notes": "Reported overlay result."
+        },
+        {
+          "name": "ATM return",
+          "value": 1.08354,
+          "unit": "account_return_percent",
+          "population": "three common trades",
+          "notes": "Reported overlay result."
+        },
+        {
+          "name": "Saved ledger arithmetic checks",
+          "value": 24,
+          "unit": "descriptive_text",
+          "population": "saved-ledger checks",
+          "notes": "Arithmetic pass only, not strategy gate."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "recommendation": "retain_hypothesis",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../reports/strategy_validation/c3_vol_overlay2023_v1r3/C3_VOL_OVERLAY_2023_V1R3_GATE_REPORT_CN_V1R2.md",
+        "../reports/strategy_validation/c3_vol_overlay2023_v1r3/C3_VOL_OVERLAY_2023_V1R3_RESULTS_CN.md"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "c3-risk-train-shrink",
+      "title": "C3 risk-training position shrink",
+      "category": "strategy",
+      "market_type": "perpetual",
+      "symbols": [
+        "BTC",
+        "ETH"
+      ],
+      "timeframe": [
+        "1h"
+      ],
+      "windows": [
+        {
+          "role": "train",
+          "start_utc": "2021-01-01T00:00:00Z",
+          "end_utc": "2022-07-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "FIT window."
+        },
+        {
+          "role": "validation",
+          "start_utc": "2022-07-08T00:00:00Z",
+          "end_utc": "2023-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "CAL window, internal exposure."
+        }
+      ],
+      "sample": {
+        "sample_unit": "account identity",
+        "count": 16,
+        "independence_notes": "Eight arms and 16 account identities; market E0 has 34 FIT trades and 10 CAL trades. 352 ledger rows are not market samples."
+      },
+      "cost_and_accounting": "5 bp fee plus 5 bp slippage, funding proxy. Lower exposure substantial; constant controls do not fully match.",
+      "results": [
+        {
+          "name": "E0 FIT return",
+          "value": 2.91,
+          "unit": "account_return_percent",
+          "population": "E0 FIT: 34 trades",
+          "notes": "FIT has 34 trades; CAL has 10."
+        },
+        {
+          "name": "E0 CAL return",
+          "value": -1.952,
+          "unit": "account_return_percent",
+          "population": "E0 CAL: 10 trades",
+          "notes": "Reported account result."
+        },
+        {
+          "name": "New stop scaled MAE FIT / CAL",
+          "value": "+0.781 / -0.450",
+          "unit": "account_return_percent",
+          "population": "reported risk-shrink result",
+          "notes": "Downside FIT/CAL +0.984/-0.463%; not evidence of alpha."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "recommendation": "retain_hypothesis",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../docs/C3_RISK_TRAIN_REFINEMENT_REPORT_AUDITED_V1R3.md"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "event-meta-2021-23",
+      "title": "Regime, event and meta-account families",
+      "category": "model",
+      "market_type": "perpetual",
+      "symbols": [
+        "multiple; see referenced reports"
+      ],
+      "timeframe": [
+        "multiple; see referenced reports"
+      ],
+      "windows": [
+        {
+          "role": "train",
+          "start_utc": "2021-01-01T00:00:00Z",
+          "end_utc": "2022-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "Meta family training window."
+        },
+        {
+          "role": "evaluation",
+          "start_utc": "2022-01-01T00:00:00Z",
+          "end_utc": "2024-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "2022-23 exposed evaluation; multiple family results."
+        }
+      ],
+      "sample": {
+        "sample_unit": "trade/case/account depending on cited sub-study",
+        "count": 461,
+        "independence_notes": "Event round reports 461 trades; regime route has only 3 trades; counts across families are not pooled independent samples."
+      },
+      "cost_and_accounting": "Meta CatBoost 135 and Ridge 123 primary cost ledgers were structurally reconciled with 5 bp fee plus 5 bp slippage each side and observed funding proxy. Financing failures are specific to E4_unfiltered primary/stress; they block the complete incremental comparison, not those two model ledgers. Sub-study units differ.",
+      "results": [
+        {
+          "name": "Regime baseline 2023 return",
+          "value": 24.53,
+          "unit": "account_return_percent",
+          "population": "43 trades",
+          "notes": "2023 baseline account return. Probabilistic route had 3 trades and about 10.4-10.6%; incremental CI crosses zero."
+        },
+        {
+          "name": "Meta CatBoost 135 CAGR",
+          "value": 6.89,
+          "unit": "account_cagr_percent",
+          "population": "2022-23 evaluation",
+          "notes": "Below E0 reported 17.09%; its primary cost ledger was structurally reconciled. E4_unfiltered financing failure blocks complete incremental comparison."
+        },
+        {
+          "name": "Meta Ridge 123 CAGR",
+          "value": 7.23,
+          "unit": "account_cagr_percent",
+          "population": "2022-23 evaluation",
+          "notes": "Below E0 reported 17.09%; its primary cost ledger was structurally reconciled. E4_unfiltered financing failure blocks complete incremental comparison."
+        },
+        {
+          "name": "Event round trades",
+          "value": 461,
+          "unit": "trade_count",
+          "population": "2021-23 event family",
+          "notes": "2022 negative."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "recommendation": "pause_current_version",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../reports/strategy_validation/market_regime_round1_20260930/final_review_v1/README_CN.md",
+        "../reports/strategy_validation/regime_event_round2_20260930/evaluation2023_v1/ROOT_REVIEW_CN_v2_WITH_ALPHA.md",
+        "../reports/strategy_validation/regime_event_round2_20260930/meta_account_2022_2023_v5_independent_audit_v1/README_AUDIT_RESULTS_CN_v1.md"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "channel-ml-maker-2024-25",
+      "title": "Channel ML R4 resume, selected CatBoost D6/I500",
+      "category": "model",
+      "market_type": "perpetual",
+      "symbols": [
+        "ETH",
+        "SOL"
+      ],
+      "timeframe": [
+        "multiple / action rows"
+      ],
+      "windows": [
+        {
+          "role": "train",
+          "start_utc": "2022-01-01T00:00:00Z",
+          "end_utc": "2023-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "R4 training."
+        },
+        {
+          "role": "validation",
+          "start_utc": "2023-01-01T00:00:00Z",
+          "end_utc": "2024-01-01T00:00:00Z",
+          "exposure_status": "reused_validation",
+          "notes": "Selection year had no eligible positive result."
+        },
+        {
+          "role": "evaluation",
+          "start_utc": "2024-01-01T00:00:00Z",
+          "end_utc": "2026-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "2024/25 are exposed evaluation windows; selection occurred in 2023, not in these evaluation years."
+        }
+      ],
+      "sample": {
+        "sample_unit": "action row in selected CatBoost run",
+        "count": 397205,
+        "independence_notes": "397205 action rows are not independent account samples. 2023 selection had no eligible positive; 2024/25 are exposed evaluation, not stated as selection windows."
+      },
+      "cost_and_accounting": "Base and stress results reported negative for exposed ETH/SOL windows; inspect cited reports for variant details. Candidate row counts do not indicate performance.",
+      "results": [
+        {
+          "name": "R4 action rows",
+          "value": 397205,
+          "unit": "prediction_row_count",
+          "population": "selected CatBoost D6/I500 run",
+          "notes": "No eligible positive in 2023 selection; exposed 2024/25 base and stress all negative."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "recommendation": "pause_current_version",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../reports/strategy_validation/channel_ml_validation_resume_v1/selected_catboost_d6_i500_20261008T132354Z.md"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "maker-v2-r1",
+      "title": "MTF trend-range Maker v2_r1",
+      "category": "model",
+      "market_type": "perpetual",
+      "symbols": [
+        "ETH",
+        "SOL"
+      ],
+      "timeframe": [
+        "multiple / action rows"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "not_established_untouched",
+          "notes": "Version-specific window not established in the limited summary."
+        }
+      ],
+      "sample": {
+        "sample_unit": "candidate ledger row",
+        "count": 60374,
+        "independence_notes": "72 candidates and 60374 ledger rows are not independent account samples; zero eligible positive."
+      },
+      "cost_and_accounting": "Base and stress results reported negative for exposed ETH/SOL windows; inspect cited reports for variant details. Candidate row counts do not indicate performance.",
+      "results": [
+        {
+          "name": "Maker candidates / ledger rows / eligible positives",
+          "value": "72 / 60374 / 0",
+          "unit": "descriptive_text",
+          "population": "Maker v2_r1 completion",
+          "notes": "Not an account sample count."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "recommendation": "pause_current_version",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../reports/strategy_validation/mtf_trend_range_maker_v2_r1/completion.json"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "pattern-support-meta",
+      "title": "Pattern, execution-horizon, support-rebound and meta candidates",
+      "category": "mixed",
+      "market_type": "perpetual",
+      "symbols": [
+        "ETH",
+        "four coin family; see reports"
+      ],
+      "timeframe": [
+        "multiple"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": "2022-01-01T00:00:00Z",
+          "end_utc": "2026-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "2022-25 reused/exposed across reported cases."
+        }
+      ],
+      "sample": {
+        "sample_unit": "case, closed trade, or fixed candidate by sub-study",
+        "count": 18257,
+        "independence_notes": "Pattern family: 24 cases/18257 closed trades; horizon family: 405 candidates, ETH passive 17 small positive but stress-negative; support: 89 trades; candidate counts are not independent samples."
+      },
+      "cost_and_accounting": "Pattern combined net bounds negative. Horizon small passive positives fail stress. Results are sub-study-specific, do not pool metrics.",
+      "results": [
+        {
+          "name": "Pattern combined net bounds",
+          "value": "negative",
+          "unit": "descriptive_text",
+          "population": "24 cases / 18257 closed trades",
+          "notes": "2022-25 exposed."
+        },
+        {
+          "name": "Support rebound mean per-coin compound",
+          "value": 0.29,
+          "unit": "account_return_percent",
+          "population": "89 trades in 2025",
+          "notes": "Rule result; exposed development year."
+        },
+        {
+          "name": "CatBoost meta F0/F1/F2",
+          "value": "all negative",
+          "unit": "descriptive_text",
+          "population": "four coins, 2025",
+          "notes": "Development validation report."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "recommendation": "pause_current_version",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../reports/strategy_validation/pattern_comparison_round2_20261009/codex_final_review.md",
+        "../reports/strategy_validation/b_execution_horizon_round3_20261009/codex_final_review_zh.md",
+        "../reports/strategy_validation/support_rebound_mtf/STAGE_C_DEV_VALIDATION_REPORT_V2.md",
+        "../reports/strategy_validation/support_rebound_mtf/catboost_meta_dev_2025_v4/dev25_validation_report.md"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "minute-return-2026",
+      "title": "Minute-return prediction and dynamic strategy",
+      "category": "mixed",
+      "market_type": "perpetual",
+      "symbols": [
+        "see source reports"
+      ],
+      "timeframe": [
+        "minute"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": "2026-01-01T00:00:00Z",
+          "end_utc": "2026-09-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "Jan-Aug fixed-window results have been examined."
+        }
+      ],
+      "sample": {
+        "sample_unit": "separate reset-fold simulation ledger",
+        "count": null,
+        "independence_notes": "Fixed and dynamic results come from different simulated ledgers/windows; cumulative totals are not daily observations or independent samples. Eight negative months; no stable predictive increment."
+      },
+      "cost_and_accounting": "Primary 0.05% fee and 0.05% slippage each side; observed funding cash accounting missing.",
+      "results": [
+        {
+          "name": "Fixed-exit cumulative net PnL",
+          "value": -752.75,
+          "unit": "account_simulation_cumulative_usdt",
+          "population": "Jan-Aug 2026; 393 trades; reset-fold arithmetic cumulative account simulation",
+          "notes": "Observed result; funding cash accounting missing."
+        },
+        {
+          "name": "Dynamic cumulative net PnL",
+          "value": -783.06,
+          "unit": "account_simulation_cumulative_usdt",
+          "population": "Jan-Aug 2026; 413 trades; reset-fold arithmetic cumulative account simulation",
+          "notes": "Observed result; eight negative months; funding cash accounting missing."
+        },
+        {
+          "name": "Fixed-exit trade count",
+          "value": 393,
+          "unit": "trade_count",
+          "population": "Jan-Aug 2026 fixed-exit simulation ledger",
+          "notes": "Count is separate from the dynamic ledger."
+        },
+        {
+          "name": "Dynamic trade count",
+          "value": 413,
+          "unit": "trade_count",
+          "population": "Jan-Aug 2026 dynamic simulation ledger",
+          "notes": "Count is separate from the fixed-exit ledger."
+        },
+        {
+          "name": "Stable predictive increment",
+          "value": "not found",
+          "unit": "descriptive_text",
+          "population": "static study",
+          "notes": "Reported no stable predictive increment."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "recommendation": "pause_current_version",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../reports/strategy_validation/minute_return_2026_v1/EMPIRICAL_RESULTS_CN_minute_return_2026_v1_20261004.md",
+        "../reports/strategy_validation/minute_return_dynamic_2026_v1/CODEX_REVIEW_20261004.md"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "btc-minute-probability-2023",
+      "title": "BTC minute-probability model",
+      "category": "model",
+      "market_type": "perpetual",
+      "symbols": [
+        "BTC"
+      ],
+      "timeframe": [
+        "minute",
+        "15m score"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": "2023-01-01T00:00:00Z",
+          "end_utc": "2024-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "Single historical year."
+        }
+      ],
+      "sample": {
+        "sample_unit": "overlapping prediction score",
+        "count": 525000,
+        "independence_notes": "About 525k overlapping scores do not represent independent samples; trade count is 71."
+      },
+      "cost_and_accounting": "Base trading result negative; detailed costs in referenced result artifact.",
+      "results": [
+        {
+          "name": "15m accuracy",
+          "value": 53,
+          "unit": "prediction_metric",
+          "population": "approximately 525k overlapping scores",
+          "notes": "Classification accuracy is not trading return."
+        },
+        {
+          "name": "Base trades",
+          "value": 71,
+          "unit": "trade_count",
+          "population": "2023 base",
+          "notes": "Negative base result."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "recommendation": "retain_benchmark",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../reports/strategy_validation/btc_minute_probability_v1/run_20261007_v3/RESULTS_中文.md"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "source-spot-bb-benchmark",
+      "title": "Source spot BB120x2 benchmark",
+      "category": "strategy",
+      "market_type": "spot",
+      "symbols": [
+        "spot source universe"
+      ],
+      "timeframe": [
+        "multiple"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "exposed",
+          "notes": "Exact period not established from cited summary; spot-only benchmark."
+        }
+      ],
+      "sample": {
+        "sample_unit": "strategy benchmark configuration",
+        "count": null,
+        "independence_notes": "Spot-only reference; no perpetual inference. Performance not asserted by this entry."
+      },
+      "cost_and_accounting": "Benchmark definition only; no performance values asserted in this record.",
+      "results": [
+        {
+          "name": "BB benchmark definition",
+          "value": "BB120x2, no stop, four slots",
+          "unit": "descriptive_text",
+          "population": "spot reference",
+          "notes": "Do not conflate with Top1 annual trend results."
+        }
+      ],
+      "verdict": "LEGACY_RESEARCH",
+      "recommendation": "retain_benchmark",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../../crypto/trend_research/reports/TREND_RESEARCH_REPORT.md"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "source-top1-annual-trend",
+      "title": "Source Top1 annual trend result",
+      "category": "strategy",
+      "market_type": "spot",
+      "symbols": [
+        "spot source universe"
+      ],
+      "timeframe": [
+        "multiple"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "exposed",
+          "notes": "Report gives full date span 2020-10-15 through 2026-09-22, but exact UTC boundary semantics are unknown. Recent 2024-01 through 2026-09 period is development-exposed."
+        }
+      ],
+      "sample": {
+        "sample_unit": "annual trend strategy account result",
+        "count": null,
+        "independence_notes": "Historical periods exposed; 2021 dominates the full-history result."
+      },
+      "cost_and_accounting": "Legacy 1x spot account simulation; do not transfer this result to perpetuals. Other leverage tables are not represented by this result.",
+      "results": [
+        {
+          "name": "Top1 updated 1x spot full-history account return",
+          "value": 1119.75,
+          "unit": "account_return_percent",
+          "population": "full cited history",
+          "notes": "MDD 69.95%; recent 2024-01 through 2026-09 result -19.54%. This is the 1x spot Top1 result, not the BB benchmark."
+        }
+      ],
+      "verdict": "LEGACY_RESEARCH",
+      "recommendation": "retain_benchmark",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../../crypto/reports/V1_1X_per_year_decision.md"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "source-ma-ml-legacy",
+      "title": "Source MA/ML legacy",
+      "category": "model",
+      "market_type": "mixed_reference",
+      "symbols": [
+        "spot source universe"
+      ],
+      "timeframe": [
+        "multiple"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "exposed",
+          "notes": "Exact evaluation window not extracted from cited MA/ML summary."
+        }
+      ],
+      "sample": {
+        "sample_unit": "evaluation event",
+        "count": 7199,
+        "independence_notes": "Selected events/models are not independent samples; source summary does not establish exact UTC bounds."
+      },
+      "cost_and_accounting": "Legacy MA/ML result; account/transaction costs are not established by this summary.",
+      "results": [
+        {
+          "name": "XGB selected result",
+          "value": 0.095,
+          "unit": "r_multiple",
+          "population": "7199 evaluation events; 16 selected",
+          "notes": "Reported +0.095R; gate FAILED."
+        }
+      ],
+      "verdict": "LEGACY_RESEARCH",
+      "recommendation": "retain_benchmark",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../../crypto/reports/ma_ml/ML_RESEARCH_SUMMARY.md"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "source-transformer-stchan-legacy",
+      "title": "Source legacy Transformer/STChan models",
+      "category": "model",
+      "market_type": "spot",
+      "symbols": [
+        "source-repository studies; exact universe not extracted"
+      ],
+      "timeframe": [
+        "unknown"
+      ],
+      "windows": [
+        {
+          "role": "validation",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "reused_validation",
+          "notes": "2024/25 history was used for selection; exact UTC boundaries not extracted."
+        },
+        {
+          "role": "evaluation",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "exposed",
+          "notes": "Changes were made post hoc in 2026; exact UTC boundaries not extracted."
+        }
+      ],
+      "sample": {
+        "sample_unit": "model evaluation event; exact count not extracted",
+        "count": null,
+        "independence_notes": "Legacy model evidence; no independent sample count established."
+      },
+      "cost_and_accounting": "No verified account-level cost or trading result is asserted for the legacy Transformer/STChan artifacts.",
+      "results": [
+        {
+          "name": "Stable incremental value",
+          "value": "not established",
+          "unit": "descriptive_text",
+          "population": "legacy Transformer/STChan reports",
+          "notes": "Existing provenance/incremental-value docs show no stable increment."
+        }
+      ],
+      "verdict": "LEGACY_RESEARCH",
+      "recommendation": "retain_benchmark",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../../crypto/docs/model_provenance.json",
+        "../../crypto/docs/model_incremental_value.json"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "factor-calibration-causal-2023",
+      "title": "Factor calibration, volatility and causal-timing evidence",
+      "category": "factor",
+      "market_type": "perpetual",
+      "symbols": [
+        "BTC",
+        "ETH",
+        "multiple; see reports"
+      ],
+      "timeframe": [
+        "multiple"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "unknown",
+          "notes": "Per-study windows and availability details are in source artifacts; limited audit does not infer them."
+        }
+      ],
+      "sample": {
+        "sample_unit": "score row / event, varies by study",
+        "count": 261,
+        "independence_notes": "EOH has 261 scores; BVOL has 1346 rows. Rows are not independent trades; several feature availability and causal controls unresolved."
+      },
+      "cost_and_accounting": "Prediction/calibration studies are not account ledgers. BVOL availability was assumed. Funding/basis/OI/book timing or continuity is unresolved in cited work.",
+      "results": [
+        {
+          "name": "EOH ATM loss calibration",
+          "value": "improved; publication-unit gap",
+          "unit": "descriptive_text",
+          "population": "261 scores",
+          "notes": "Skew did not help; publication timing remains a limitation."
+        },
+        {
+          "name": "Binance BVOL metrics",
+          "value": "QLIKE better; MSE worse",
+          "unit": "descriptive_text",
+          "population": "1346 rows",
+          "notes": "Availability assumed."
+        },
+        {
+          "name": "BTC strength trend residual CI",
+          "value": "crosses zero",
+          "unit": "descriptive_text",
+          "population": "focused follow-up",
+          "notes": "No residual increment established."
+        },
+        {
+          "name": "Six-factor basket",
+          "value": "low-funding basket no advantage; basis clock unresolved; OI/book continuity insufficient",
+          "unit": "descriptive_text",
+          "population": "six-factor study",
+          "notes": "Lead-lag timing inference is separately invalidated due to incomplete matched controls."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "recommendation": "retain_hypothesis",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../reports/strategy_validation/eoh_train_scale_calibration_v1/calibration_metrics.json",
+        "../reports/strategy_validation/binance_bvol_increment_2023/core_run_contract.json",
+        "../reports/strategy_validation/focused_followup_v1/FOCUSED_FOLLOWUP_RESULTS_CN_20261003_v1r2.md",
+        "../reports/strategy_validation/sixfactor_longcycle_v1/SIXFACTOR_LONGCYCLE_RESULTS_CN_20261003.md"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "source-universe-forward",
+      "title": "Source spot-universe and paper-forward status snapshots",
+      "category": "data",
+      "market_type": "spot",
+      "symbols": [
+        "718-symbol spot universe"
+      ],
+      "timeframe": [
+        "multiple files"
+      ],
+      "windows": [
+        {
+          "role": "unknown",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "unknown",
+          "notes": "Universe status source snapshot dated 2026-09-24; paper-forward status snapshot dated 2026-10-07T19:42:10Z. These are artifact snapshot dates, not market windows."
+        }
+      ],
+      "sample": {
+        "sample_unit": "universe symbol/file; paper-forward snapshot",
+        "count": 26076,
+        "independence_notes": "718 symbols and 26076 files are coverage counts, not strategy observations."
+      },
+      "cost_and_accounting": "Not an account-level evaluation in this registry entry.",
+      "results": [
+        {
+          "name": "Universe file count",
+          "value": 26076,
+          "unit": "file_count",
+          "population": "718 symbols",
+          "notes": "D3/D14/D15 blocked; dynamic backtest false."
+        },
+        {
+          "name": "Paper-forward BB spot snapshot",
+          "value": -1.71,
+          "unit": "account_return_percent",
+          "population": "snapshot through 2026-10-07 19:42:10Z",
+          "notes": "Old snapshot does not prove current observer is running."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "recommendation": "retain_benchmark",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../../crypto/universe_research/reports/pit_spot_fullmarket_20260924_172948/D_GATE_STATUS.json",
+        "../../crypto/trend_research/paper_forward/runs/20260924_143017/STATUS.md"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "platform-boundary",
+      "title": "Source interfaces and platform capability boundary",
+      "category": "platform",
+      "market_type": "mixed_reference",
+      "symbols": [],
+      "timeframe": [],
+      "windows": [
+        {
+          "role": "unknown",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "unknown",
+          "notes": "File counts and status timestamps do not describe research windows."
+        }
+      ],
+      "sample": {
+        "sample_unit": "file count / status registry entry",
+        "count": 83,
+        "independence_notes": "83 crypto_quant Python files in source; 499 scripts, 96 tools, 276 tests, 336 Markdown docs locally. Counts are inventory facts, not evidence quality."
+      },
+      "cost_and_accounting": "No cost or account model established. Source dataset_builder.py fill behavior is incompatible with no-imputation contract; do not reuse as shared implementation.",
+      "results": [
+        {
+          "name": "Source crypto_quant / scripts / tests / strategies files",
+          "value": "83 / 77 / 48 / 4",
+          "unit": "descriptive_text",
+          "population": "source repository",
+          "notes": "Four strategy Python files including init."
+        },
+        {
+          "name": "Local scripts / tools / tests / Markdown docs",
+          "value": "499 / 96 / 276 / 336",
+          "unit": "descriptive_text",
+          "population": "crypto-leverage workspace",
+          "notes": "One formal Freqtrade strategy: ExploratoryDonchianFutures.py."
+        },
+        {
+          "name": "Source data status snapshot",
+          "value": "44 registered; 25 configured; 25 success; 19 unconfigured",
+          "unit": "descriptive_text",
+          "population": "2026-10-10T20:00:03.816826Z",
+          "notes": "daily_sla_certified false; current loop process inactive at snapshot; does not prove no scheduler or current observer status."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "recommendation": "retain_benchmark",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../../crypto/crypto_quant/data/research_adapter.py",
+        "../../crypto/crypto_quant/framework/engine.py",
+        "../../crypto/crypto_quant/framework_v3/engine.py",
+        "../../crypto/crypto_quant/dataset_builder.py",
+        "../../crypto/data/data_catalog_status.json"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "local-conversion-boundary",
+      "title": "Local source-copy, conversion and bounded mark readiness snapshot",
+      "category": "data",
+      "market_type": "perpetual",
+      "symbols": [
+        "Core4"
+      ],
+      "timeframe": [
+        "4h",
+        "5m",
+        "15m",
+        "1h mark bounded"
+      ],
+      "windows": [
+        {
+          "role": "unknown",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "unknown",
+          "notes": "Coverage varies by dataset and selected window; this registry row records only the cited source-copy manifest and conversion/readiness status."
+        }
+      ],
+      "sample": {
+        "sample_unit": "manifest entry",
+        "count": 139,
+        "independence_notes": "139 manifest entries; 54 unverified and 71 weak basis at cited snapshot; all_copies_verified false. These are provenance statuses, not independent samples."
+      },
+      "cost_and_accounting": "Conversion defaults to refusal; readiness false for default full converted window. Genuine bounded mark data exists; do not claim no mark data. D: input not read for this hub.",
+      "results": [
+        {
+          "name": "Manifest status",
+          "value": "139 entries; 54 unverified; 71 weak basis; all copies verified false",
+          "unit": "descriptive_text",
+          "population": "source_data/MANIFEST.json snapshot",
+          "notes": "Snapshot reported by prior audit."
+        },
+        {
+          "name": "Default conversion readiness",
+          "value": "false",
+          "unit": "descriptive_text",
+          "population": "generated conversion report",
+          "notes": "Genuine mark files are registered and bounded; readiness depends on selected pair/window coverage."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "recommendation": "retain_benchmark",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../source_data/MANIFEST.json",
+        "../archive/inventory/conversion_report.json",
+        "../archive/catalog/mark_candle_registry.json"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "permission-denied-result",
+      "title": "Access-restricted trend result directory",
+      "category": "strategy",
+      "market_type": "perpetual",
+      "symbols": [],
+      "timeframe": [],
+      "windows": [
+        {
+          "role": "unknown",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "unknown",
+          "notes": "Artifact contents are unknown; no inference is made."
+        }
+      ],
+      "sample": {
+        "sample_unit": "unknown; directory not read",
+        "count": null,
+        "independence_notes": "Contents were not accessible in prior audit; no attempt to bypass permissions."
+      },
+      "cost_and_accounting": "Unknown; no result values claimed.",
+      "results": [
+        {
+          "name": "Evidence availability",
+          "value": "permission denied",
+          "unit": "descriptive_text",
+          "population": "one formal result directory and 18 temporary directories in prior audit",
+          "notes": "Not read; no bypass attempted."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "recommendation": "priority_validation",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../reports/strategy_validation/high_return_trend_20260928/stage_e/e2_pit_volatility_input_audit_v1/results_c_c100_v1"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "garch-har-leakage-invalidated",
+      "title": "GARCH/HAR leakage-era volatility scores",
+      "category": "factor",
+      "market_type": "perpetual",
+      "symbols": [
+        "BTC",
+        "ETH",
+        "multiple; see reports"
+      ],
+      "timeframe": [
+        "multiple"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "unknown",
+          "notes": "Per-study windows and availability details are in source artifacts; limited audit does not infer them."
+        }
+      ],
+      "sample": {
+        "sample_unit": "historical score row; exact independent count unknown",
+        "count": null,
+        "independence_notes": "Future innovation leakage and immature labels invalidate old scores; repair has no market rerun."
+      },
+      "cost_and_accounting": "Prediction score artifacts only; old leakage-era scores are invalidated. No trading ledger or account result is asserted.",
+      "results": [
+        {
+          "name": "Leakage-era scores",
+          "value": "INVALIDATED",
+          "unit": "descriptive_text",
+          "population": "legacy GARCH/HAR metrics",
+          "notes": "Do not reuse old scores as evidence; repair is not a market rerun."
+        }
+      ],
+      "verdict": "INVALIDATED",
+      "recommendation": "invalidated",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../reports/strategy_validation/foundation_review_20260930/VOLATILITY_CAUSAL_LEAKAGE_REPAIR.md"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "eth-btc-leadlag-invalidated",
+      "title": "ETH/BTC lead-lag inference with incomplete matched control",
+      "category": "factor",
+      "market_type": "perpetual",
+      "symbols": [
+        "BTC",
+        "ETH",
+        "multiple; see reports"
+      ],
+      "timeframe": [
+        "multiple"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "unknown",
+          "notes": "Per-study windows and availability details are in source artifacts; limited audit does not infer them."
+        }
+      ],
+      "sample": {
+        "sample_unit": "matched timing episode",
+        "count": null,
+        "independence_notes": "Matched-control design incomplete; inferential result is invalid in its present form."
+      },
+      "cost_and_accounting": "Inference-only timing study; matched controls are incomplete. No account-level result or trading ledger is asserted.",
+      "results": [
+        {
+          "name": "Lead-lag inference",
+          "value": "INVALIDATED",
+          "unit": "descriptive_text",
+          "population": "ETH/BTC timing study",
+          "notes": "Incomplete matched control; no valid lead-lag inference."
+        }
+      ],
+      "verdict": "INVALIDATED",
+      "recommendation": "invalidated",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../reports/strategy_validation/c3_timing_eth_btc_v4/B_INFERENCE_VALIDITY_NOTICE_V1.md"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "core3-trend-risk-v1",
+      "title": "Core3 4h trend and 1h/24h risk-sizing adapter",
+      "category": "mixed",
+      "market_type": "perpetual",
+      "symbols": [
+        "BTC/USDT:USDT",
+        "ETH/USDT:USDT",
+        "SOL/USDT:USDT"
+      ],
+      "timeframe": [
+        "1h",
+        "4h",
+        "8h funding events"
+      ],
+      "windows": [
+        {
+          "role": "train",
+          "start_utc": "2021-01-01T00:00:00Z",
+          "end_utc": "2021-07-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "Fixed pooled Ridge fit; label maturity plus modeled lag must be strictly before cutoff."
+        },
+        {
+          "role": "validation",
+          "start_utc": "2021-07-08T00:00:00Z",
+          "end_utc": "2022-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "Known exposed; 7-day embargo from train cutoff; reset account, carry causal price warmup."
+        },
+        {
+          "role": "validation",
+          "start_utc": "2025-01-01T00:00:00Z",
+          "end_utc": "2026-01-01T00:00:00Z",
+          "exposure_status": "reused_validation",
+          "notes": "Known reused/exposed; fixed 2021 fit and full prior causal price history; no retraining."
+        }
+      ],
+      "sample": {
+        "sample_unit": "aligned 4h forecast origin with next-24 completed H1 return-square mean target",
+        "count": null,
+        "independence_notes": "24-hour targets overlap across origins; observations are dependent and pooled rows are not independent sample counts."
+      },
+      "cost_and_accounting": "Main case fee 5bp/side plus adverse slippage 5bp/side; one fixed sensitivity fee 5bp/side plus adverse slippage 15bp/side and 61-minute modeled signal delay. Each fold resets a 100,000 USDT no-borrow wallet, per-symbol initial slot 98%/3, dynamic gross cap 98% of then-known modeled NAV. Observed funding events retain native times; prior genuine mark close is only an ex-post valuation proxy, with actual publication/settlement mark availability unverified. Main and adverse sensitivity are assumption scenarios, not formal passes.",
+      "results": [
+        {
+          "name": "Ridge 1h/24h MSE 2021 BTC",
+          "value": 1.9367533973099216E-09,
+          "unit": "prediction_metric",
+          "population": "1,055 paired origins; BTCUSDT, exposed 2021 validation",
+          "notes": "EWMA MSE 1.8969692515717007e-09; Ridge was worse."
+        },
+        {
+          "name": "Ridge 1h/24h MSE 2021 ETH",
+          "value": 4.5452405123031875E-09,
+          "unit": "prediction_metric",
+          "population": "1,055 paired origins; ETHUSDT, exposed 2021 validation",
+          "notes": "EWMA MSE 4.564176393894115e-09; Ridge was better."
+        },
+        {
+          "name": "Ridge 1h/24h MSE 2021 SOL",
+          "value": 5.0021983269587155E-08,
+          "unit": "prediction_metric",
+          "population": "1,055 paired origins; SOLUSDT, exposed 2021 validation",
+          "notes": "EWMA MSE 5.750995164991595e-08; Ridge was better."
+        },
+        {
+          "name": "Ridge 1h/24h MSE 2025 BTC",
+          "value": 7.315349605487115E-10,
+          "unit": "prediction_metric",
+          "population": "2,183 paired origins; BTCUSDT, reused 2025 validation",
+          "notes": "EWMA MSE 7.311596921705845e-10; Ridge was slightly worse."
+        },
+        {
+          "name": "Ridge 1h/24h MSE 2025 ETH",
+          "value": 5.297201732094947E-09,
+          "unit": "prediction_metric",
+          "population": "2,183 paired origins; ETHUSDT, reused 2025 validation",
+          "notes": "EWMA MSE 5.757555493385241e-09; Ridge was better."
+        },
+        {
+          "name": "Ridge 1h/24h MSE 2025 SOL",
+          "value": 1.062218784461403E-08,
+          "unit": "prediction_metric",
+          "population": "2,183 paired origins; SOLUSDT, reused 2025 validation",
+          "notes": "EWMA MSE 9.907734360960498e-09; Ridge was worse."
+        },
+        {
+          "name": "Completed account replays",
+          "value": "60/60 completed",
+          "unit": "descriptive_text",
+          "population": "3 strategies x 2 folds x main/stress arms and controls",
+          "notes": "All 60 completed; no performance metric is a strategy gate pass."
+        },
+        {
+          "name": "Paired forecast rows reconstructed",
+          "value": 9714,
+          "unit": "prediction_row_count",
+          "population": "3 symbols x 2 exposed/reused folds",
+          "notes": "Independent audit reconstructed every paired row and confirmed model identity; overlapping 24-hour targets are dependent."
+        },
+        {
+          "name": "2021 main Ridge exposure matches",
+          "value": "0/3 matched",
+          "unit": "descriptive_text",
+          "population": "EMA200, MACD+EMA200, Donchian55/20",
+          "notes": "All three preregistered 2021 main Ridge matched controls failed the symbol-level exposure match; risk-PnL gain remains unproven."
+        },
+        {
+          "name": "2025 main Ridge vs q1 baseline",
+          "value": "close, not identical",
+          "unit": "descriptive_text",
+          "population": "EMA200, MACD+EMA200, Donchian55/20; reused 2025",
+          "notes": "Normalized ledger net returns: EMA200 0.2165166245642569 vs prior 0.2165158705882084; MACD+EMA200 0.1496005062733965 vs 0.1495995319309762; Donchian55/20 0.0815999458258927 vs 0.0815998785104972. New ledger uses genuine-prior-mark valuation, final-H1-open exit, and fee-aware exposure cap; differences are convention/accounting differences. Separate legacy sidecars are reported below."
+        },
+        {
+          "name": "Legacy 2025 sidecar trade counts",
+          "value": "95 / 155 / 41",
+          "unit": "descriptive_text",
+          "population": "EMA200 / MACD+EMA200 / Donchian55/20",
+          "notes": "All three sidecars have counts 95/155/41 and binary64 net returns equal to the original account_summary.csv literals after parsing. The independent literal round-trip audit confirms this; EMA200/Donchian runner exact_reference_match flags remain false because its stored expected constants use shorter precision. Numeric equality does not imply serialized-byte identity."
+        },
+        {
+          "name": "Independent reconstruction audit",
+          "value": "PASS_RECONSTRUCTION_ONLY_NOT_A_STRATEGY_GATE",
+          "unit": "descriptive_text",
+          "population": "60 accounts, 3 legacy sidecars, 9,714 paired rows",
+          "notes": "No refit; checkpoint model and ledger/NAV outputs reconstructed. Formal causality and every strategy gate remain unpassed."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "recommendation": "priority_validation",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "platform_data/contracts/core3_trend_risk_protocol_v1.md",
+        "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r3.json",
+        "../reports/strategy_validation/longcycle_trend_catalog_v1/accounts_v3_frozen_20261003/account_summary.csv",
+        "../reports/strategy_validation/research_hub_admission_20261011_v1r2/admission_report.json",
+        "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1.json",
+        "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r1.json",
+        "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r2.json",
+        "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r4.json",
+        "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r5.json",
+        "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r6.json",
+        "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r7.json",
+        "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r8.json",
+        "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r9.json",
+        "../reports/strategy_validation/core3_trend_risk_v1/results_v1r3/results.json",
+        "../reports/strategy_validation/research_hub_review_20261011_v1/INDEPENDENT_NUMERIC_AUDIT_V1R3.json",
+        "../reports/strategy_validation/research_hub_review_20261011_v1/LEGACY_REFERENCE_DECIMAL_PARSE_AUDIT.json",
+        "../reports/strategy_validation/research_hub_review_20261011_v1/FULL_SUITE_FAILURE_CLASSIFICATION_FINAL.json"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    },
+    {
+      "id": "research-hub-admission-v1r2",
+      "title": "Core3 minimal source admission v1r2",
+      "category": "data",
+      "market_type": "perpetual",
+      "symbols": [
+        "BTC/USDT:USDT",
+        "ETH/USDT:USDT",
+        "SOL/USDT:USDT"
+      ],
+      "timeframe": [
+        "1h trade",
+        "1h mark",
+        "8h observed funding events"
+      ],
+      "windows": [
+        {
+          "role": "validation",
+          "start_utc": "2021-07-08T00:00:00Z",
+          "end_utc": "2022-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "Known exposed; 7-day embargo from train cutoff; reset account, carry causal price warmup."
+        },
+        {
+          "role": "validation",
+          "start_utc": "2025-01-01T00:00:00Z",
+          "end_utc": "2026-01-01T00:00:00Z",
+          "exposure_status": "reused_validation",
+          "notes": "Known reused/exposed; fixed 2021 fit and full prior causal price history; no retraining."
+        }
+      ],
+      "sample": {
+        "sample_unit": "sealed-source-verified raw source file",
+        "count": 9,
+        "independence_notes": "Nine exact raw source files; source bytes are not independent market observations."
+      },
+      "cost_and_accounting": "No strategy costs or account result. This record covers only a bounded Core3 input-admission slice. It does not establish publication timing, feature/label causality, tradeability, or effectiveness.",
+      "results": [],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "recommendation": "priority_validation",
+      "archival_verification": "REGISTRY_SNAPSHOT_READ_NOT_INDEPENDENT_REPLAY",
+      "evidence": [
+        "../reports/strategy_validation/research_hub_admission_20261011_v1r2/admission_report.json",
+        "../reports/strategy_validation/research_hub_admission_20261011_v1r2/full_price_mark_warmup_independent.json",
+        "../reports/strategy_validation/research_hub_admission_20261011_v1/admission_report.json",
+        "../reports/strategy_validation/research_hub_admission_20261011_v1r1/admission_report.json",
+        "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r3.json"
+      ],
+      "note": "Original registry is an older snapshot. More recent correction documents and family results take precedence."
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+# Preserve sanitized evidence bytes (including inherited line endings) for manifest verification.
+research_archive/** -text -whitespace
+tools/research_archive/*.py text eol=lf
+FINAL_RESEARCH_RESULTS_ZH.md text eol=lf
+PUBLICATION_MANIFEST.json text eol=lf

@@ -1,4 +1,7 @@
 # 声明一致性审计报告 (Claim Consistency Audit)
+
+> **2026-10-23 适用范围纠正**：本审计记录旧基线的文档矛盾，不是本次代码复审或最新系统状态。原文“样本外年化约 14–19%”不可理解为可期待水平，2026 已被开发使用；“Phase 19 唯一通过全部 8 项审核”也不等于完整研究门禁或有效前向证据。方法论审计仍记录止损、funding、杠杆和追溯缺口。以下旧判断保留以便追踪其后续失效，当前结论见[最终研究清单](../FINAL_RESEARCH_RESULTS_ZH.md)。
+
 审计日期基准: 仓库 main @ 7955834。审计范围: README.md, docs/CROSS_SECTIONAL_ROTATION_IMPLEMENTATION_PLAN.md, leverage_research/README.md, WALKTHROUGH.md, docs/*.json, reports/cross_sectional_evaluation.json。
 
 ## 一、全部"最优/推荐/最终"声明清单

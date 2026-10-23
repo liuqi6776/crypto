@@ -1,0 +1,258 @@
+{
+  "as_of": "2026-10-23",
+  "scope": "Archive validation and aggregate arithmetic only; no market-data, strategy, model, ledger or service rerun",
+  "tool_tests": {
+    "failed": 0,
+    "passed": 13,
+    "command": "python -m unittest discover -s tools/research_archive -p test_*.py -v"
+  },
+  "aggregate_verification": {
+    "datasets": [
+      {
+        "checks": [
+          {
+            "expected": "one nonempty unique scenario_id per row",
+            "name": "unique_scenario_id",
+            "observed": {
+              "nonempty": 36,
+              "unique": 36
+            },
+            "passed": true
+          },
+          {
+            "expected": 36,
+            "name": "documented_row_count",
+            "observed": 36,
+            "passed": true
+          },
+          {
+            "expected": 24,
+            "name": "documented_core_scope",
+            "observed": 24,
+            "passed": true
+          },
+          {
+            "expected": "all core rows < 0",
+            "name": "core_negative_total_return",
+            "observed": {
+              "core_rows": 24,
+              "negative_rows": 24
+            },
+            "passed": true
+          },
+          {
+            "expected": 0,
+            "name": "net_trade_pnl_identity",
+            "observed": {
+              "max_abs_residual": 1.8189894035458565E-12,
+              "mismatches": 0
+            },
+            "passed": true,
+            "tolerance": 1E-07
+          },
+          {
+            "expected": 0,
+            "name": "equity_change_identity",
+            "observed": {
+              "max_abs_residual": 4.001776687800884E-11,
+              "mismatches": 0
+            },
+            "passed": true,
+            "tolerance": 1E-07
+          }
+        ],
+        "core_rows": 24,
+        "dataset": "performance",
+        "errors": [],
+        "path": "evidence/recent/langlang_fixed/outputs/v3/performance.csv",
+        "rows": 36,
+        "status": "PASS"
+      },
+      {
+        "checks": [
+          {
+            "expected": "VERIFIED_LEDGER",
+            "name": "ledger_status",
+            "observed": "VERIFIED_LEDGER",
+            "passed": true
+          },
+          {
+            "expected": 36,
+            "name": "ledger_scenario_count",
+            "observed": 36,
+            "passed": true
+          },
+          {
+            "expected": "same scenario_id set as performance.csv",
+            "name": "ledger_scenario_ids_match_performance",
+            "observed": 36,
+            "passed": true
+          },
+          {
+            "expected": "match",
+            "name": "ledger_performance_hash",
+            "observed": "match",
+            "passed": true
+          }
+        ],
+        "dataset": "independent_ledger",
+        "errors": [],
+        "path": "evidence/recent/langlang_fixed/INDEPENDENT_LEDGER_V3.json",
+        "status": "PASS"
+      },
+      {
+        "checks": [
+          {
+            "expected": [
+              "negative",
+              "positive"
+            ],
+            "name": "logistic_eval_direction_rows",
+            "observed": {
+              "directions": [
+                "negative",
+                "positive"
+              ],
+              "rows": 2
+            },
+            "passed": true
+          },
+          {
+            "expected": 0,
+            "name": "directional_confusion_count_identities",
+            "observed": {
+              "mismatches": 0
+            },
+            "passed": true
+          }
+        ],
+        "dataset": "event_metrics",
+        "errors": [],
+        "observed_counts": [
+          {
+            "FN": 132,
+            "FP": 1,
+            "TP": 0,
+            "direction": "negative"
+          },
+          {
+            "FN": 10,
+            "FP": 68,
+            "TP": 122,
+            "direction": "positive"
+          }
+        ],
+        "path": "evidence/recent/funding_switch/btc_funding_switch_study/event_metrics.csv",
+        "rows": 32,
+        "status": "PASS"
+      },
+      {
+        "checks": [
+          {
+            "expected": "one unique row key per row",
+            "name": "unique_metric_identity",
+            "observed": {
+              "unique": 4
+            },
+            "passed": true
+          },
+          {
+            "expected": 4,
+            "name": "documented_row_count",
+            "observed": 4,
+            "passed": true
+          },
+          {
+            "expected": 0,
+            "name": "fee_only_cost_identity",
+            "observed": {
+              "max_abs_residual": 1.4210854715202004E-14,
+              "mismatches": 0
+            },
+            "passed": true,
+            "tolerance": 1E-07
+          }
+        ],
+        "dataset": "small_cap_metrics",
+        "errors": [],
+        "path": "evidence/recent/small_cap_game/root_review_run_v1/strategy_metrics.csv",
+        "rows": 4,
+        "status": "PASS"
+      },
+      {
+        "checks": [
+          {
+            "expected": "one cohort/variant row",
+            "name": "unique_metric_identity",
+            "observed": {
+              "unique": 6
+            },
+            "passed": true
+          },
+          {
+            "expected": 6,
+            "name": "documented_row_count",
+            "observed": 6,
+            "passed": true
+          },
+          {
+            "expected": {
+              "rows": 4,
+              "trade_count_each": 25
+            },
+            "name": "state_filtered_variant_scope",
+            "observed": {
+              "rows": 4,
+              "trade_counts": [
+                25,
+                25,
+                25,
+                25
+              ]
+            },
+            "passed": true
+          },
+          {
+            "expected": "field blank for all aggregate rows",
+            "name": "funding_full_net_expectancy_unavailable",
+            "observed": {
+              "blank_rows": 6,
+              "rows": 6
+            },
+            "passed": true
+          }
+        ],
+        "dataset": "human_protection_metrics",
+        "errors": [],
+        "path": "evidence/recent/human_protection/algorithm_metrics.csv",
+        "rows": 6,
+        "status": "PASS"
+      }
+    ],
+    "failed_datasets": [],
+    "schema_version": 1,
+    "scope": "Aggregate-file arithmetic, identifiers, and documented row coverage only; no strategy assessment or trading claim.",
+    "status": "PASS",
+    "tolerance": 1E-07
+  },
+  "archive_manifest_check": {
+    "scope": "All archived files, exported hashes, JSON and in-package links checked; source data hashes not rerun",
+    "status": "PASS"
+  },
+  "manual_review": {
+    "checks": [
+      "Recent report versus aggregate arithmetic",
+      "Historical claim corrections",
+      "Private-content exclusions and publication license boundary",
+      "Heuristic pattern scans and flagged-marker review"
+    ],
+    "status": "PASS_WITH_DECLARED_LIMITATIONS"
+  },
+  "not_run": [
+    "full research test suites",
+    "market data import or replay",
+    "strategy optimization or training",
+    "full event ledger reconstruction",
+    "collector installation or forward observation"
+  ]
+}

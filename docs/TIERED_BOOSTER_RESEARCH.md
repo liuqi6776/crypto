@@ -1,6 +1,8 @@
 # Research Report: Score-Based Initial Position Sizing & Floating-Profit Booster Strategy
 # 科研报告：基于技术共振评分的初始定额与浮盈加码（Booster）策略体系
 
+> **2026-10-23 归档限定**：这是已使用历史窗口上的探索性结果。较高样本内收益不代表更高风险调整表现，2026 已是事后压力期；本次没有复算表格、验证生产配置或确认前向实验持续运行。原文“已建立实验”不能替代有效前向证据；新旧浮盈保护研究不能因名称相近而合并。当前结论见[最终研究清单](../FINAL_RESEARCH_RESULTS_ZH.md)。
+
 ---
 
 ## 1. Executive Summary & Methodological Rectification / 核心执行总结与方法论整改

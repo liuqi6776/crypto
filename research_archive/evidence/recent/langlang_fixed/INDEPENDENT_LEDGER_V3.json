@@ -1,0 +1,861 @@
+{
+  "core_scenario_ids": [
+    "full__A_be__base",
+    "full__A_be__stress",
+    "full__A_fixed__base",
+    "full__A_fixed__stress",
+    "full__B_be__base",
+    "full__B_be__stress",
+    "full__B_fixed__base",
+    "full__B_fixed__stress"
+  ],
+  "created_at_utc": "2026-10-22T04:12:25.595355+00:00",
+  "manifest_sha256": "723a64770a607b07e283f2fede86a59b8c7962d7f9063fb7afd6e60adf6c4ad1",
+  "output_root": "<SOURCE_ROOT:research-runs>/2026-10-22/task-2/outputs/v3",
+  "performance_sha256": "9a9727cbbf0c60bdfa8789b8d59d844b9c6a99817ba6f7df25d977245deba5c1",
+  "post_run_input_hashes_unchanged": true,
+  "protocol_config_sha256": "50e3c6873501ca14c2c6ce05ba4f02aae5e013778f6529af41121f4c2ecaeff3",
+  "remaining_scenario_ids": [
+    "full__BUY_HOLD__base",
+    "full__BUY_HOLD__stress",
+    "full__TREND__base",
+    "full__TREND__stress",
+    "locked_2025__A_be__base",
+    "locked_2025__A_be__stress",
+    "locked_2025__A_fixed__base",
+    "locked_2025__A_fixed__stress",
+    "locked_2025__BUY_HOLD__base",
+    "locked_2025__BUY_HOLD__stress",
+    "locked_2025__B_be__base",
+    "locked_2025__B_be__stress",
+    "locked_2025__B_fixed__base",
+    "locked_2025__B_fixed__stress",
+    "locked_2025__TREND__base",
+    "locked_2025__TREND__stress",
+    "research_2024__A_be__base",
+    "research_2024__A_be__stress",
+    "research_2024__A_fixed__base",
+    "research_2024__A_fixed__stress",
+    "research_2024__BUY_HOLD__base",
+    "research_2024__BUY_HOLD__stress",
+    "research_2024__B_be__base",
+    "research_2024__B_be__stress",
+    "research_2024__B_fixed__base",
+    "research_2024__B_fixed__stress",
+    "research_2024__TREND__base",
+    "research_2024__TREND__stress"
+  ],
+  "run_snapshot_and_source_hashes": {
+    "FREEZE.json": {
+      "bytes": 1400,
+      "sha256": "0e1f75e526ebbca8f4ec32a558e669931795cad8b17ed6dad16539f6a75da508",
+      "snapshot_path": "<SOURCE_ROOT:research-runs>/2026-10-22/task-2/outputs/v3/run_snapshot/FREEZE.json",
+      "source_path": "<SOURCE_ROOT:research-runs>/2026-10-22/task-2/FREEZE.json"
+    },
+    "audit_data.py": {
+      "bytes": 23953,
+      "sha256": "adcb23e892d7a4b017e912a91bce81e8ae25e2b9d571328254d8e87e43c98b66",
+      "snapshot_path": "<SOURCE_ROOT:research-runs>/2026-10-22/task-2/outputs/v3/run_snapshot/audit_data.py",
+      "source_path": "<SOURCE_ROOT:research-runs>/2026-10-22/task-2/audit_data.py"
+    },
+    "engine.py": {
+      "bytes": 57889,
+      "sha256": "7e684aa6890cd50f47cfcb44e150f7df8f527640bb36d1a0027f2c6fec1c888b",
+      "snapshot_path": "<SOURCE_ROOT:research-runs>/2026-10-22/task-2/outputs/v3/run_snapshot/engine.py",
+      "source_path": "<SOURCE_ROOT:research-runs>/2026-10-22/task-2/engine.py"
+    },
+    "protocol_config.json": {
+      "bytes": 6724,
+      "sha256": "50e3c6873501ca14c2c6ce05ba4f02aae5e013778f6529af41121f4c2ecaeff3",
+      "snapshot_path": "<SOURCE_ROOT:research-runs>/2026-10-22/task-2/outputs/v3/run_snapshot/protocol_config.json",
+      "source_path": "<SOURCE_ROOT:research-runs>/2026-10-22/task-2/protocol_config.json"
+    },
+    "protocol_document.md": {
+      "bytes": 11279,
+      "sha256": "e6275e9aa586c9bccabff8d6885a4bfba17e03cd79ce6fa9bd737f6d2dc80b44",
+      "snapshot_path": "<SOURCE_ROOT:research-runs>/2026-10-22/task-2/outputs/v3/run_snapshot/protocol_document.md",
+      "source_path": "<SOURCE_ROOT:research-runs>/2026-10-22/task-2/PROTOCOL_V1_ZH.md"
+    },
+    "requirements-study.txt": {
+      "bytes": 114,
+      "sha256": "f4c38b4bfba1100932f87f0dfd0c3aba6d78ed396520f5803281d91b872027a3",
+      "snapshot_path": "<SOURCE_ROOT:research-runs>/2026-10-22/task-2/outputs/v3/run_snapshot/requirements-study.txt",
+      "source_path": "<SOURCE_ROOT:research-runs>/2026-10-22/task-2/requirements-study.txt"
+    },
+    "run_study.py": {
+      "bytes": 22337,
+      "sha256": "adac08854f31560bdb0cbbee894e848c83a14afed518b1e5642b0aea9366c2fa",
+      "snapshot_path": "<SOURCE_ROOT:research-runs>/2026-10-22/task-2/outputs/v3/run_snapshot/run_study.py",
+      "source_path": "<SOURCE_ROOT:research-runs>/2026-10-22/task-2/run_study.py"
+    }
+  },
+  "scenario_count": 36,
+  "scenario_ids": [
+    "full__A_be__base",
+    "full__A_be__stress",
+    "full__A_fixed__base",
+    "full__A_fixed__stress",
+    "full__BUY_HOLD__base",
+    "full__BUY_HOLD__stress",
+    "full__B_be__base",
+    "full__B_be__stress",
+    "full__B_fixed__base",
+    "full__B_fixed__stress",
+    "full__TREND__base",
+    "full__TREND__stress",
+    "locked_2025__A_be__base",
+    "locked_2025__A_be__stress",
+    "locked_2025__A_fixed__base",
+    "locked_2025__A_fixed__stress",
+    "locked_2025__BUY_HOLD__base",
+    "locked_2025__BUY_HOLD__stress",
+    "locked_2025__B_be__base",
+    "locked_2025__B_be__stress",
+    "locked_2025__B_fixed__base",
+    "locked_2025__B_fixed__stress",
+    "locked_2025__TREND__base",
+    "locked_2025__TREND__stress",
+    "research_2024__A_be__base",
+    "research_2024__A_be__stress",
+    "research_2024__A_fixed__base",
+    "research_2024__A_fixed__stress",
+    "research_2024__BUY_HOLD__base",
+    "research_2024__BUY_HOLD__stress",
+    "research_2024__B_be__base",
+    "research_2024__B_be__stress",
+    "research_2024__B_fixed__base",
+    "research_2024__B_fixed__stress",
+    "research_2024__TREND__base",
+    "research_2024__TREND__stress"
+  ],
+  "scenario_reports": {
+    "full__A_be__base": {
+      "artifacts_sha256": {
+        "equity.csv": "dbe9df37433c4b984e787aa57fcd780e2a44ccf4e942085ae69a7fbd34b6a704",
+        "events.csv": "5a168048df59207d81fee6c4df917ebc01bf17a21518a73f084948851b6c58d1",
+        "trades.csv": "aff2f21d8577d532c7d4725ebc9310aa57f33e1e2f6243a8559e32d0e8a02449"
+      },
+      "elapsed_seconds": 26.094000000040978,
+      "equity_rows": 69313,
+      "event_rows": 3610,
+      "exit_fills_replayed": 719,
+      "sampled_15m_max_drawdown_fraction": -0.34683602375383904,
+      "scenario_id": "full__A_be__base",
+      "terminal_cash_after_events": 6766.954610949294,
+      "trade_rows": 719
+    },
+    "full__A_be__stress": {
+      "artifacts_sha256": {
+        "equity.csv": "3d2a28b2291235efca84bfe5a8580804b0ef424d9d93c47fcd0e2ed8e7a854fb",
+        "events.csv": "ad13d5a6fbde7369b9dd685d7d0573eaf6e507d1ab80bd0183c4d452e2b27365",
+        "trades.csv": "b8b25f575941d7cdc878d01f45b72edf99c98cd8afb9aefafc0f98261f91e1dc"
+      },
+      "elapsed_seconds": 25.765000000130385,
+      "equity_rows": 69313,
+      "event_rows": 3569,
+      "exit_fills_replayed": 710,
+      "sampled_15m_max_drawdown_fraction": -0.5279047356651649,
+      "scenario_id": "full__A_be__stress",
+      "terminal_cash_after_events": 4835.581774134318,
+      "trade_rows": 710
+    },
+    "full__A_fixed__base": {
+      "artifacts_sha256": {
+        "equity.csv": "fe75e3d6ed485c03e2478fcb5f022c2f235c022ec164a89bccf8b1947443dbc0",
+        "events.csv": "dbcbe325d1bb5dc1207fcf5e9bcbfd568bc97f3ad16891e19c9d647a6ce91ebb",
+        "trades.csv": "ec35192f9d48f53a777878a74049b3ffa0debcafd9f93313d786aa831f4da1f9"
+      },
+      "elapsed_seconds": 24.844000000040978,
+      "equity_rows": 69313,
+      "event_rows": 3383,
+      "exit_fills_replayed": 709,
+      "sampled_15m_max_drawdown_fraction": -0.31779294019397075,
+      "scenario_id": "full__A_fixed__base",
+      "terminal_cash_after_events": 7108.705367376944,
+      "trade_rows": 709
+    },
+    "full__A_fixed__stress": {
+      "artifacts_sha256": {
+        "equity.csv": "35a7e5ce3a83b460f4b7d3edecdeb43d91a4b5a5563cd62a5084ccc2243250b7",
+        "events.csv": "4ffae5c794191ccd41838284c560dab49a4bb7a2ca6b028dabdef8058c82b248",
+        "trades.csv": "a6fd4ee28c2922e576a264399a3fcc354f0c8854b4467a735d3ae305a09106f6"
+      },
+      "elapsed_seconds": 25.843000000109896,
+      "equity_rows": 69313,
+      "event_rows": 3354,
+      "exit_fills_replayed": 701,
+      "sampled_15m_max_drawdown_fraction": -0.5116867822207729,
+      "scenario_id": "full__A_fixed__stress",
+      "terminal_cash_after_events": 5001.6991788491405,
+      "trade_rows": 701
+    },
+    "full__BUY_HOLD__base": {
+      "artifacts_sha256": {
+        "equity.csv": "66d34bfbddefdc0996c1b6d4c6fb395f08fa30edc185692c4af41c3e8b8786fc",
+        "events.csv": "42dbe08bf8271d140842af05a083c3effa49151034196f84473f4fe26c8efbfa",
+        "trades.csv": "e6711d6e078646a239fe7390cac22eb027bd566d5418384479a424edcba6235b"
+      },
+      "elapsed_seconds": 37.811999999918044,
+      "equity_rows": 69313,
+      "event_rows": 13572,
+      "exit_fills_replayed": 3,
+      "sampled_15m_max_drawdown_fraction": -0.5151449082749706,
+      "scenario_id": "full__BUY_HOLD__base",
+      "terminal_cash_after_events": 12568.033445261948,
+      "trade_rows": 3
+    },
+    "full__BUY_HOLD__stress": {
+      "artifacts_sha256": {
+        "equity.csv": "a6213b758301620c78010523f4f7e32fdb86da014935afe3b3688044c3fb6d0e",
+        "events.csv": "af1707cfc46b92f5e1add2049537e726d839ff9c208ab4fd47e10f68f9fe7098",
+        "trades.csv": "f12329330ba18429e4da1a994f4a48b26480b43d7eb7b0233116db6c130cae9c"
+      },
+      "elapsed_seconds": 38.015000000130385,
+      "equity_rows": 69313,
+      "event_rows": 13569,
+      "exit_fills_replayed": 3,
+      "sampled_15m_max_drawdown_fraction": -0.5150051150096973,
+      "scenario_id": "full__BUY_HOLD__stress",
+      "terminal_cash_after_events": 12539.424289604147,
+      "trade_rows": 3
+    },
+    "full__B_be__base": {
+      "artifacts_sha256": {
+        "equity.csv": "b333d9e4ccf74124fca1af829c51c4feebc0c8225c82fe06f70da82d4f10b398",
+        "events.csv": "28b8a19c5db7a4a6c2ae4f6bf720c145c1072bb7b1b5c84ca6a5d899b911f52b",
+        "trades.csv": "c29dd722c6ccc6a966b82e7fdb725578e0f26deb3263f75ed66d108383f27e8b"
+      },
+      "elapsed_seconds": 21.29700000002049,
+      "equity_rows": 69313,
+      "event_rows": 3167,
+      "exit_fills_replayed": 290,
+      "sampled_15m_max_drawdown_fraction": -0.26870784412026383,
+      "scenario_id": "full__B_be__base",
+      "terminal_cash_after_events": 7378.882183698871,
+      "trade_rows": 290
+    },
+    "full__B_be__stress": {
+      "artifacts_sha256": {
+        "equity.csv": "06dc60c03ced2455d41fda27ef4b1e265b121a08e4dd599b70c0338f614c818e",
+        "events.csv": "4cb66b32b3c909b17515672be4d3aca708d7393a51b63cf19a21296cff84880e",
+        "trades.csv": "4513662b80f66241bc5bff048115d9dc4b6165fbb5408edff87f6aecea2b7be8"
+      },
+      "elapsed_seconds": 21.29700000002049,
+      "equity_rows": 69313,
+      "event_rows": 3144,
+      "exit_fills_replayed": 288,
+      "sampled_15m_max_drawdown_fraction": -0.4097131720235171,
+      "scenario_id": "full__B_be__stress",
+      "terminal_cash_after_events": 5952.77250442551,
+      "trade_rows": 288
+    },
+    "full__B_fixed__base": {
+      "artifacts_sha256": {
+        "equity.csv": "7268a3f7e194e50757b8058b38de7f026b57ececdfca658ab46fbb2f715ac7b6",
+        "events.csv": "b0810fc798e7514e56ca3e3876894b8d0475bf40d0e39bd6a67ce30cf9c2e655",
+        "trades.csv": "70d69b589c4adeb13eca4f34431fbdab4b3c57e29430a37be578eaf69b508853"
+      },
+      "elapsed_seconds": 21.32799999997951,
+      "equity_rows": 69313,
+      "event_rows": 3092,
+      "exit_fills_replayed": 289,
+      "sampled_15m_max_drawdown_fraction": -0.2763853059235155,
+      "scenario_id": "full__B_fixed__base",
+      "terminal_cash_after_events": 7307.612241606897,
+      "trade_rows": 289
+    },
+    "full__B_fixed__stress": {
+      "artifacts_sha256": {
+        "equity.csv": "17075550ab82a1c4d5447b2ae406b41858173dd22c264af6698720dd8a1fbea1",
+        "events.csv": "717fc72bc22d6e52bfca2dd5ea0835c476d0417f46e7fb05c42fb0c9a485decb",
+        "trades.csv": "15e785f7f0a5d58b70b7c42cc679d0d72529a6e3c16ae94e752fede52ec79cd2"
+      },
+      "elapsed_seconds": 21.343999999808148,
+      "equity_rows": 69313,
+      "event_rows": 3067,
+      "exit_fills_replayed": 284,
+      "sampled_15m_max_drawdown_fraction": -0.39111110375544134,
+      "scenario_id": "full__B_fixed__stress",
+      "terminal_cash_after_events": 6140.3658493274215,
+      "trade_rows": 284
+    },
+    "full__TREND__base": {
+      "artifacts_sha256": {
+        "equity.csv": "79989dffc7734c92967a0cec60dabe5f75e765e9bf01216395b35b6608c3d327",
+        "events.csv": "4389f74cc01a1ebc53e58f91252822d21e458c1d7f6f3ab377ba41b8b8b1b898",
+        "trades.csv": "0b8bfbdbe2bfd1daa8adbbcbd278f060cc97e867cd334cdfe47254b0eb31462a"
+      },
+      "elapsed_seconds": 33.92200000002049,
+      "equity_rows": 69313,
+      "event_rows": 6244,
+      "exit_fills_replayed": 1562,
+      "sampled_15m_max_drawdown_fraction": -0.7120353702934717,
+      "scenario_id": "full__TREND__base",
+      "terminal_cash_after_events": 3242.8795963541534,
+      "trade_rows": 1562
+    },
+    "full__TREND__stress": {
+      "artifacts_sha256": {
+        "equity.csv": "568a8b9d9c4980e703d557fb938671da113cc39fb56f263a1cf5b962e44ff185",
+        "events.csv": "ef17d7562eb56b3d57878f7897e9653dbef4f8575bb45cdf61e6aac527bc036a",
+        "trades.csv": "6ff637faa0748c244b3a8856f017e10a4dd7f7759e8737998fd7a505dd7808e8"
+      },
+      "elapsed_seconds": 34.062000000150874,
+      "equity_rows": 69313,
+      "event_rows": 6190,
+      "exit_fills_replayed": 1562,
+      "sampled_15m_max_drawdown_fraction": -0.9007834343241791,
+      "scenario_id": "full__TREND__stress",
+      "terminal_cash_after_events": 1034.9276296895155,
+      "trade_rows": 1562
+    },
+    "locked_2025__A_be__base": {
+      "artifacts_sha256": {
+        "equity.csv": "b2ebd59bb06833e3653b538d24ee5ea9b15a1c9c402cbed021ab6a00b0784059",
+        "events.csv": "fd00e8371fc2c376bec0efdb19b604e07e25217c83abe8a08bc8f8beaa8e6ca6",
+        "trades.csv": "90f15a3faf63edef3c46b67611c65d34801e11378461622119308c9552828083"
+      },
+      "elapsed_seconds": 10.796999999787658,
+      "equity_rows": 35041,
+      "event_rows": 1776,
+      "exit_fills_replayed": 352,
+      "sampled_15m_max_drawdown_fraction": -0.24996073146388242,
+      "scenario_id": "locked_2025__A_be__base",
+      "terminal_cash_after_events": 7881.668441788892,
+      "trade_rows": 352
+    },
+    "locked_2025__A_be__stress": {
+      "artifacts_sha256": {
+        "equity.csv": "894ce0038d4413f4f23e8ce0a20e3284cbc9cc76a96df1b07b150d60b8d4eba9",
+        "events.csv": "40b0104c2b0fe96918719f44b6b8e61229802142f90dbcbdd123680936ad9d50",
+        "trades.csv": "92295473a53f287d0e70455720097fa99be170d7f4884f37227ef7533a64e9a7"
+      },
+      "elapsed_seconds": 10.75,
+      "equity_rows": 35041,
+      "event_rows": 1764,
+      "exit_fills_replayed": 349,
+      "sampled_15m_max_drawdown_fraction": -0.3498285330711226,
+      "scenario_id": "locked_2025__A_be__stress",
+      "terminal_cash_after_events": 6698.956931769346,
+      "trade_rows": 349
+    },
+    "locked_2025__A_fixed__base": {
+      "artifacts_sha256": {
+        "equity.csv": "eb217151b4721af94ace1e8def7989d8d300fcef69218b1e0231e530eee002fa",
+        "events.csv": "3552db4e9cd7d2e53a2b2da895690fd4cbe05e56a2f0b222b62c532751c63484",
+        "trades.csv": "5cf835f554ba8cac0e6b6a52dc647351968f95e1df3b5b14822ca9f9a302a9c1"
+      },
+      "elapsed_seconds": 10.984000000171363,
+      "equity_rows": 35041,
+      "event_rows": 1665,
+      "exit_fills_replayed": 346,
+      "sampled_15m_max_drawdown_fraction": -0.22455260123673404,
+      "scenario_id": "locked_2025__A_fixed__base",
+      "terminal_cash_after_events": 8188.449583960818,
+      "trade_rows": 346
+    },
+    "locked_2025__A_fixed__stress": {
+      "artifacts_sha256": {
+        "equity.csv": "23a96a63edfdff3a4b1f2f9c4b86a887188fa66bcd79c01656bfb17552d2a872",
+        "events.csv": "665fbc14cf6d43153f237ae39aa57111cfc9658a988e9aeb1f9ff08687d72507",
+        "trades.csv": "f601440388a39e4cd334a5d47e0ba2c663e6764c340a8cec2e99ae23556cb768"
+      },
+      "elapsed_seconds": 10.780999999959022,
+      "equity_rows": 35041,
+      "event_rows": 1656,
+      "exit_fills_replayed": 343,
+      "sampled_15m_max_drawdown_fraction": -0.3366751734937571,
+      "scenario_id": "locked_2025__A_fixed__stress",
+      "terminal_cash_after_events": 6940.776155030775,
+      "trade_rows": 343
+    },
+    "locked_2025__BUY_HOLD__base": {
+      "artifacts_sha256": {
+        "equity.csv": "fe7d65f31bcfffa97acd697b5f5080bae2849677cb09d021c841f53948603b6d",
+        "events.csv": "3a0992edc688ef97cbd7e20794c3a4aa87143929f356854ee13f0f1999270396",
+        "trades.csv": "cb15d3e0330a33b680e5e40bfbd6eb64978f209b4fd9aca106cb79a0b33c11c1"
+      },
+      "elapsed_seconds": 15.125,
+      "equity_rows": 35041,
+      "event_rows": 6762,
+      "exit_fills_replayed": 3,
+      "sampled_15m_max_drawdown_fraction": -0.5221078825478059,
+      "scenario_id": "locked_2025__BUY_HOLD__base",
+      "terminal_cash_after_events": 7985.691949841997,
+      "trade_rows": 3
+    },
+    "locked_2025__BUY_HOLD__stress": {
+      "artifacts_sha256": {
+        "equity.csv": "7c8d79aaacbbdd6e008d10910694bf9690729d1c0582bdba163f5c1a4a3b80f4",
+        "events.csv": "e3850e0adf6efbc39874148de42cdf9d090d479d77ae299057df4c33253ed57d",
+        "trades.csv": "14f9eb7cdb0706796de5789b303b32b40949617f6f32b9028848ae7ea3ffe3ab"
+      },
+      "elapsed_seconds": 15.515999999828637,
+      "equity_rows": 35041,
+      "event_rows": 6756,
+      "exit_fills_replayed": 3,
+      "sampled_15m_max_drawdown_fraction": -0.521980449307767,
+      "scenario_id": "locked_2025__BUY_HOLD__stress",
+      "terminal_cash_after_events": 7968.659538437416,
+      "trade_rows": 3
+    },
+    "locked_2025__B_be__base": {
+      "artifacts_sha256": {
+        "equity.csv": "d634a12321c6c0874c2f04cfb3f823d4bec0cceed0991bbbd05f49757002be24",
+        "events.csv": "3604230815f062296b340ed20a9db87e277332bb8c8fb3b7721bb13fcf6374ab",
+        "trades.csv": "69e2784fd4d94ca0657c359c8030372d5f17033abdc6617dda3eccdd435c3c4e"
+      },
+      "elapsed_seconds": 9.312000000150874,
+      "equity_rows": 35041,
+      "event_rows": 1545,
+      "exit_fills_replayed": 136,
+      "sampled_15m_max_drawdown_fraction": -0.15170374678210696,
+      "scenario_id": "locked_2025__B_be__base",
+      "terminal_cash_after_events": 8838.562529431432,
+      "trade_rows": 136
+    },
+    "locked_2025__B_be__stress": {
+      "artifacts_sha256": {
+        "equity.csv": "18dacacb0d48f464f91bad65fa0be2aabd1c1d70c049589efbb997519ca2686e",
+        "events.csv": "d71523046d9436002649e546869e4479c46a801462f00a49b7aad517dd8cb76f",
+        "trades.csv": "705cdaf4c143c92af85fc6cbc5ac650bcaf4c068209822e196ed5ba63c4accd6"
+      },
+      "elapsed_seconds": 9.405999999959022,
+      "equity_rows": 35041,
+      "event_rows": 1536,
+      "exit_fills_replayed": 135,
+      "sampled_15m_max_drawdown_fraction": -0.2081296550141768,
+      "scenario_id": "locked_2025__B_be__stress",
+      "terminal_cash_after_events": 7987.402680774634,
+      "trade_rows": 135
+    },
+    "locked_2025__B_fixed__base": {
+      "artifacts_sha256": {
+        "equity.csv": "849313bb8147f354fc772260c1e8b20a4a8d86bc63f8d9561df4e49a3e324db0",
+        "events.csv": "a430ea794b8c660ba717aebd714e5e0e82d1d7cfae9c220f511bfb6c61679aff",
+        "trades.csv": "370fbb878ec82775ed41a31c23efd6176e198b94ec1fac7b282513e3d3250193"
+      },
+      "elapsed_seconds": 9.327999999979511,
+      "equity_rows": 35041,
+      "event_rows": 1511,
+      "exit_fills_replayed": 135,
+      "sampled_15m_max_drawdown_fraction": -0.1423345046136375,
+      "scenario_id": "locked_2025__B_fixed__base",
+      "terminal_cash_after_events": 8860.083865476605,
+      "trade_rows": 135
+    },
+    "locked_2025__B_fixed__stress": {
+      "artifacts_sha256": {
+        "equity.csv": "54f05953cc914ee187c34b60b4aebc53106aba1583f224b169fb56b49b8391b5",
+        "events.csv": "edaba58bcba99e59562f52656363ffad3ed1e7d851df08d06c3bfe88db71bb02",
+        "trades.csv": "b15a4191b2cf12fe3ac12109187537c7b76f0db5e56327fe09b5cc0a8bf64ed0"
+      },
+      "elapsed_seconds": 9.327999999979511,
+      "equity_rows": 35041,
+      "event_rows": 1505,
+      "exit_fills_replayed": 133,
+      "sampled_15m_max_drawdown_fraction": -0.20503278965303362,
+      "scenario_id": "locked_2025__B_fixed__stress",
+      "terminal_cash_after_events": 8071.9271039015075,
+      "trade_rows": 133
+    },
+    "locked_2025__TREND__base": {
+      "artifacts_sha256": {
+        "equity.csv": "5cb16a4ef30cda442d6204b74af6e3fb409c96d0fcc6222d686c089b80e7eb68",
+        "events.csv": "0fb8a5ac431225003505e11c37521a1c9d3606796fc8b54565540ef457b96825",
+        "trades.csv": "f481b9d0f3670e77dc741ddc23d3154b31ed1f7753d56e8f1d3efddc133b91cf"
+      },
+      "elapsed_seconds": 13.155999999959022,
+      "equity_rows": 35041,
+      "event_rows": 3128,
+      "exit_fills_replayed": 773,
+      "sampled_15m_max_drawdown_fraction": -0.5424245962804397,
+      "scenario_id": "locked_2025__TREND__base",
+      "terminal_cash_after_events": 4888.010473439086,
+      "trade_rows": 773
+    },
+    "locked_2025__TREND__stress": {
+      "artifacts_sha256": {
+        "equity.csv": "2fbfffaa945182d72053eaace3b9e99494260b482c5091379310d93ccaac46a1",
+        "events.csv": "a6fa513b9c4fd4889f5e19579006fcdcce547376883ea69b98cc5d3071e4039f",
+        "trades.csv": "ada7222ff9c65a861da3fa34b0c96f96c9f947be5c94655fb94c8b7e3605e939"
+      },
+      "elapsed_seconds": 13.187000000150874,
+      "equity_rows": 35041,
+      "event_rows": 3098,
+      "exit_fills_replayed": 773,
+      "sampled_15m_max_drawdown_fraction": -0.7308835409272958,
+      "scenario_id": "locked_2025__TREND__stress",
+      "terminal_cash_after_events": 2777.6578557831017,
+      "trade_rows": 773
+    },
+    "research_2024__A_be__base": {
+      "artifacts_sha256": {
+        "equity.csv": "a9c731c4cb5c30bbe003d564a6355b10f83fd3732be023cb994e82ce7f42a8f8",
+        "events.csv": "015c4cffdd71f71a8e7fcfcb512520ed4e17eb8aeffe38a478621d5f5726220c",
+        "trades.csv": "7440a35d3546d8acfe4bacd1e8a6707aa3bf5e0ac74db180f9ee7817db603c8c"
+      },
+      "elapsed_seconds": 10.515999999828637,
+      "equity_rows": 34274,
+      "event_rows": 1834,
+      "exit_fills_replayed": 367,
+      "sampled_15m_max_drawdown_fraction": -0.1713488889428877,
+      "scenario_id": "research_2024__A_be__base",
+      "terminal_cash_after_events": 8585.687993509906,
+      "trade_rows": 367
+    },
+    "research_2024__A_be__stress": {
+      "artifacts_sha256": {
+        "equity.csv": "791b81d0037ed673590389fe69113e3e7f4541eea1ee8bd59b9f02417a88a8d0",
+        "events.csv": "219ce09db72f819c582551f35cf6e9f8009408615abacdf422541c6308f35ec3",
+        "trades.csv": "26f12645b75f871ef7fdc52ebb1eeb040ad590cac5631c6df544b7ebfc37b334"
+      },
+      "elapsed_seconds": 10.452999999979511,
+      "equity_rows": 34274,
+      "event_rows": 1805,
+      "exit_fills_replayed": 361,
+      "sampled_15m_max_drawdown_fraction": -0.29411757516521686,
+      "scenario_id": "research_2024__A_be__stress",
+      "terminal_cash_after_events": 7218.41000529786,
+      "trade_rows": 361
+    },
+    "research_2024__A_fixed__base": {
+      "artifacts_sha256": {
+        "equity.csv": "15c11f8ef993f1971f8af56528ea13d38379f50260793c7299ad0c2a1620744b",
+        "events.csv": "64737b5f0afabea8f97e13fa2a9e2da4f3827ebab27370925db7924a3fadd9f8",
+        "trades.csv": "7611fcfffb79a80683538677e315ff09834c309c5a4d3fb5abc16b2ec681be3f"
+      },
+      "elapsed_seconds": 10.437000000150874,
+      "equity_rows": 34274,
+      "event_rows": 1718,
+      "exit_fills_replayed": 363,
+      "sampled_15m_max_drawdown_fraction": -0.165208455816104,
+      "scenario_id": "research_2024__A_fixed__base",
+      "terminal_cash_after_events": 8681.381370780065,
+      "trade_rows": 363
+    },
+    "research_2024__A_fixed__stress": {
+      "artifacts_sha256": {
+        "equity.csv": "93c1cb23cd553e8efb0ce9b0ebc57e0cf108c20f47cbb055a2623c43bf41a409",
+        "events.csv": "e0b9a3efa23b5eb5640f1e772995292be1c9c99110262752b2935bae23eeb2b2",
+        "trades.csv": "a3346097a2087169592bd60537399fd005fd3bde1e73107e0162ac85f6cbfb52"
+      },
+      "elapsed_seconds": 10.422000000020489,
+      "equity_rows": 34274,
+      "event_rows": 1698,
+      "exit_fills_replayed": 358,
+      "sampled_15m_max_drawdown_fraction": -0.29530635935929483,
+      "scenario_id": "research_2024__A_fixed__stress",
+      "terminal_cash_after_events": 7206.253403265048,
+      "trade_rows": 358
+    },
+    "research_2024__BUY_HOLD__base": {
+      "artifacts_sha256": {
+        "equity.csv": "f1cf11f63a6efb241d9778a72bce7395f4e3ab9171ff67408763fa835b5e20f5",
+        "events.csv": "8185de3b6b55be4a2d70503596f5c24ededb8bb9fa991c26068717e9d34418d5",
+        "trades.csv": "cbf3fc6011c6b4b14132bed5dcb2667b89e02719ce919490f62c936f699c88e5"
+      },
+      "elapsed_seconds": 14.468000000109896,
+      "equity_rows": 34274,
+      "event_rows": 6912,
+      "exit_fills_replayed": 3,
+      "sampled_15m_max_drawdown_fraction": -0.4168713466475097,
+      "scenario_id": "research_2024__BUY_HOLD__base",
+      "terminal_cash_after_events": 15748.773814206083,
+      "trade_rows": 3
+    },
+    "research_2024__BUY_HOLD__stress": {
+      "artifacts_sha256": {
+        "equity.csv": "a6458bde46809a993512d7b2d0003a4f619da45f8febf6ae853c29616748859f",
+        "events.csv": "774f09d8d35adbd5a448a3aff98304f4cb753c15c76cffca3c18d5e4edc0c0e5",
+        "trades.csv": "850bdff37a0bb008a8b4f1a6becaf6da8c9854587d76f5f06ec039fc3dd789a2"
+      },
+      "elapsed_seconds": 14.625,
+      "equity_rows": 34274,
+      "event_rows": 6909,
+      "exit_fills_replayed": 3,
+      "sampled_15m_max_drawdown_fraction": -0.41683237763328995,
+      "scenario_id": "research_2024__BUY_HOLD__stress",
+      "terminal_cash_after_events": 15711.688325203286,
+      "trade_rows": 3
+    },
+    "research_2024__B_be__base": {
+      "artifacts_sha256": {
+        "equity.csv": "b12e5a7ffa2bf95155514609bd3d40b5f768cfd82811806858b6276887525994",
+        "events.csv": "bfd973beb2d59201feb6898e2e0ffff750f3f81619a9f9dab78d58e62ded3db8",
+        "trades.csv": "569c203b4ecd8e0acd82bf91753a9317589b3287cd4757b3a521d37d37894891"
+      },
+      "elapsed_seconds": 9.202999999979511,
+      "equity_rows": 34274,
+      "event_rows": 1622,
+      "exit_fills_replayed": 154,
+      "sampled_15m_max_drawdown_fraction": -0.17261188859091725,
+      "scenario_id": "research_2024__B_be__base",
+      "terminal_cash_after_events": 8348.50934088887,
+      "trade_rows": 154
+    },
+    "research_2024__B_be__stress": {
+      "artifacts_sha256": {
+        "equity.csv": "e0d7bafe407a767d458c86752953b10e75473c5e71ac7dd797f9844eb3d658f1",
+        "events.csv": "b91e6878e3275faf6487fc0d2f82d4cbc89750294f4b1ad395a267bd99b70e61",
+        "trades.csv": "2669eecda10cee46525d1d9e8eb346a42915c1beab7c88d3cb42efe8926e9fab"
+      },
+      "elapsed_seconds": 9.093999999808148,
+      "equity_rows": 34274,
+      "event_rows": 1608,
+      "exit_fills_replayed": 153,
+      "sampled_15m_max_drawdown_fraction": -0.26097775263380507,
+      "scenario_id": "research_2024__B_be__stress",
+      "terminal_cash_after_events": 7452.701137446859,
+      "trade_rows": 153
+    },
+    "research_2024__B_fixed__base": {
+      "artifacts_sha256": {
+        "equity.csv": "bb102be2a2b130381c14474ee5b2856feac1df184b78dd6e4d84d6765cae8fe7",
+        "events.csv": "d5428965f9507d05af352b826056c2dbca879ea1c1eee05fb0fc0d03c9726d55",
+        "trades.csv": "630167e71f6763823a53ab922878efde0b53a380344e350ecff20ef10124990d"
+      },
+      "elapsed_seconds": 9.171000000089407,
+      "equity_rows": 34274,
+      "event_rows": 1581,
+      "exit_fills_replayed": 154,
+      "sampled_15m_max_drawdown_fraction": -0.18328685702845715,
+      "scenario_id": "research_2024__B_fixed__base",
+      "terminal_cash_after_events": 8247.79127665042,
+      "trade_rows": 154
+    },
+    "research_2024__B_fixed__stress": {
+      "artifacts_sha256": {
+        "equity.csv": "890607f9602896c77d79963c55b4a643a07fc462654d6f8b644d6adbb80d3786",
+        "events.csv": "7787146919357f97d86b9bd3d62c60f6ac10ebecc66586231a47d149f31d1b61",
+        "trades.csv": "4183451b5c38b7cdf777e1e81817bbf72335530ba1031ea193760ec29605db30"
+      },
+      "elapsed_seconds": 9.171999999787658,
+      "equity_rows": 34274,
+      "event_rows": 1562,
+      "exit_fills_replayed": 151,
+      "sampled_15m_max_drawdown_fraction": -0.2456709675310922,
+      "scenario_id": "research_2024__B_fixed__stress",
+      "terminal_cash_after_events": 7607.063059773558,
+      "trade_rows": 151
+    },
+    "research_2024__TREND__base": {
+      "artifacts_sha256": {
+        "equity.csv": "50751372b32b94f748cc71afce1032f50e13c8424bd1ad78f22406281dbbd6fa",
+        "events.csv": "b277b371107d19fd73795309253c582bf5aa2f29a22279ca7b2fb2a7888af749",
+        "trades.csv": "5e59d70119a87a1751a2f40a6bc7eec7d58e4347cdaa924cb26f5c02a53e358b"
+      },
+      "elapsed_seconds": 12.375,
+      "equity_rows": 34274,
+      "event_rows": 3116,
+      "exit_fills_replayed": 789,
+      "sampled_15m_max_drawdown_fraction": -0.4108755877850597,
+      "scenario_id": "research_2024__TREND__base",
+      "terminal_cash_after_events": 6634.354844318759,
+      "trade_rows": 789
+    },
+    "research_2024__TREND__stress": {
+      "artifacts_sha256": {
+        "equity.csv": "cd01fe26a2a2df6d81b8d0822794e20a3fef5dc50842f1d0fc20e33be22e8934",
+        "events.csv": "b6c0a1aca224a4161b0617dafd489bfb65d80a34b189f7fce144fec2edf07f52",
+        "trades.csv": "9264099395accd6442670435b732cb3a6be77cb4ced46748c9334b689f76d59d"
+      },
+      "elapsed_seconds": 12.312000000150874,
+      "equity_rows": 34274,
+      "event_rows": 3092,
+      "exit_fills_replayed": 789,
+      "sampled_15m_max_drawdown_fraction": -0.6428049427712935,
+      "scenario_id": "research_2024__TREND__stress",
+      "terminal_cash_after_events": 3725.9003211457148,
+      "trade_rows": 789
+    }
+  },
+  "source_audit_sha256": "d75e6eae78c69af2a9afb05ad459f7524ced7ccbbad6b3d9a5761ca4475af5a2",
+  "status": "VERIFIED_LEDGER",
+  "summary_metric_scope": "Lifecycle, costs, funding completeness/cashflows, terminal cash, and per-scenario MDD checked by verify_results; portfolio/symbol summaries checked separately by verify_summary.",
+  "symbol_performance_sha256": "b838eb43f4283a03c5683bc05ac6894db56b80b19e9ffc99378d8a52a21048d4",
+  "validation_sha256": "c5dbd882a3debd75df581e961e19cc072d1f9c7134da0babc247c26dfb51df24",
+  "verified_artifact_hashes": {
+    "full__A_be__base": {
+      "equity.csv": "dbe9df37433c4b984e787aa57fcd780e2a44ccf4e942085ae69a7fbd34b6a704",
+      "events.csv": "5a168048df59207d81fee6c4df917ebc01bf17a21518a73f084948851b6c58d1",
+      "trades.csv": "aff2f21d8577d532c7d4725ebc9310aa57f33e1e2f6243a8559e32d0e8a02449"
+    },
+    "full__A_be__stress": {
+      "equity.csv": "3d2a28b2291235efca84bfe5a8580804b0ef424d9d93c47fcd0e2ed8e7a854fb",
+      "events.csv": "ad13d5a6fbde7369b9dd685d7d0573eaf6e507d1ab80bd0183c4d452e2b27365",
+      "trades.csv": "b8b25f575941d7cdc878d01f45b72edf99c98cd8afb9aefafc0f98261f91e1dc"
+    },
+    "full__A_fixed__base": {
+      "equity.csv": "fe75e3d6ed485c03e2478fcb5f022c2f235c022ec164a89bccf8b1947443dbc0",
+      "events.csv": "dbcbe325d1bb5dc1207fcf5e9bcbfd568bc97f3ad16891e19c9d647a6ce91ebb",
+      "trades.csv": "ec35192f9d48f53a777878a74049b3ffa0debcafd9f93313d786aa831f4da1f9"
+    },
+    "full__A_fixed__stress": {
+      "equity.csv": "35a7e5ce3a83b460f4b7d3edecdeb43d91a4b5a5563cd62a5084ccc2243250b7",
+      "events.csv": "4ffae5c794191ccd41838284c560dab49a4bb7a2ca6b028dabdef8058c82b248",
+      "trades.csv": "a6fd4ee28c2922e576a264399a3fcc354f0c8854b4467a735d3ae305a09106f6"
+    },
+    "full__BUY_HOLD__base": {
+      "equity.csv": "66d34bfbddefdc0996c1b6d4c6fb395f08fa30edc185692c4af41c3e8b8786fc",
+      "events.csv": "42dbe08bf8271d140842af05a083c3effa49151034196f84473f4fe26c8efbfa",
+      "trades.csv": "e6711d6e078646a239fe7390cac22eb027bd566d5418384479a424edcba6235b"
+    },
+    "full__BUY_HOLD__stress": {
+      "equity.csv": "a6213b758301620c78010523f4f7e32fdb86da014935afe3b3688044c3fb6d0e",
+      "events.csv": "af1707cfc46b92f5e1add2049537e726d839ff9c208ab4fd47e10f68f9fe7098",
+      "trades.csv": "f12329330ba18429e4da1a994f4a48b26480b43d7eb7b0233116db6c130cae9c"
+    },
+    "full__B_be__base": {
+      "equity.csv": "b333d9e4ccf74124fca1af829c51c4feebc0c8225c82fe06f70da82d4f10b398",
+      "events.csv": "28b8a19c5db7a4a6c2ae4f6bf720c145c1072bb7b1b5c84ca6a5d899b911f52b",
+      "trades.csv": "c29dd722c6ccc6a966b82e7fdb725578e0f26deb3263f75ed66d108383f27e8b"
+    },
+    "full__B_be__stress": {
+      "equity.csv": "06dc60c03ced2455d41fda27ef4b1e265b121a08e4dd599b70c0338f614c818e",
+      "events.csv": "4cb66b32b3c909b17515672be4d3aca708d7393a51b63cf19a21296cff84880e",
+      "trades.csv": "4513662b80f66241bc5bff048115d9dc4b6165fbb5408edff87f6aecea2b7be8"
+    },
+    "full__B_fixed__base": {
+      "equity.csv": "7268a3f7e194e50757b8058b38de7f026b57ececdfca658ab46fbb2f715ac7b6",
+      "events.csv": "b0810fc798e7514e56ca3e3876894b8d0475bf40d0e39bd6a67ce30cf9c2e655",
+      "trades.csv": "70d69b589c4adeb13eca4f34431fbdab4b3c57e29430a37be578eaf69b508853"
+    },
+    "full__B_fixed__stress": {
+      "equity.csv": "17075550ab82a1c4d5447b2ae406b41858173dd22c264af6698720dd8a1fbea1",
+      "events.csv": "717fc72bc22d6e52bfca2dd5ea0835c476d0417f46e7fb05c42fb0c9a485decb",
+      "trades.csv": "15e785f7f0a5d58b70b7c42cc679d0d72529a6e3c16ae94e752fede52ec79cd2"
+    },
+    "full__TREND__base": {
+      "equity.csv": "79989dffc7734c92967a0cec60dabe5f75e765e9bf01216395b35b6608c3d327",
+      "events.csv": "4389f74cc01a1ebc53e58f91252822d21e458c1d7f6f3ab377ba41b8b8b1b898",
+      "trades.csv": "0b8bfbdbe2bfd1daa8adbbcbd278f060cc97e867cd334cdfe47254b0eb31462a"
+    },
+    "full__TREND__stress": {
+      "equity.csv": "568a8b9d9c4980e703d557fb938671da113cc39fb56f263a1cf5b962e44ff185",
+      "events.csv": "ef17d7562eb56b3d57878f7897e9653dbef4f8575bb45cdf61e6aac527bc036a",
+      "trades.csv": "6ff637faa0748c244b3a8856f017e10a4dd7f7759e8737998fd7a505dd7808e8"
+    },
+    "locked_2025__A_be__base": {
+      "equity.csv": "b2ebd59bb06833e3653b538d24ee5ea9b15a1c9c402cbed021ab6a00b0784059",
+      "events.csv": "fd00e8371fc2c376bec0efdb19b604e07e25217c83abe8a08bc8f8beaa8e6ca6",
+      "trades.csv": "90f15a3faf63edef3c46b67611c65d34801e11378461622119308c9552828083"
+    },
+    "locked_2025__A_be__stress": {
+      "equity.csv": "894ce0038d4413f4f23e8ce0a20e3284cbc9cc76a96df1b07b150d60b8d4eba9",
+      "events.csv": "40b0104c2b0fe96918719f44b6b8e61229802142f90dbcbdd123680936ad9d50",
+      "trades.csv": "92295473a53f287d0e70455720097fa99be170d7f4884f37227ef7533a64e9a7"
+    },
+    "locked_2025__A_fixed__base": {
+      "equity.csv": "eb217151b4721af94ace1e8def7989d8d300fcef69218b1e0231e530eee002fa",
+      "events.csv": "3552db4e9cd7d2e53a2b2da895690fd4cbe05e56a2f0b222b62c532751c63484",
+      "trades.csv": "5cf835f554ba8cac0e6b6a52dc647351968f95e1df3b5b14822ca9f9a302a9c1"
+    },
+    "locked_2025__A_fixed__stress": {
+      "equity.csv": "23a96a63edfdff3a4b1f2f9c4b86a887188fa66bcd79c01656bfb17552d2a872",
+      "events.csv": "665fbc14cf6d43153f237ae39aa57111cfc9658a988e9aeb1f9ff08687d72507",
+      "trades.csv": "f601440388a39e4cd334a5d47e0ba2c663e6764c340a8cec2e99ae23556cb768"
+    },
+    "locked_2025__BUY_HOLD__base": {
+      "equity.csv": "fe7d65f31bcfffa97acd697b5f5080bae2849677cb09d021c841f53948603b6d",
+      "events.csv": "3a0992edc688ef97cbd7e20794c3a4aa87143929f356854ee13f0f1999270396",
+      "trades.csv": "cb15d3e0330a33b680e5e40bfbd6eb64978f209b4fd9aca106cb79a0b33c11c1"
+    },
+    "locked_2025__BUY_HOLD__stress": {
+      "equity.csv": "7c8d79aaacbbdd6e008d10910694bf9690729d1c0582bdba163f5c1a4a3b80f4",
+      "events.csv": "e3850e0adf6efbc39874148de42cdf9d090d479d77ae299057df4c33253ed57d",
+      "trades.csv": "14f9eb7cdb0706796de5789b303b32b40949617f6f32b9028848ae7ea3ffe3ab"
+    },
+    "locked_2025__B_be__base": {
+      "equity.csv": "d634a12321c6c0874c2f04cfb3f823d4bec0cceed0991bbbd05f49757002be24",
+      "events.csv": "3604230815f062296b340ed20a9db87e277332bb8c8fb3b7721bb13fcf6374ab",
+      "trades.csv": "69e2784fd4d94ca0657c359c8030372d5f17033abdc6617dda3eccdd435c3c4e"
+    },
+    "locked_2025__B_be__stress": {
+      "equity.csv": "18dacacb0d48f464f91bad65fa0be2aabd1c1d70c049589efbb997519ca2686e",
+      "events.csv": "d71523046d9436002649e546869e4479c46a801462f00a49b7aad517dd8cb76f",
+      "trades.csv": "705cdaf4c143c92af85fc6cbc5ac650bcaf4c068209822e196ed5ba63c4accd6"
+    },
+    "locked_2025__B_fixed__base": {
+      "equity.csv": "849313bb8147f354fc772260c1e8b20a4a8d86bc63f8d9561df4e49a3e324db0",
+      "events.csv": "a430ea794b8c660ba717aebd714e5e0e82d1d7cfae9c220f511bfb6c61679aff",
+      "trades.csv": "370fbb878ec82775ed41a31c23efd6176e198b94ec1fac7b282513e3d3250193"
+    },
+    "locked_2025__B_fixed__stress": {
+      "equity.csv": "54f05953cc914ee187c34b60b4aebc53106aba1583f224b169fb56b49b8391b5",
+      "events.csv": "edaba58bcba99e59562f52656363ffad3ed1e7d851df08d06c3bfe88db71bb02",
+      "trades.csv": "b15a4191b2cf12fe3ac12109187537c7b76f0db5e56327fe09b5cc0a8bf64ed0"
+    },
+    "locked_2025__TREND__base": {
+      "equity.csv": "5cb16a4ef30cda442d6204b74af6e3fb409c96d0fcc6222d686c089b80e7eb68",
+      "events.csv": "0fb8a5ac431225003505e11c37521a1c9d3606796fc8b54565540ef457b96825",
+      "trades.csv": "f481b9d0f3670e77dc741ddc23d3154b31ed1f7753d56e8f1d3efddc133b91cf"
+    },
+    "locked_2025__TREND__stress": {
+      "equity.csv": "2fbfffaa945182d72053eaace3b9e99494260b482c5091379310d93ccaac46a1",
+      "events.csv": "a6fa513b9c4fd4889f5e19579006fcdcce547376883ea69b98cc5d3071e4039f",
+      "trades.csv": "ada7222ff9c65a861da3fa34b0c96f96c9f947be5c94655fb94c8b7e3605e939"
+    },
+    "research_2024__A_be__base": {
+      "equity.csv": "a9c731c4cb5c30bbe003d564a6355b10f83fd3732be023cb994e82ce7f42a8f8",
+      "events.csv": "015c4cffdd71f71a8e7fcfcb512520ed4e17eb8aeffe38a478621d5f5726220c",
+      "trades.csv": "7440a35d3546d8acfe4bacd1e8a6707aa3bf5e0ac74db180f9ee7817db603c8c"
+    },
+    "research_2024__A_be__stress": {
+      "equity.csv": "791b81d0037ed673590389fe69113e3e7f4541eea1ee8bd59b9f02417a88a8d0",
+      "events.csv": "219ce09db72f819c582551f35cf6e9f8009408615abacdf422541c6308f35ec3",
+      "trades.csv": "26f12645b75f871ef7fdc52ebb1eeb040ad590cac5631c6df544b7ebfc37b334"
+    },
+    "research_2024__A_fixed__base": {
+      "equity.csv": "15c11f8ef993f1971f8af56528ea13d38379f50260793c7299ad0c2a1620744b",
+      "events.csv": "64737b5f0afabea8f97e13fa2a9e2da4f3827ebab27370925db7924a3fadd9f8",
+      "trades.csv": "7611fcfffb79a80683538677e315ff09834c309c5a4d3fb5abc16b2ec681be3f"
+    },
+    "research_2024__A_fixed__stress": {
+      "equity.csv": "93c1cb23cd553e8efb0ce9b0ebc57e0cf108c20f47cbb055a2623c43bf41a409",
+      "events.csv": "e0b9a3efa23b5eb5640f1e772995292be1c9c99110262752b2935bae23eeb2b2",
+      "trades.csv": "a3346097a2087169592bd60537399fd005fd3bde1e73107e0162ac85f6cbfb52"
+    },
+    "research_2024__BUY_HOLD__base": {
+      "equity.csv": "f1cf11f63a6efb241d9778a72bce7395f4e3ab9171ff67408763fa835b5e20f5",
+      "events.csv": "8185de3b6b55be4a2d70503596f5c24ededb8bb9fa991c26068717e9d34418d5",
+      "trades.csv": "cbf3fc6011c6b4b14132bed5dcb2667b89e02719ce919490f62c936f699c88e5"
+    },
+    "research_2024__BUY_HOLD__stress": {
+      "equity.csv": "a6458bde46809a993512d7b2d0003a4f619da45f8febf6ae853c29616748859f",
+      "events.csv": "774f09d8d35adbd5a448a3aff98304f4cb753c15c76cffca3c18d5e4edc0c0e5",
+      "trades.csv": "850bdff37a0bb008a8b4f1a6becaf6da8c9854587d76f5f06ec039fc3dd789a2"
+    },
+    "research_2024__B_be__base": {
+      "equity.csv": "b12e5a7ffa2bf95155514609bd3d40b5f768cfd82811806858b6276887525994",
+      "events.csv": "bfd973beb2d59201feb6898e2e0ffff750f3f81619a9f9dab78d58e62ded3db8",
+      "trades.csv": "569c203b4ecd8e0acd82bf91753a9317589b3287cd4757b3a521d37d37894891"
+    },
+    "research_2024__B_be__stress": {
+      "equity.csv": "e0d7bafe407a767d458c86752953b10e75473c5e71ac7dd797f9844eb3d658f1",
+      "events.csv": "b91e6878e3275faf6487fc0d2f82d4cbc89750294f4b1ad395a267bd99b70e61",
+      "trades.csv": "2669eecda10cee46525d1d9e8eb346a42915c1beab7c88d3cb42efe8926e9fab"
+    },
+    "research_2024__B_fixed__base": {
+      "equity.csv": "bb102be2a2b130381c14474ee5b2856feac1df184b78dd6e4d84d6765cae8fe7",
+      "events.csv": "d5428965f9507d05af352b826056c2dbca879ea1c1eee05fb0fc0d03c9726d55",
+      "trades.csv": "630167e71f6763823a53ab922878efde0b53a380344e350ecff20ef10124990d"
+    },
+    "research_2024__B_fixed__stress": {
+      "equity.csv": "890607f9602896c77d79963c55b4a643a07fc462654d6f8b644d6adbb80d3786",
+      "events.csv": "7787146919357f97d86b9bd3d62c60f6ac10ebecc66586231a47d149f31d1b61",
+      "trades.csv": "4183451b5c38b7cdf777e1e81817bbf72335530ba1031ea193760ec29605db30"
+    },
+    "research_2024__TREND__base": {
+      "equity.csv": "50751372b32b94f748cc71afce1032f50e13c8424bd1ad78f22406281dbbd6fa",
+      "events.csv": "b277b371107d19fd73795309253c582bf5aa2f29a22279ca7b2fb2a7888af749",
+      "trades.csv": "5e59d70119a87a1751a2f40a6bc7eec7d58e4347cdaa924cb26f5c02a53e358b"
+    },
+    "research_2024__TREND__stress": {
+      "equity.csv": "cd01fe26a2a2df6d81b8d0822794e20a3fef5dc50842f1d0fc20e33be22e8934",
+      "events.csv": "b6c0a1aca224a4161b0617dafd489bfb65d80a34b189f7fce144fec2edf07f52",
+      "trades.csv": "9264099395accd6442670435b732cb3a6be77cb4ced46748c9334b689f76d59d"
+    }
+  },
+  "verifier_sha256": "35b42021ae792e49def5d21f643d69fa5f3107b1164c72e3425f9e9ee07eab75"
+}

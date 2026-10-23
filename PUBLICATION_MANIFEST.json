@@ -1,0 +1,1154 @@
+{
+  "base_commit": "f7b48a9b69973a722bca2321adbb646489412cb9",
+  "scope": "Exact staged Git blob bytes for this publication. No source checkout, raw market data or personal records copied. This manifest excludes itself to avoid a recursive digest.",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 255,
+      "sha256": "8e6a9a49cd384f21f747fa0bae6b000ff50b77279ab7e19e65babef2595edffd",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "FINAL_RESEARCH_RESULTS_ZH.md",
+      "bytes": 7156,
+      "sha256": "41df169c54aaae01367079496052daa60b3b1e0c888c2621bb3947ab2cfc98ab",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "README.md",
+      "bytes": 71943,
+      "sha256": "eee49e762a5e1d1c17917627a6ac2700de64e282b75c1f355119844f7281393c",
+      "base_git_blob": "3855fa41119cc383402a8f1dc2b61bef4d7c7685",
+      "reason": "Correct historical documentation and remove private references"
+    },
+    {
+      "path": "WALKTHROUGH.md",
+      "bytes": 88497,
+      "sha256": "f6816b9693c557c3f0829b0ea660829655016776c1ce07bfeb48360b109b9ab3",
+      "base_git_blob": "3dbc3c929dc9f347ed3d7f5a5ef6090e975bcc69",
+      "reason": "Correct historical documentation and remove private references"
+    },
+    {
+      "path": "docs/CLAIM_CONSISTENCY_AUDIT.md",
+      "bytes": 13194,
+      "sha256": "26e51092012ca40d661a841caffc11d0232ff07b167bd385f4f3317b99f94d44",
+      "base_git_blob": "9d4af7d9a0b683e19eda7f0a2b336e949d18ddf0",
+      "reason": "Correct historical documentation and remove private references"
+    },
+    {
+      "path": "docs/CROSS_SECTIONAL_ROTATION_IMPLEMENTATION_PLAN.md",
+      "bytes": 12014,
+      "sha256": "4756ebac7966c6212352ffe7be9bcecadfd5cb93adfe7d30d052348de21966bd",
+      "base_git_blob": "731be8ccf0485525023727350c46954980b795e6",
+      "reason": "Correct historical documentation and remove private references"
+    },
+    {
+      "path": "docs/FORWARD_PAPER_EVALUATION_PROTOCOL.md",
+      "bytes": 10655,
+      "sha256": "625f1628bf7783f4399bc963fe549836f9ec14a10570202fc729aa43f0e5846e",
+      "base_git_blob": "634d250fb7de33054aa1459fa8a42f1685637311",
+      "reason": "Correct historical documentation and remove private references"
+    },
+    {
+      "path": "docs/SYSTEM_ARCHITECTURE_DISAMBIGUATION.md",
+      "bytes": 5646,
+      "sha256": "8a3499d9c1641a48bd82c5608482913629a6b7452dac1b17e3b28c286f8b5c26",
+      "base_git_blob": "1c658fd4d0dccf3fe0d0f82ae13814fb50c16e4e",
+      "reason": "Correct historical documentation and remove private references"
+    },
+    {
+      "path": "docs/TIERED_BOOSTER_RESEARCH.md",
+      "bytes": 8996,
+      "sha256": "c342c57a4919c19bd57e081b0e371389e4ec5bb22d9049fd05461d0ffdbecfce",
+      "base_git_blob": "13ea8714ef69a1a899fb1d779fefa74348a67560",
+      "reason": "Correct historical documentation and remove private references"
+    },
+    {
+      "path": "leverage_research/README.md",
+      "bytes": 10179,
+      "sha256": "c92513aed750fc168693879dc9d8c8da554b5a68a994d6cc8af03c3b7eeffadc",
+      "base_git_blob": "f52ce9455ca4f6e61280abf918117a92fbbd6484",
+      "reason": "Correct historical documentation and remove private references"
+    },
+    {
+      "path": "leverage_research/docs/WALKTHROUGH_LEVERAGE.md",
+      "bytes": 6452,
+      "sha256": "e5052d4879e6810387b4aadeb6b495034e96c3d3dc9284dabc522de8e1754710",
+      "base_git_blob": "2f898a12457253dc4b7d207556b99b18472b8492",
+      "reason": "Correct historical documentation and remove private references"
+    },
+    {
+      "path": "reports/REVIEW_最优方法评审_2026-09-19.md",
+      "bytes": 7925,
+      "sha256": "b6110e496a9dd2791fba8762fc6b325356cccb5b72403847fa9dece7e39089de",
+      "base_git_blob": "a2da9f70164f8e83d12330e2e28cfe334346af07",
+      "reason": "Correct historical documentation and remove private references"
+    },
+    {
+      "path": "reports/backtest_methodology_audit.md",
+      "bytes": 11186,
+      "sha256": "4fad1bc32419fbc55dc0f547199f4b9d818189bedc841671353c715b9207166c",
+      "base_git_blob": "eb44780c76f27abdb90869f4b2406a08289516fa",
+      "reason": "Correct historical documentation and remove private references"
+    },
+    {
+      "path": "research_archive/CORRECTIONS_ZH.md",
+      "bytes": 3482,
+      "sha256": "ac6776cccd3686e8d0fc70068eeff6f76e9dbc5c3b6fbdc68aa1fa4a79f8615c",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/EVIDENCE_INDEX.md",
+      "bytes": 37028,
+      "sha256": "dfb9eeb8d0dfd05e681baf4ed6f4bd2bc3638cad3a26f0a56099c31ec150db38",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/HISTORY_CORRECTIONS_ZH.md",
+      "bytes": 7942,
+      "sha256": "5b24249ed9648d7a364f6885560edbc26f7b03714af851a705adf565a45abbd6",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/HISTORY_RESULTS_ZH.md",
+      "bytes": 20080,
+      "sha256": "2c8933e8fecb727d469abfe7cfbdb538b03bacfdd2a9b64c2dee1d9377fed2d4",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/PUBLICATION_SCOPE_ZH.md",
+      "bytes": 2241,
+      "sha256": "7305178d75d7231d5fb465a4de901cf1fc477e37a5e16dfe280f98cf7d3506f4",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/README.md",
+      "bytes": 1146,
+      "sha256": "6b08623d0cdf5222de4a6f81b1786a59e85442221a2587e0103edd17cdd6e0dc",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/REPRODUCE_ZH.md",
+      "bytes": 2614,
+      "sha256": "9a95cf8145554ea196b274fbc38b7eeba523a6cf16de23445a4cb9992399940e",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/VALIDATION_RESULTS.json",
+      "bytes": 7378,
+      "sha256": "ad6effa209eeb0601b7ca903584cf8b26524a9038dfd78ef6794317a9ec66e8d",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/archive_manifest.json",
+      "bytes": 461930,
+      "sha256": "522123c1b9fdf20409f06ea324b35235b7c345e63dfa63f0d223f1f6a371cfa3",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/catalog/directory_census.json",
+      "bytes": 6049,
+      "sha256": "d5304fce8d18adaf515e3b69f373b338a73caab7ae6da727ac9ddbc833e6fd4d",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/catalog/recent_results.json",
+      "bytes": 5263,
+      "sha256": "311235ff9d0f48997d465ed81485edbaec39cc087301752800435e37dcdae7e6",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/catalog/registry_snapshot.json",
+      "bytes": 64811,
+      "sha256": "dcdd7292a607363e6847a09091c170f2706bf61148db5af33454421c14021bcf",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/archive/README.md",
+      "bytes": 3122,
+      "sha256": "f89d62deb37d9db745d5ea454aa0707cfbb6fa00eb1af0072fad3e93dfc5d6b9",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/docs/C3_RISK_TRAIN_REFINEMENT_REPORT_AUDITED_V1R3.md",
+      "bytes": 20587,
+      "sha256": "9bce6da310845ac819d4338062cda5660070d6bd4fe20357883aada72b48070a",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/docs/ROUND2_PHYSICAL_ACCOUNTING_ERRATUM_V3.md",
+      "bytes": 30889,
+      "sha256": "4e56b7dd420aa55740597d3d8690db48b09387f38f6e52e209fb0244e9516135",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/activity_trend_round_v1_20261016/RESULTS_ZH.md",
+      "bytes": 12946,
+      "sha256": "9f9c1c811b9e20de1de91cc67f6a302c02d4b998d5eaf5ace6c2dd0f70b10e25",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/b_execution_horizon_round3_20261009/codex_final_review_zh.md",
+      "bytes": 9050,
+      "sha256": "f52e5e82fc5f24afc83fe89e1fdff4b4c6710910112aaf21b1e210569f7f1175",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/btc_minute_probability_v1/run_20261007_v3/RESULTS_中文.md",
+      "bytes": 15759,
+      "sha256": "b76682606013788426c9d627d4450ff6370e8f4c20b0ce9adfb3858f29fc029b",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/btc_noncore_combination_v4_20261014/review/delivery/RESEARCH_CN.md",
+      "bytes": 33723,
+      "sha256": "6e6481508f3b90346da8a01547067ea614258a10816ac9ecf5b6fb2ef2ec3ea3",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/btc_noncore_literature_selection_v3_20261014/review/delivery/RESEARCH_CN.md",
+      "bytes": 16563,
+      "sha256": "88a46ebc38e199069db5c36350f78249a4fb837c682b666aff7955d720243e6a",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/btc_noncore_news_event_v1_20261015/newreview/delivery/RESEARCH_CN.md",
+      "bytes": 4125,
+      "sha256": "1cbe95acb208076d0dd3449a88d04277d35af5a9e0f84f7b66d786796a79f504",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/btc_noncore_selection_v2_20261014/RESEARCH_CN.md",
+      "bytes": 16701,
+      "sha256": "a7e97a8726f286a6f82a7dfbaeed820a337954a3d62699c7ede9c895492dafa3",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/c3_timing_eth_btc_v4/B_INFERENCE_VALIDITY_NOTICE_V1.md",
+      "bytes": 3641,
+      "sha256": "72456b83749c4d098e4d2206f07948b150ca0d9d87d873871569d8fb717d9a0c",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/c3_vol_overlay2023_v1r3/C3_VOL_OVERLAY_2023_V1R3_RESULTS_CN.md",
+      "bytes": 6550,
+      "sha256": "8da944f4ce374be1327297559aa873a1f0a0707c81ff8abd8895eba774fe97f0",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/channel-ml-codex-final_20261008T132917Z.md",
+      "bytes": 6634,
+      "sha256": "ef2df142b094649199bb0e15d49832d6bb3138d57f07a527d28b4c11a78f14e9",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/channel_ml_validation_resume_v1/selected_catboost_d6_i500_20261008T132354Z.md",
+      "bytes": 12471,
+      "sha256": "77639dd8704edecbca03482752daa46f96935d5a75ae45f93cfe5a58f7670e5e",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/collector_funding_schema_fix_20261020_v1/OUTCOME.json",
+      "bytes": 1709,
+      "sha256": "f3c540fd584a8d8f08b8cc53383b85c84c562bdfdbd637e4a6203e014b40dae6",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/collector_funding_schema_fix_20261020_v1/RESEARCH_CARD.md",
+      "bytes": 1417,
+      "sha256": "58e9727f84921aa018be72eac28db30bff5b73d90178eccc57dbf83748a540ad",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/collector_funding_schema_install_20261020_v1/OUTCOME.json",
+      "bytes": 1252,
+      "sha256": "f9268b1af7549273b57f2283a320ca7e540960f8cdedf4d34d133eeacb06891a",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/collector_receipts_20261019_v1/RESEARCH_CARD.md",
+      "bytes": 1904,
+      "sha256": "532b2514ecd7a30d015c072a04d82b83d08c0baa9f73929079b4b9fb93f09c46",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/core3_variance_ablation_20261012_v1/delivery_v1/FINAL_ACCEPTANCE_ZH.md",
+      "bytes": 23027,
+      "sha256": "cfe7de94c5c644cb56b9f9296417656f3a49287feb5db227f133981191ff3acc",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/core3_variance_ablation_20261012_v1/delivery_v1/ema200_account_summary.csv",
+      "bytes": 4452,
+      "sha256": "856446c11fe9f5a0f64763032c76fcd3ba7681023e549a29b8faea29ef69af8a",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/ema_shock_probability_backtest_v5_20261016.md",
+      "bytes": 8254,
+      "sha256": "2587e01eef4941cf9a43369edba10f933c5989a0ea3bfe901ff7892b6e1aaae2",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/ema_volume_direction_v3_20261016.md",
+      "bytes": 29421,
+      "sha256": "7ef6ec90f2264f73f3f7eee30638399b7d7141a88559643dc5bc926c614085bd",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/eth_box_ridge_5m_20261006/preliminary_cn.md",
+      "bytes": 7608,
+      "sha256": "c3193e9deda3f1741fc59ee873c43044e03b79755c41e61e2d2a43afae50cb77",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/focused_followup_v1/FOCUSED_FOLLOWUP_RESULTS_CN_20261003_v1r2.md",
+      "bytes": 11715,
+      "sha256": "5dc2d4d1454c10f95df7b69802a440abad1b3336b23c6ccb372f3d343c52b281",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/forward_data_admission_20261019_v1/RESEARCH_CARD.md",
+      "bytes": 2134,
+      "sha256": "c2a5fdeccfd87c07dcfd3e943f3ab179ba4edc90fe3a9d0705bf0aa24a4c0106",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/foundation_review_20260930/VOLATILITY_CAUSAL_LEAKAGE_REPAIR.md",
+      "bytes": 8153,
+      "sha256": "5ea1329ca0dedff9660928279aa21ce8715020219a212dd3e198798dd43d902b",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/funding_carry_net_economics_v1_20261017/REPORT_CN.md",
+      "bytes": 18664,
+      "sha256": "1a6b7d3a6092f3096f090f3581a1e46a7af3e98aa0c25f8a6f04f77d0bcf46ce",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/funding_carry_net_economics_v1_20261017/results_20261016T225531135982Z/annual_summary.csv",
+      "bytes": 6219,
+      "sha256": "f786e58a176e172380154413c9a1ccb19598fc4cb27be9be471fb4d6f1ab00e8",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/funding_carry_settlement_cost_v2_20261017/REPORT_CN.md",
+      "bytes": 17817,
+      "sha256": "0bc47dbd41a90eeb9671455155bc0be988aa72610a1dad188a5e17a898eb28bb",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/funding_carry_settlement_cost_v2_20261017/results_20261017T020727133643Z/annual_cost_scenarios.csv",
+      "bytes": 28990,
+      "sha256": "c9a8c8d8b481a48844b74f2dcc09a064d4e4147253d9119d6eca6714d0164367",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/funding_carry_settlement_cost_v2_20261017/results_20261017T020727133643Z/v1_screen_control.csv",
+      "bytes": 533,
+      "sha256": "737f2701f9b3ccab38eea38dd464737cad5a8188d43c2fabcbe3dad2b8b99f81",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/funding_carry_settlement_cost_v2_20261017/source_audit/notice_provenance_review.md",
+      "bytes": 2749,
+      "sha256": "153f529c371b641f6d1a165a3d6220e0e579da0e87c586376b5a619b73ce9865",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/gemini_direction_review_20261017/REPORT_CN.md",
+      "bytes": 9410,
+      "sha256": "8349f2fce3cf832b1a577c21f684312ccec55ace8545d17e63e4be54b9204554",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/longcycle_trend_catalog_v1/ACCOUNT_RESULTS_V3_20261003.md",
+      "bytes": 10685,
+      "sha256": "765a8682f3647f9f73e5fbeaac979a3f3718caebc2aa73dfdf955e3018fc0299",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/longtrend_simple_screen_20261019_v1/implementation_v1r3/reporting_v1/RESULTS.md",
+      "bytes": 19650,
+      "sha256": "1b764277b884ca27260501f14e250396d0b1db7572f5a58b1cb924058cd5a672",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/longtrend_simple_screen_20261019_v1/implementation_v1r3/runs/20261019T001008382948Z/screen_report.md",
+      "bytes": 4694,
+      "sha256": "ea1c6aec68e504256ae2835dac5f5de6ed1b3c9cffd4951166f0d66e444f3112",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/market_regime_round1_20260930/final_review_v1/README_CN.md",
+      "bytes": 16176,
+      "sha256": "33a660d497d2f730102fa6536c4d13bbd9c905455b08f5b37206674b5a6c8ca5",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/minute_return_2026_v1/EMPIRICAL_RESULTS_CN_minute_return_2026_v1_20261004.md",
+      "bytes": 15470,
+      "sha256": "66ab12a175fa3be2c0616fab3b5a86bf925a01defe1fa749b6f682fc19bdd1d2",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/minute_return_dynamic_2026_v1/CODEX_REVIEW_20261004.md",
+      "bytes": 13504,
+      "sha256": "28f13cfcb12c8bd60f0be5e882d68e50381e4af2423667528308dd265bcccd79",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/mtf-v2-codex-final_20261008T110207Z.md",
+      "bytes": 4584,
+      "sha256": "bac5132d5023accf8be3b4d5119fc58d4734b0ec0da77e83a07d9279f7d293a3",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/mtf4h_pullback_bb_v1_20261009/codex_final_review_20261009.md",
+      "bytes": 5119,
+      "sha256": "31b3c47328477bb32d9f960d7ec0c56e62462707a321436504d05cc1a4934e7c",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/mtf_trend_range_maker_v2_r1/completion.json",
+      "bytes": 4741,
+      "sha256": "bcc9d30dcc8575ad7938d6a992db76e94fafd4c8a38c4ed41e6d9308db053a0c",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/pattern_comparison_round2_20261009/codex_final_review.md",
+      "bytes": 6207,
+      "sha256": "be0a3b01edddf3ed51a52e52b87448ba2e7fae9a42ad7a6de01d3246963388be",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/prophet_trend_pilot_20261019_v1/FINAL_REPORT_ZH.md",
+      "bytes": 8026,
+      "sha256": "635ffa4e20fdf9252322c5365fd100b3db7fb3a25513e06988901ffc71e7c574",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/prophet_trend_pilot_20261019_v1/ROOT_INDEPENDENT_AUDIT.json",
+      "bytes": 6848,
+      "sha256": "7d414734aa090bf6aeefdfa07552c9dbd8e95407e7df30b1164ea1d4b5f09f80",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/r3k_20261005/b_price_iv_daily_r3k_20261005.md",
+      "bytes": 8235,
+      "sha256": "f2c090a67d92317a2b066cfcaa193da50da9e3b4447cfb2f1ff32a84955225c0",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/r3k_20261005/c3_r3k_20261005.md",
+      "bytes": 8336,
+      "sha256": "25726917cc102fd908ca00dd67728c29c89fd51dbe7c7a53b9d2677e632998b9",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/r3k_20261005/d1_r3k_20261005.md",
+      "bytes": 8528,
+      "sha256": "e2e7903701c952dded626301d06606808891972495e940feb017803f37bbee65",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/regime_event_round2_20260930/meta_account_2022_2023_v5_independent_audit_v1/README_AUDIT_RESULTS_CN_v1.md",
+      "bytes": 7530,
+      "sha256": "8e134ce894683e3a13504bb1d552b0b062e04134bfcef2ab9cd89109c54c972b",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/research_hub_admission_20261011_v1r2/admission_report.json",
+      "bytes": 47541,
+      "sha256": "dd81718fe85abf80487dc47ca0f3fafb2238970e74bafeaa94c6a0a4fb1155da",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/rolling_volume_funding_probability_v4_20261016.md",
+      "bytes": 19656,
+      "sha256": "2e6a968f331b9cf0f2acdc3ed4d08493e0033fe420dc122d5e888bd856c5870a",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/round3/ROUND3_RESULTS.md",
+      "bytes": 36189,
+      "sha256": "e66a554e0085f2a1a7cd8fdaba93b5196c25c574cc47ed27e832f91133e216e2",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/support_rebound_mtf/catboost_meta_dev_2025_v4/dev25_validation_report.md",
+      "bytes": 6711,
+      "sha256": "3c28c1985be8f7e270e3cb5324b93259104ed22c7239705f9db6e05468d6497d",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/tradingview_fixed_diagnostic_20261018_v1/COMBINED_DIRECTION_ZH.md",
+      "bytes": 7341,
+      "sha256": "d5ca6de08b5401cf159f3b417f1d1a80a0d18836223bdc757ed4fd1c5b95e647",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/tradingview_fixed_diagnostic_20261018_v1/RESULTS_ZH.md",
+      "bytes": 11813,
+      "sha256": "2da70f68298245d30f39902ecf232a3eef1e838066775b2564e3617b781968cf",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/trend_beta_fair_comparison_20261019_v1/FINAL_RESEARCH_REPORT.md",
+      "bytes": 10499,
+      "sha256": "d6b0cc7e463ee7435e873c46b7075a34c83b4161c597ee903158ce347a9e1aed",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/trend_mainline_v1_20261017/loader_schema_v2/RESULTS_ZH.md",
+      "bytes": 13511,
+      "sha256": "80ed806d03aadf6d464f96bf497adc632097a02fbef0715c4a857b158ae25e7d",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/trend_risk30_20261018_v1/RESULTS_ZH.md",
+      "bytes": 7585,
+      "sha256": "c59b6a6b1b5d5a3de1f1371ec65efb0d52b25aa9e0d622bc0a5d3f6063825376",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/trend_vol_1h_risk2021_v1/derived_arithmetic_audit_v1r3.json",
+      "bytes": 21357,
+      "sha256": "6d70bb4d15d418b66627b75b99f086e4225b712035add5c69a1347fd2a4262a6",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/tsmom_30d_v1_20261020/strategy_validation_report.md",
+      "bytes": 2389,
+      "sha256": "7ec5b76bcfaec9eb290ad617124723aab695955df08d3f4b688b5979b6294708",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/volatility_monetization_v1_20261020/FINAL_RESEARCH_REPORT_ZH.md",
+      "bytes": 11981,
+      "sha256": "2220cca4228707794f277e076774a5e3d287054f1b783ba0d0ed333ccc3b9af8",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/volatility_monetization_v1_20261020/review/ECONOMIC_ATTRIBUTION_REVIEW.md",
+      "bytes": 10530,
+      "sha256": "e467b4796c8e87c7eec42e83ac03b8eb19128b792b2bbe1e6d0aa259ddf4b735",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/volume_activity_count_cooldown_v2_20261016.md",
+      "bytes": 16741,
+      "sha256": "1590ced15569e3e1a241855fedb8d40399ed419e236b9e52d9c195bba1fb9d9b",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/reports/strategy_validation/volume_etas_prediction_v1_20261015.md",
+      "bytes": 15654,
+      "sha256": "bed6bbaca15cd1781879e1f1609b2bf94a8972b9ae6d5559169d247ca10e7eb0",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research/mtf_forecast_v1/RESULTS_ZH.md",
+      "bytes": 12740,
+      "sha256": "258e4cef85af01337cd8e9bb4c7032a793b4fee34193ecad831f01010a6794cd",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research/mtf_neutral_v1/RESULTS_ZH.md",
+      "bytes": 11269,
+      "sha256": "be34a768eb9f9605fd256ec87610d97f7afd6f5a153ff49a464d4f01364c5fae",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research/mtf_trend_atr_v1/RESULTS_ZH.md",
+      "bytes": 20095,
+      "sha256": "7414858acb66e72d8203e4c5afe258e302ab6380663150f6f3155c4e4ceb0bec",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research/options_chain_2023_v1/RESULTS_ZH.md",
+      "bytes": 16579,
+      "sha256": "83e8f80a2413b23722e849091f10175131b1995e851205065290037a6ba904c2",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research/structural_imbalance_v1/RESULTS_ZH.md",
+      "bytes": 17080,
+      "sha256": "02250f2bc0f41eca197c629e01d12c18f320813133b99cca1c6bcc5fae6883f4",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research/structural_imbalance_v1/ledger/ROUNDS.json",
+      "bytes": 3195,
+      "sha256": "8721846ab0ad72fc57fee57f24db7b1cc1a877388c45b25910a4622fb1c9356e",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research/vol_options_proxy_v1/RESULTS_ZH.md",
+      "bytes": 8495,
+      "sha256": "5776188404898063ed0c1371783724de7df20677d2484dc2f0d872674f68818b",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/INVENTORY_AND_EVIDENCE.md",
+      "bytes": 15960,
+      "sha256": "d7eb9e4d3cf2ba6136f8ec56a190750e0a47550fcae0e19c58e2c0e647ec7b55",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/experiment_registry.json",
+      "bytes": 133565,
+      "sha256": "98f37bdd6c942882d0ba1ef69ab0d89097d1e74e59ffca1a67022648845f4a02",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/factor_research/FACTOR_USABILITY_REVIEW_ZH_20261011.md",
+      "bytes": 33751,
+      "sha256": "d9690576b5b7b6c6bdc4f3a797d0fb2aa4946089e213cf30fbd76c6bfe31dcbd",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/factor_research/factor_cards/eth-btc-leadlag-invalidated.md",
+      "bytes": 3268,
+      "sha256": "02bea65cc3349bd149f7d739eb3d2731c2aaf1922b59081a7c02ce517cf534d4",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/factor_research/factor_cards/factor-calibration-causal-2023.md",
+      "bytes": 8880,
+      "sha256": "f9961ccd43c1b926ce3ae66ddb34814e196c72be4c845765084555520f4f51dc",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/factor_research/factor_cards/garch-har-leakage-invalidated.md",
+      "bytes": 3525,
+      "sha256": "e226ed690a93fc815895275f885490f215af11619aa6c48f0cd45a15e6eeac2e",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/platform_data/records/local-conversion-boundary.md",
+      "bytes": 4136,
+      "sha256": "f5062e8ed2e979bea6fe194a85d426dba9b8f8f4d6e7fbddf369e4e1eaa06797",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/platform_data/records/permission-denied-result.md",
+      "bytes": 3343,
+      "sha256": "8d5b0ce3ba5cdb06aca35a197f8b5d8cb05a0f523b422690c58372da36c854b9",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/platform_data/records/platform-boundary.md",
+      "bytes": 4698,
+      "sha256": "f2dae309da4eb35d76549a794a1ada3f41b56831687825f359462e9382224664",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/platform_data/records/research-hub-admission-v1r2.md",
+      "bytes": 5203,
+      "sha256": "304a0be58a20f7c4df5767f15373f8aff5ee832fb430d2ca206ee1e42e736d81",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/platform_data/records/source-universe-forward.md",
+      "bytes": 3768,
+      "sha256": "1b7234812ba823e044c45c89cb6ee7f8a17c64d3cd0a3aeccd37c34f0a3b5e55",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/research_map.json",
+      "bytes": 129313,
+      "sha256": "d0929e4e028327484113b2990526cd2d9755f52d228ea835a17fe2227792c855",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/strategy_models/experiments/btc-minute-probability-2023.md",
+      "bytes": 4074,
+      "sha256": "f043800913c0cdaa925d7244f1c00264ac35fae47489eef101fad1a9a58a850e",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/strategy_models/experiments/c3-risk-train-shrink.md",
+      "bytes": 5891,
+      "sha256": "625ff47d9d4ae20926d962aac583b368080c0fa3b10e98ed4f29285f8a4646c1",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/strategy_models/experiments/c3-x3-overlay-2023.md",
+      "bytes": 5654,
+      "sha256": "bb51469046af269160c2e07ef372b28f5d00a929fb7c001c3e8ef036fedb992b",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/strategy_models/experiments/channel-c1-c3-20261010.md",
+      "bytes": 5553,
+      "sha256": "2f7a4aab06e7a8981f73db6d4ed5951223f89a885871e34d107c1a2a7582bed1",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/strategy_models/experiments/channel-ml-maker-2024-25.md",
+      "bytes": 4807,
+      "sha256": "e07d3a4c5adf54c841a5fd544189b52a33163b7407d3f547e97a910b811daa4d",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/strategy_models/experiments/core3-trend-risk-v1.md",
+      "bytes": 23814,
+      "sha256": "644dcb55a39bbc85c576c3df83bd54ff1d2913458ada3d014c9fd423b7adc780",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/strategy_models/experiments/d1-r3k-20261005.md",
+      "bytes": 9506,
+      "sha256": "a1296aa9785c5cad1a536782386ae4e5c8a777fa57be5962edb8ed2a26168e67",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/strategy_models/experiments/event-meta-2021-23.md",
+      "bytes": 6493,
+      "sha256": "ec133c430406a80a4f33778de2813de3a328cecaea484cd915e73c0018f49f77",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/strategy_models/experiments/longcycle-trend-12-rules.md",
+      "bytes": 5140,
+      "sha256": "a13612ab64a7b7205a3e83ebea7e43ab0d96dd938f98be66e111c1046a13cc75",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/strategy_models/experiments/maker-v2-r1.md",
+      "bytes": 4150,
+      "sha256": "17721ca17811d41ff97c379a9409a3219a13a3f37dd3a61ed3748fed7758cb81",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/strategy_models/experiments/minute-return-2026.md",
+      "bytes": 6961,
+      "sha256": "99f918eb05d8759966f065759fcf6bc04f50c6532a5b4c5e9c5491169d13628a",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/strategy_models/experiments/pattern-support-meta.md",
+      "bytes": 6943,
+      "sha256": "e4f190d86ddee49c1801cb0222df1e7d9ada89ec8c1e9e7f3cb13d41ed976264",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/strategy_models/experiments/ridge-1h24-risk-2021.md",
+      "bytes": 5111,
+      "sha256": "5072aa0530fb90e778c3197879a1eb283467262557f8bde7041f707643e70b83",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/strategy_models/experiments/source-ma-ml-legacy.md",
+      "bytes": 5031,
+      "sha256": "12fd7d942466cc4e8e74f6774cf7ca6c3218efef31b1db7edcd7cf7f45f162ef",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/strategy_models/experiments/source-spot-bb-benchmark.md",
+      "bytes": 3861,
+      "sha256": "8af541c2dc400671b79135f845a7f964f9485fad6f67d75858ae386d3c006473",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/strategy_models/experiments/source-top1-annual-trend.md",
+      "bytes": 4074,
+      "sha256": "828ea4fb93d4997d04073a398ec4ccda16e31ce133a4db0f34762c9e7b28f700",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/history/research_hub/strategy_models/experiments/source-transformer-stchan-legacy.md",
+      "bytes": 5614,
+      "sha256": "0310ae773fcc2b3529dd86b74bf353c160930219f806aef78cb56dd59c863417",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/funding_switch/DATA_AND_LEGACY_AUDIT_ZH.md",
+      "bytes": 8055,
+      "sha256": "747cb4b86c929d20c89f7899de33101fc27ea0221cc960f452665273c23b1c56",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/funding_switch/REPORT_ZH.md",
+      "bytes": 12051,
+      "sha256": "ceb0077ad30e36516df4ff2fee79b372c061901baee5df9b100f6cee1f9db358",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/funding_switch/VALIDATION_GATES_ZH.md",
+      "bytes": 3248,
+      "sha256": "42425d5fc4558620253aa8ce3d0f1548aa53cca3f6e121ae6fab210eecf00593",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/funding_switch/btc_funding_switch_study/config.json",
+      "bytes": 1135,
+      "sha256": "0757a1b6a976362e541ff4fae31ec0b1cb43a71366c86d1fc5c7f166264dbeaf",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/funding_switch/btc_funding_switch_study/event_metrics.csv",
+      "bytes": 11924,
+      "sha256": "c00c680eb80d087d2d7b8aae3a23de2f871223b11955f3a42624bd3ac4c2ab14",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/funding_switch/btc_funding_switch_study/financial_ledger_status.csv",
+      "bytes": 7798,
+      "sha256": "430aa0c1646a810d983b5df8d18073e5cb02bccf41a0c5e2fae8ce496d43bb43",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/funding_switch/btc_funding_switch_study/paired_comparisons.csv",
+      "bytes": 1521,
+      "sha256": "e1178674ab9128df5e5832a28a7382db85af93fd11db010d0d46ad4f56e17005",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/funding_switch/btc_funding_switch_study/run_summary.json",
+      "bytes": 343,
+      "sha256": "4b3b30294fd6e2bc10e01d1d21ea6a57fadba7e17c79aa5f4b0be6b9210bf31b",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/human_protection/ALGORITHM_REPORT_ZH.md",
+      "bytes": 2709,
+      "sha256": "d8299309a900fef3be6c556838a76f5b2dd5960516e0754563f7d91fc7e4a4cf",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/human_protection/SOURCE_NOTE.json",
+      "bytes": 1501,
+      "sha256": "98bd096d87e296840ff884dcf2f722d8d00bcc18a0602e6fe96b98bc71e12cc1",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/human_protection/algorithm_metrics.csv",
+      "bytes": 997,
+      "sha256": "71c07b770f8284455e7329331878a42f04f9ebfb55f8dde9b4fe703defb7b88e",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/langlang_fixed/INDEPENDENT_LEDGER_V3.json",
+      "bytes": 41896,
+      "sha256": "9f59147d3bf76a5c1f9a4889f2614e8597009ffe572ea93b2a1a27a4560c8676",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/langlang_fixed/REPORT_TABLES_ZH.md",
+      "bytes": 34573,
+      "sha256": "dd768832a31dd213747797e71fa11dbb677b604c1333e4727352ac374860cea2",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/langlang_fixed/REPORT_ZH.md",
+      "bytes": 27073,
+      "sha256": "0f33f8d2fc998b6622f9bbab66175056961d818dffe65a846afcf9259ab8537f",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/langlang_fixed/REPRODUCE_ZH.md",
+      "bytes": 3834,
+      "sha256": "fa0b82b4c678be04baa7767be33f75a14d14d39cba1c3bb79d4c5fd811ec5fd3",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/langlang_fixed/TEST_RUN_FINAL.txt",
+      "bytes": 101,
+      "sha256": "8a8f89d9bb528fd19e227d3df73212d182a083d6edb6ba768e70e4a3957d04c2",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/langlang_fixed/outputs/v3/performance.csv",
+      "bytes": 40585,
+      "sha256": "9a9727cbbf0c60bdfa8789b8d59d844b9c6a99817ba6f7df25d977245deba5c1",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/langlang_fixed/outputs/v3/symbol_performance.csv",
+      "bytes": 63236,
+      "sha256": "b838eb43f4283a03c5683bc05ac6894db56b80b19e9ffc99378d8a52a21048d4",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/langlang_fixed/protocol_config.json",
+      "bytes": 6724,
+      "sha256": "50e3c6873501ca14c2c6ce05ba4f02aae5e013778f6529af41121f4c2ecaeff3",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/new_listing_short/AUDIT_STATUS.json",
+      "bytes": 3715,
+      "sha256": "144932076fbf1d03f5b7ed6cdb796adcb117cda550a6691bd357e19abd6d4ec3",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/new_listing_short/LIFECYCLE_GATE_REVIEW_ZH.md",
+      "bytes": 15273,
+      "sha256": "48340ae3f6043d084ad53dfe1806c003a8facf0320e6988d6afff49af16cf33c",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/new_listing_short/PROTOCOL_AND_DATA_GATES_ZH.md",
+      "bytes": 7409,
+      "sha256": "840a4ff23608eebdab9a89d17338003f3cd352b285dc407625501320ccf56ad7",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/new_listing_short/REPORT_ZH.md",
+      "bytes": 9180,
+      "sha256": "92adc8f408adcc91a03481f36d8d12eed2bda950940685824c3cdfe5faff0432",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/small_cap_game/PROTOCOL_V1_ZH.md",
+      "bytes": 5248,
+      "sha256": "fe5c92dfcf38af87fbfa02f1aad4b563cd7ce1a4d7776531a884b00403633f67",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/small_cap_game/REPORT_ZH.md",
+      "bytes": 12460,
+      "sha256": "10768568cbdbab35984e478acec4027cf4f54a28361fae17f078724d2fb1ceab",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/small_cap_game/VALIDATION_ZH.md",
+      "bytes": 3666,
+      "sha256": "4fa161348fc2b950325664d01937cc1399785b25fa7838d5192947c2d7242187",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/small_cap_game/root_review_run_v1/cost_reconciliation.csv",
+      "bytes": 11865,
+      "sha256": "4d2e8103c20d9dec916aa2f65da9dff4e6a10904133dafa0a647d3b6e2018710",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/small_cap_game/root_review_run_v1/funding_status.csv",
+      "bytes": 396,
+      "sha256": "b195d45882b3d2a447722898116aafab24775b64253f560371e14cefb9ab901f",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/small_cap_game/root_review_run_v1/period_metrics.csv",
+      "bytes": 16392,
+      "sha256": "da5d2536d2c05c34ceaa957fd37c58b7d8d6ed7ed50f601ecc9404a6a55fd3e3",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/small_cap_game/root_review_run_v1/random_control_summary.csv",
+      "bytes": 1485,
+      "sha256": "9216683cef4ae314c341f579a2be4a0874b993e09994d4e3a568cd3f088e997c",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/small_cap_game/root_review_run_v1/strategy_metrics.csv",
+      "bytes": 1219,
+      "sha256": "3ceb2672e3b1d1d7fdbfda2dd5d2cbfec8ea769839177217eef75bd6221e5e79",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/two_wave/BENCHMARK_INVALIDATED.json",
+      "bytes": 1134,
+      "sha256": "e35319f134bcb58233d52f04b57eaeaae0d4c69f4100a38b1dc894ff7fe36f7f",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/two_wave/STATUS_ZH.md",
+      "bytes": 1787,
+      "sha256": "be654e7f48bc869e38ba2904f661f62869bc3fa3b197f8decf8f91a9a070d358",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "research_archive/evidence/recent/two_wave/TWO_WAVE_TIMEFRAME_SCOPE_V1_20261022.md",
+      "bytes": 6632,
+      "sha256": "7f929ff9669de75a25e419b9fd35a193ffadbca8486a54c5b9c5bafe2ef9a467",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "tools/research_archive/archive_builder.py",
+      "bytes": 16846,
+      "sha256": "91f55d2fa7306b574dcd227904b9c83558dc156f5e8576fe02420df0406ba979",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "tools/research_archive/archive_validator.py",
+      "bytes": 8945,
+      "sha256": "63a9bfefc55037818c471c88159ad3b13489092654de91f027afdb7eb0eee4e5",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "tools/research_archive/test_archive_tools.py",
+      "bytes": 12519,
+      "sha256": "a7b0e2f4794370748642785d2a9e4e5419217589c729291daa07ff714cf2dc11",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "tools/research_archive/test_verify_aggregate_evidence.py",
+      "bytes": 4941,
+      "sha256": "df84a01654d5e332d317c3ce568a37a56dc2f50fa7d24031b366fb5374429fbf",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    },
+    {
+      "path": "tools/research_archive/verify_aggregate_evidence.py",
+      "bytes": 16931,
+      "sha256": "a8d0f3ec1f23a822e23705873294398a8b71eb49394d12c4b1c92ca234273f54",
+      "base_git_blob": null,
+      "reason": "Curated research evidence, index, manifest or offline archive verification tool"
+    }
+  ]
+}

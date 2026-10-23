@@ -1,0 +1,199 @@
+{
+  "status": "PASS_INDEPENDENT_RECOMPUTATION",
+  "checked_utc": "2026-10-19T10:13:24.407369+00:00",
+  "review_script_sha256": "d27bb9ad1bf82df332532569ea7057ef37a328a1bc610e4f3974c6ada7f5bf9c",
+  "fit_records_sha256": "38c1b029cc7f8f0b68de8b94225f15e8075de0921a0b27b35fca57db5723fad2",
+  "analysis_sha256": "870867490f2a0037463e5d8e49e47a8f7619c401cee87a38aa98aa0ed5311608",
+  "fit_attempts": 468,
+  "successes": 465,
+  "failures": 3,
+  "common_origins": 154,
+  "sources_and_clocks": {
+    "BTCUSDT": {
+      "successful_fits_checked": 155,
+      "input_sha256": "0375b352ce6bd95dab4a01b40555f90426fa1fdb9912abd80892a8a83988eead"
+    },
+    "ETHUSDT": {
+      "successful_fits_checked": 154,
+      "input_sha256": "8c5f18ff6a0e380bf757819ad0c3502a4516e93fb340a0331c47078e0deaf486"
+    },
+    "SOLUSDT": {
+      "successful_fits_checked": 156,
+      "input_sha256": "788e1b968cb0cce615ab86bd136cbed0afc3927ea69a9bf88bda3805ec0ddd26"
+    }
+  },
+  "point_metric_comparisons": 432,
+  "independent_metrics": {
+    "24": {
+      "BTCUSDT": {
+        "n": 154,
+        "up": 81,
+        "nonup": 73,
+        "zero": 0,
+        "down": 73,
+        "mae": 0.06733175156657559,
+        "rmse": 0.08459419581145657,
+        "rw_mae": 0.021526353473123087,
+        "rw_rmse": 0.030225245445658605,
+        "relative_mae_gain_rw": -2.1278754040085435,
+        "relative_rmse_gain_rw": -1.798792683538232,
+        "accuracy": 0.5324675324675324,
+        "balanced_accuracy": 0.5318789108743447,
+        "auc": 0.5262979874852021,
+        "ema_auc": 0.45653644512092,
+        "ema_auc_gain": 0.06976154236428206,
+        "donchian_auc": 0.4961948249619482,
+        "donchian_auc_gain": 0.030103162523253846
+      },
+      "ETHUSDT": {
+        "n": 154,
+        "up": 83,
+        "nonup": 71,
+        "zero": 0,
+        "down": 71,
+        "mae": 0.08679936321497365,
+        "rmse": 0.11115154279314912,
+        "rw_mae": 0.02682025682344404,
+        "rw_rmse": 0.038683589722633464,
+        "relative_mae_gain_rw": -2.2363360196872115,
+        "relative_rmse_gain_rw": -1.873351299352532,
+        "accuracy": 0.5,
+        "balanced_accuracy": 0.5005090785677923,
+        "auc": 0.4970303750212116,
+        "ema_auc": 0.4914305107754964,
+        "ema_auc_gain": 0.005599864245715236,
+        "donchian_auc": 0.4703885966400815,
+        "donchian_auc_gain": 0.026641778381130132
+      },
+      "SOLUSDT": {
+        "n": 154,
+        "up": 72,
+        "nonup": 82,
+        "zero": 1,
+        "down": 81,
+        "mae": 0.1377487013889849,
+        "rmse": 0.1809221680357802,
+        "rw_mae": 0.03784395758687468,
+        "rw_rmse": 0.0506779984941566,
+        "relative_mae_gain_rw": -2.6399126881158943,
+        "relative_rmse_gain_rw": -2.5700338097733146,
+        "accuracy": 0.5714285714285714,
+        "balanced_accuracy": 0.5730013550135502,
+        "auc": 0.5509823848238482,
+        "ema_auc": 0.48509485094850946,
+        "ema_auc_gain": 0.06588753387533874,
+        "donchian_auc": 0.44529132791327913,
+        "donchian_auc_gain": 0.10569105691056907
+      }
+    },
+    "72": {
+      "BTCUSDT": {
+        "n": 154,
+        "up": 84,
+        "nonup": 70,
+        "zero": 0,
+        "down": 70,
+        "mae": 0.07535168212487421,
+        "rmse": 0.0940619541379753,
+        "rw_mae": 0.03346565171264911,
+        "rw_rmse": 0.04562174009131716,
+        "relative_mae_gain_rw": -1.251612571955182,
+        "relative_rmse_gain_rw": -1.0617791857500278,
+        "accuracy": 0.5064935064935064,
+        "balanced_accuracy": 0.5035714285714286,
+        "auc": 0.5437074829931973,
+        "ema_auc": 0.4857142857142857,
+        "ema_auc_gain": 0.05799319727891156,
+        "donchian_auc": 0.5047619047619047,
+        "donchian_auc_gain": 0.03894557823129252
+      },
+      "ETHUSDT": {
+        "n": 154,
+        "up": 80,
+        "nonup": 74,
+        "zero": 0,
+        "down": 74,
+        "mae": 0.09491301043617625,
+        "rmse": 0.12112402019441709,
+        "rw_mae": 0.04300391659566396,
+        "rw_rmse": 0.05782939438999314,
+        "relative_mae_gain_rw": -1.207078283789301,
+        "relative_rmse_gain_rw": -1.0945061153083167,
+        "accuracy": 0.5194805194805194,
+        "balanced_accuracy": 0.51875,
+        "auc": 0.5307432432432433,
+        "ema_auc": 0.49898648648648647,
+        "ema_auc_gain": 0.03175675675675682,
+        "donchian_auc": 0.43648648648648647,
+        "donchian_auc_gain": 0.09425675675675682
+      },
+      "SOLUSDT": {
+        "n": 154,
+        "up": 77,
+        "nonup": 77,
+        "zero": 0,
+        "down": 77,
+        "mae": 0.14907697526640953,
+        "rmse": 0.19317249843492248,
+        "rw_mae": 0.05460501146980531,
+        "rw_rmse": 0.07099199034269614,
+        "relative_mae_gain_rw": -1.7300969499629897,
+        "relative_rmse_gain_rw": -1.7210463814640273,
+        "accuracy": 0.5064935064935064,
+        "balanced_accuracy": 0.5064935064935064,
+        "auc": 0.4892899308483724,
+        "ema_auc": 0.5,
+        "ema_auc_gain": -0.010710069151627588,
+        "donchian_auc": 0.5064935064935064,
+        "donchian_auc_gain": -0.017203575645134028
+      }
+    }
+  },
+  "independently_recomputed_intervals": {
+    "auc_gain_donchian_24h": {
+      "invalid_replicates": 0,
+      "lower": -0.060589507490483516,
+      "status": "ESTIMABLE",
+      "upper": 0.17762074059134864,
+      "valid_replicates": 2000
+    },
+    "auc_gain_donchian_72h": {
+      "invalid_replicates": 0,
+      "lower": -0.0808688254152616,
+      "status": "ESTIMABLE",
+      "upper": 0.15912474214664823,
+      "valid_replicates": 2000
+    },
+    "auc_gain_ema_24h": {
+      "invalid_replicates": 0,
+      "lower": -0.06667740915637906,
+      "status": "ESTIMABLE",
+      "upper": 0.16750533665795414,
+      "valid_replicates": 2000
+    },
+    "auc_gain_ema_72h": {
+      "invalid_replicates": 0,
+      "lower": -0.10568571389709132,
+      "status": "ESTIMABLE",
+      "upper": 0.15526037672510368,
+      "valid_replicates": 2000
+    },
+    "relative_mae_gain_24h": {
+      "invalid_replicates": 0,
+      "lower": -2.969793427111658,
+      "status": "ESTIMABLE",
+      "upper": -1.847744061134279,
+      "valid_replicates": 2000
+    },
+    "relative_mae_gain_72h": {
+      "invalid_replicates": 0,
+      "lower": -1.7895636694811539,
+      "status": "ESTIMABLE",
+      "upper": -1.0770188717143037,
+      "valid_replicates": 2000
+    }
+  },
+  "new_model_fits": 0,
+  "account_equity_identity": "N/A: forecast-only experiment; no trades or account ledger",
+  "scope_limit": "Checks inputs, timing, labels, stored prediction algebra, baselines, metrics and intervals; does not refit Prophet or establish untouched OOS/live validity."
+}

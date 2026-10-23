@@ -1,10 +1,13 @@
 # Crypto Perpetual Leverage Quantitative Research
 # 加密货币永续合约高杠杆量化研究与全周期实证系统
 
+> **2026-10-23 归档纠正：`LEGACY_RESEARCH / UNVERIFIED`。** 当前结论见[最终研究清单](../FINAL_RESEARCH_RESULTS_ZH.md)和[修正记录](../research_archive/CORRECTIONS_ZH.md)。下方历史 CAGR、Sharpe、回撤与“0 次强平”均为旧模型输出，不是可实现净收益或安全保证。
+>
+> 原“两套正期望机构级架构”“无风险套利”“绝对安全”措辞已撤回。资金费可为负，现货/永续的基差、交易成本、资金占用与保证金路径必须分别核对；不能从 funding 累加或历史零强平推出稳定盈利。旧表同时记录 ETH 1× 基准 +1,643.50%、Core +92.44%、Hybrid +43.72%，这些是不同风险结构的历史对照，不能只展示有利指标。本次没有重新计算原始行情或验证当前数据覆盖。
+
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
 [![Leverage](https://img.shields.io/badge/Leverage-20X%20Isolated-red.svg)]()
-[![Dataset](https://img.shields.io/badge/Data%20Location-D%3A%5CConvertible__Bond__data%5Ccrypto__data-green.svg)]()
-[![Status](https://img.shields.io/badge/Status-Fully%20Reproducible-purple.svg)]()
+[![Status](https://img.shields.io/badge/Status-Legacy%20Research-orange.svg)](../FINAL_RESEARCH_RESULTS_ZH.md)
 
 ---
 
@@ -16,7 +19,7 @@
 > 本研究所依赖的海量历史高频数据（**2017/2020 至 2026 年近 1,500 万根连续 1m/5m K 线、7,305 期历史资金费率连续归档及多交易所 L2 深度快照**）存放在 D 盘原持久化路径：
 >
 > ```
-> D:\Convertible_Bond_data\crypto_data\
+> EXTERNAL_MARKET_DATA_ROOT/
 > ├── history/
 > │   ├── futures_1m/    # ETH, BTC, SOL continuous 1m bars (3.5M rows each, Parquet)
 > │   ├── futures_5m/    # ETH, BTC, SOL continuous 5m bars (700k rows each, Parquet)
@@ -26,8 +29,8 @@
 > ├── okx/               # OKX SWAP L2 order book & ticker archives
 > └── bitget/            # Bitget Mix USDT-futures archives
 > ```
-> **All Python scripts in this module directly link to and read from `D:\Convertible_Bond_data\crypto_data\` by default.**
-> 本模块内所有量化脚本均已默认配置连接并读取 `D:\Convertible_Bond_data\crypto_data\`，无需重复搬迁庞大历史数据集。
+> `EXTERNAL_MARKET_DATA_ROOT/` is a documentation placeholder for a historical local archive, not a supported environment variable or a path configured in the scripts. Legacy scripts may still hardcode local paths; reproduction requires reviewing each script and binding source-labelled inputs. This archive update did not port or run them.
+> `EXTERNAL_MARKET_DATA_ROOT/` 仅是去敏后的示意路径。旧脚本仍可能硬编码本地路径；复现前须审查代码并绑定有来源标签的数据，当前未移植或运行这些脚本。
 
 ---
 
@@ -36,14 +39,14 @@
 This sub-repository houses the specialized **High-Leverage (20X) Cryptocurrency Perpetual Futures Quantitative Research**, focusing on:
 本项目专门针对加密货币**高杠杆（20X）永续合约量化交易**开展深度数理与实证研究，涵盖以下核心突破：
 
-1. **The Mathematical Friction Boundary of 20X Leverage / 20X 杠杆费率摩擦死穴的严格证明**:
-   - At 20X leverage, round-trip fee friction (Maker 0.02% + Taker 0.05% + 1 bps slippage) equals **1.60% of margin**.
-   - Proved mathematically and empirically that **high-frequency 1m/15m directional trading with 20X leverage paying retail fees is mathematically unsustainable**, as 50+ trades per day drain 100% of margin within days.
+1. **Conditional Friction Arithmetic at 20X / 20X 杠杆条件成本算术**:
+   - Under the historical assumption of 20X notional exposure to margin, Maker 0.02% + Taker 0.05% + a total 1 bps slippage equals **1.60% of margin per round trip**, before funding and any additional execution costs.
+   - This illustrates a high turnover cost burden; it is not a proof that every 1m/15m strategy must lose or that margin is exhausted after a fixed number of trades. Profitability still requires causal fills, the full cost ledger and a strategy-specific validation.
 2. **Order Book Microstructure & Order Flow (LOB / OFI) / 市场微结构与订单流工程**:
    - Shifted from legacy lagging OHLCV price indicators to **Order Flow Imbalance (OFI)** and **Order Book Imbalance (OBI)**.
    - Built Numba-accelerated **Marcos López de Prado Dual Triple Barrier Method** (dynamic ATR upper/lower/vertical barriers) strictly calibrated with 20X liquidation buffers.
-   - Built a **Purged Walk-Forward LightGBM Engine** across 120,000 out-of-sample bars, achieving statistically validated OOS AUCs of **0.5106 (Long)** and **0.5110 (Short)** with zero future leakage.
-3. **The Two Viable High-Leverage Institutional Solutions / 两套真正跑出正期望的机构级落地架构**:
+   - The historical report labelled a **Purged Walk-Forward LightGBM Engine** and 120,000 bars as OOS, reporting AUCs **0.5106 (Long)** and **0.5110 (Short)**. The stronger claims of statistical validation and zero future leakage are unverified here; a near-0.51 AUC alone does not establish executable net profitability.
+3. **Two Historical High-Leverage Hypotheses / 两套尚未验证的历史高杠杆假说**:
    - **Architecture 1: Hybrid Core-Satellite (母子账户对冲与狙击架构)**:
      - 85% Core: Delta-Neutral Funding Rate Arbitrage (**CAGR 10.32%~22%, MaxDD 0.18%, Sharpe 10.65, Ulcer Index 0.03**).
      - 15% Satellite: 20X Macro Liquidation Sniper.
@@ -57,10 +60,12 @@ This sub-repository houses the specialized **High-Leverage (20X) Cryptocurrency 
 ## 2. Master Performance Benchmark (2020 - 2026)
 ## 全场景全周期综合业绩与学术风控指标对比总表
 
+> 下表为冻结的旧结果转录，保留数值不等于认可口径。“绝对安全”等原表注释已撤回；0 次仅表示原模型未记录强平，未证明真实条件下没有风险。成本、选择过程和市场身份须按最新证据重新审计后才能计算新的净结果。
+
 | Model / Portfolio Architecture | Initial ($) | Ending ($) | Total Return | CAGR (%) | Max Drawdown | Sharpe Ratio | Calmar Ratio | Ulcer Index | Liquidations |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Core Only (100% 资金费率无风险套利)** | $10,000.00 | **$19,234.84** | **+92.44%** | **10.32%** (2X杠杆达 18%~22%) | **0.18%** ★★★ | **10.65** ★★★ | **58.40** ★★★ | **0.03** ★★★ | **0 次 (绝对安全)** |
-| **Hybrid Core-Satellite (85/15 母子架构)** | $10,000.00 | **$14,366.14** | **+43.72%** | **5.59%** | **8.36%** ★★★ | **1.80** ★★★ | **0.67** | **1.92** ★★★ | **0 次 (绝对安全)** |
+| **Core Only（旧 carry 代理，未验证）** | $10,000.00 | **$19,234.84** | **+92.44%** | **10.32%**（原报告外推 2X 为 18%~22%，未验证） | **0.18%** ★★★ | **10.65** ★★★ | **58.40** ★★★ | **0.03** ★★★ | **0 次（旧模型记录，不代表安全）** |
+| **Hybrid Core-Satellite (85/15 母子架构)** | $10,000.00 | **$14,366.14** | **+43.72%** | **5.59%** | **8.36%** ★★★ | **1.80** ★★★ | **0.67** | **1.92** ★★★ | **0 次（旧模型记录，不代表安全）** |
 | **Path A (纯单边 20X 宏观极值狙击)** | $10,000.00 | $1,708.56 | -82.91% | -23.34% | 83.94% | -0.41 | -0.28 | 65.19 | **0 次 (严格止损存活)** |
 | **ETH 1X Buy & Hold (现货单边持有基准)** | $10,000.00 | $174,350.00 | +1,643.50% | 53.48% | 79.61% (暴涨暴跌) | 0.95 | 0.67 | 46.10 (深水折磨) | 0 次 |
 
@@ -68,7 +73,7 @@ This sub-repository houses the specialized **High-Leverage (20X) Cryptocurrency 
 
 ## 3. Scripts Inventory & Execution Guide / 量化脚本清单与运行指南
 
-All scripts are located in this directory (`C:\Users\liuqi\crypto\leverage_research\`):
+The script inventory below refers to this repository's `leverage_research/` directory. `SOURCE_ROOT` elsewhere is a redacted provenance placeholder, not a newly implemented runtime configuration.
 
 | Script / 脚本文件 | Core Function / 核心功能 | Execution Command / 运行命令 |
 | :--- | :--- | :--- |

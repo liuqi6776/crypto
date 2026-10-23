@@ -1,0 +1,96 @@
+{
+  "rounds": {
+    "1": {
+      "bh": {},
+      "bh_q": 0.1,
+      "block": "R1_2023",
+      "candidates": [],
+      "created_utc": "2026-10-18T23:34:17Z",
+      "n_coarse_pass": 0,
+      "n_hypotheses": 10,
+      "n_strict_run": 0,
+      "preregistration_sha256": {
+        "PROTOCOL_V1.md": "d24b2c3bdc6c260a8bd6e6f9050a498d42c4acf22af4448a1281bcf24ff52eb8",
+        "round1_hypotheses.json": "f028fbfb8bcb461f959bd0a0ecaed6215783ac4bb4b3ab4aa7f354d2d154bc13"
+      },
+      "round": 1,
+      "verdicts": {
+        "R1-H01": "COARSE_FAIL",
+        "R1-H02": "COARSE_FAIL",
+        "R1-H03": "COARSE_FAIL",
+        "R1-H04": "COARSE_FAIL",
+        "R1-H05": "COARSE_FAIL",
+        "R1-H06": "COARSE_FAIL",
+        "R1-H07": "COARSE_FAIL",
+        "R1-H08": "COARSE_FAIL",
+        "R1-H09": "COARSE_FAIL",
+        "R1-H10": "COARSE_FAIL"
+      }
+    },
+    "2": {
+      "bh": {},
+      "bh_q": 0.1,
+      "block": "R2_2024",
+      "candidates": [],
+      "created_utc": "2026-10-18T23:42:35Z",
+      "n_coarse_pass": 0,
+      "n_hypotheses": 10,
+      "n_strict_run": 0,
+      "preregistration_sha256": {
+        "PROTOCOL_V1.md": "d24b2c3bdc6c260a8bd6e6f9050a498d42c4acf22af4448a1281bcf24ff52eb8",
+        "round1_hypotheses.json": "f028fbfb8bcb461f959bd0a0ecaed6215783ac4bb4b3ab4aa7f354d2d154bc13",
+        "round2_hypotheses.json": "3587d92c993cb88c1800e2f87593385e07211d708ba9dc4fa438815a94808bf6"
+      },
+      "round": 2,
+      "verdicts": {
+        "R2-H01": "COARSE_FAIL",
+        "R2-H02": "COARSE_FAIL",
+        "R2-H03": "COARSE_FAIL",
+        "R2-H04": "COARSE_FAIL",
+        "R2-H05": "COARSE_FAIL",
+        "R2-H06": "COARSE_FAIL",
+        "R2-H07": "COARSE_FAIL",
+        "R2-H08": "COARSE_FAIL",
+        "R2-H09": "COARSE_FAIL",
+        "R2-H10": "COARSE_FAIL"
+      }
+    },
+    "3": {
+      "bh": {
+        "R3-H01": {
+          "p": 0.9494101179764047,
+          "rank": 1,
+          "significant": false,
+          "threshold": 0.1
+        }
+      },
+      "bh_q": 0.1,
+      "block": "R2_2024",
+      "candidates": [],
+      "created_utc": "2026-10-18T23:50:24Z",
+      "n_coarse_pass": 1,
+      "n_hypotheses": 10,
+      "n_strict_run": 1,
+      "preregistration_sha256": {
+        "PROTOCOL_AMENDMENT_V1_1.md": "0eaf297aac3e9d7d0b156117d604ac2b945f4bc50fca449226b73786cfeb4ac5",
+        "PROTOCOL_V1.md": "d24b2c3bdc6c260a8bd6e6f9050a498d42c4acf22af4448a1281bcf24ff52eb8",
+        "round1_hypotheses.json": "f028fbfb8bcb461f959bd0a0ecaed6215783ac4bb4b3ab4aa7f354d2d154bc13",
+        "round2_hypotheses.json": "3587d92c993cb88c1800e2f87593385e07211d708ba9dc4fa438815a94808bf6",
+        "round3_hypotheses.json": "646c1b290a3f4264271ad5e149bf6b296c98c827e0e25700f7fe8cd90c42c7b2"
+      },
+      "round": 3,
+      "verdicts": {
+        "R3-H01": "STRICT_FAIL",
+        "R3-H02": "COARSE_FAIL",
+        "R3-H03": "COARSE_FAIL",
+        "R3-H04": "COARSE_FAIL",
+        "R3-H05": "COARSE_FAIL",
+        "R3-H06": "COARSE_FAIL",
+        "R3-H07": "COARSE_FAIL",
+        "R3-H08": "COARSE_FAIL",
+        "R3-H09": "COARSE_FAIL",
+        "R3-H10": "COARSE_FAIL"
+      }
+    }
+  }
+}

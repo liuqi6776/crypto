@@ -1,0 +1,916 @@
+{
+  "schema": "research_hub_minimal_admission_v1r2",
+  "status": "ADMITTED_FOR_BOUNDED_RESEARCH_INPUTS",
+  "generated_utc": "2026-10-11T01:32:22.402938+00:00",
+  "source_registry": "archive/catalog/dataset_registry.json",
+  "source_manifest": "source_data/MANIFEST.json",
+  "scope": {
+    "batch": "core4_p0_20260925",
+    "symbols": [
+      "BTCUSDT",
+      "ETHUSDT",
+      "SOLUSDT"
+    ],
+    "windows": {
+      "2020_warmup": {
+        "start_inclusive": "2020-10-01T00:00:00Z",
+        "end_exclusive": "2021-01-01T00:00:00Z"
+      },
+      "2021": {
+        "start_inclusive": "2021-01-01T00:00:00Z",
+        "end_exclusive": "2022-01-01T00:00:00Z"
+      },
+      "2024_warmup": {
+        "start_inclusive": "2024-10-01T00:00:00Z",
+        "end_exclusive": "2025-01-01T00:00:00Z"
+      },
+      "2025": {
+        "start_inclusive": "2025-01-01T00:00:00Z",
+        "end_exclusive": "2026-01-01T00:00:00Z"
+      }
+    }
+  },
+  "availability_semantics": {
+    "ohlcv": "open_time_utc identifies bar start; available_time is modeled as close_time_utc + 1 ms; actual publication delay is unknown",
+    "funding": "calc_time_utc is retained as the observed event timestamp; event series is never joined to a candle grid or filled",
+    "full_execution_timing_gate": "BLOCKED: actual publication latency and fill-time evidence are not established by this admission check"
+  },
+  "inputs": [
+    {
+      "dataset_id": "binance_futures_1h_staged_official__btcusdt",
+      "dataset_kind": "trade",
+      "symbol": "BTCUSDT",
+      "market_type": "futures_usds_m_perpetual",
+      "timeframe": "1h",
+      "verification_status": "VERIFIED_PERPETUAL_LABEL",
+      "label_evidence": "Batch core4_p0_20260925 (external staging root <REDACTED_PRIVATE_PATH> dataset 'klines' for BTCUSDT. 7 normalized yearly partition(s), each re-hashed and decoded on disk. Market/contract label evidence: Binance USDⓈ-M perpetual archive paths (raw/binance/um/klines/BTCUSDT/) plus the official .CHECKSUM of every raw ZIP and the REST receipts in the batch files.jsonl.",
+      "source_path": "<REDACTED_PRIVATE_PATH>",
+      "local_path": "source_data/staging/core4_p0_20260925/klines/BTCUSDT_1h.parquet",
+      "original_path_in_copy_manifest": "<REDACTED_PRIVATE_PATH>",
+      "source_manifest_sha256": "3cde3d6c15ccce501c95c22abf1304181497e67b1eafaed4d8f626503022771e",
+      "source_partition_sha256": [
+        "45449d9d212d1866303e85e2788039bfddb0fcc1a5720915e612c9077d0b8bbd",
+        "5f4c1ddfd51056278225e499ac5cc4700879af4af14290ce0399fa7cae44d737",
+        "ee4784b77c3bf24ddb655f3fef83756ae07c938c33eeee791d21952725305fae",
+        "0c6700b87e7c8c1597fe87206be86792e86dd08ddc0496d88be737c3abbf54e7",
+        "3accc6b8b6481d1a946f0165ea37d8ffd834a62a1f8aef9b81f560630e709c45",
+        "22e854471fcb5649f056d91825ef0fbd6abc7560ff7cb22c90860590c49d0e93",
+        "8d9155ba7b1ba501ab421a0ef8a82decc175602885edbc269c4ae60c5f59012e"
+      ],
+      "local_sha256": "0375b352ce6bd95dab4a01b40555f90426fa1fdb9912abd80892a8a83988eead",
+      "frozen_local_sha256": "0375b352ce6bd95dab4a01b40555f90426fa1fdb9912abd80892a8a83988eead",
+      "hash_authority": "source_data/staging/core4_p0_20260925/partition_bindings_v1.json",
+      "hash_authority_version": "core4_partition_bindings_v1",
+      "hash_authority_sha256": "bc1590a7b967fecc4ae19897b0309be25f788a40891891e7ecb1d8aea939ae76",
+      "hash_basis": "independent_review",
+      "manifest_frozen_basis_note": "independent_review",
+      "copy_status": "PARTITION_SET_AND_AGGREGATE_VERIFIED",
+      "mark_registry_evidence": null
+    },
+    {
+      "dataset_id": "binance_mark_1h_staged_official__btcusdt",
+      "dataset_kind": "mark",
+      "symbol": "BTCUSDT",
+      "market_type": "futures_usds_m_perpetual",
+      "timeframe": "1h",
+      "verification_status": "VERIFIED_PERPETUAL_LABEL",
+      "label_evidence": "Batch core4_p0_20260925 (external staging root <REDACTED_PRIVATE_PATH> dataset 'markPriceKlines' for BTCUSDT. 7 normalized yearly partition(s), each re-hashed and decoded on disk. Market/contract label evidence: Binance USDⓈ-M perpetual archive paths (raw/binance/um/markPriceKlines/BTCUSDT/) plus the official .CHECKSUM of every raw ZIP and the REST receipts in the batch files.jsonl.",
+      "source_path": "<REDACTED_PRIVATE_PATH>",
+      "local_path": "source_data/staging/core4_p0_20260925/mark/BTCUSDT_1h_mark.parquet",
+      "original_path_in_copy_manifest": "<REDACTED_PRIVATE_PATH>",
+      "source_manifest_sha256": "3cde3d6c15ccce501c95c22abf1304181497e67b1eafaed4d8f626503022771e",
+      "source_partition_sha256": [
+        "379e6e7c3481191ffed23713d87d34c7e76a1ccdba84e69bae9c6c58bec41a11",
+        "dcdfa3967d142b8ea9621c702f51537de539cbe29fa450941f751dedfe971911",
+        "25f071c2fe0379282e64b369202549969a52c8d8a7bde1091220831849e7c4a0",
+        "310ff13c4fc03e0305ad7940a11be729d98331e9cf8944707711503ca9f3d8bc",
+        "02963c2018f986ada5699ea7b2e5e4893c3a1d28932cba72040e914b74cf0074",
+        "2f5ee3a09e8abae47fcbce8eca657554cf5b08c2454faa528c2f796db32ebd4d",
+        "f359203fcd07d058b4a243d1401f784581eb5a46d77d808674d3b92f0ba84868"
+      ],
+      "local_sha256": "b03c57db7188d3799dc5fbb1350c30e32ff84373a0756f95d46b9a15670cf657",
+      "frozen_local_sha256": "b03c57db7188d3799dc5fbb1350c30e32ff84373a0756f95d46b9a15670cf657",
+      "hash_authority": "source_data/staging/core4_p0_20260925/partition_bindings_v1.json",
+      "hash_authority_version": "core4_partition_bindings_v1",
+      "hash_authority_sha256": "bc1590a7b967fecc4ae19897b0309be25f788a40891891e7ecb1d8aea939ae76",
+      "hash_basis": "independent_review",
+      "manifest_frozen_basis_note": "independent_review",
+      "copy_status": "PARTITION_SET_AND_AGGREGATE_VERIFIED",
+      "mark_registry_evidence": {
+        "registry": "archive/catalog/mark_candle_registry.json",
+        "registry_dataset_id": "binance_mark_1h_btcusdt",
+        "registry_sha256": "ee6e0c0a0f8caa7889d3639cde5475e11d1fbc2ba384409b888dc2142f0b9512",
+        "registered_local_source": "source_data/staging/core4_p0_20260925/mark/BTCUSDT_1h_mark.parquet"
+      }
+    },
+    {
+      "dataset_id": "binance_funding_events_staged_official__btcusdt",
+      "dataset_kind": "funding",
+      "symbol": "BTCUSDT",
+      "market_type": "funding_rate",
+      "timeframe": "8h",
+      "verification_status": "VERIFIED_PERPETUAL_LABEL",
+      "label_evidence": "Batch core4_p0_20260925 (external staging root <REDACTED_PRIVATE_PATH> dataset 'fundingRate' for BTCUSDT. 7 normalized yearly partition(s), each re-hashed and decoded on disk. Market/contract label evidence: Binance USDⓈ-M perpetual archive paths (raw/binance/um/fundingRate/BTCUSDT/) plus the official .CHECKSUM of every raw ZIP and the REST receipts in the batch files.jsonl.",
+      "source_path": "<REDACTED_PRIVATE_PATH>",
+      "local_path": "source_data/staging/core4_p0_20260925/funding/BTCUSDT_funding_events.parquet",
+      "original_path_in_copy_manifest": "<REDACTED_PRIVATE_PATH>",
+      "source_manifest_sha256": "3cde3d6c15ccce501c95c22abf1304181497e67b1eafaed4d8f626503022771e",
+      "source_partition_sha256": [
+        "f84880e9ae1b8694349e5f50acbad6a2072822ef0844c2162a0e4fed31255ab6",
+        "d35965c6c4726934cb16a29eedbf1e6fa18fa65e4cb5cf41dbcd4cd6b81e8b73",
+        "9c052333dc8a4d41f95ab797a16db17e24885a8bed335df11ac8407890b9f683",
+        "10865ad453fd6eec71920b2bace70b67c27dc2ddd93bb64f7cdda000820cb87e",
+        "87bccfcf62ba34c64d5bf9b303407f71a125c3c1c3539bd061adfef5d091c536",
+        "a6c6f832c36891c491faa2df919ed9c37c5394c41439d4d626e3a70b24532216",
+        "c89971ee3bf69b33fea2d50d29af5812e206cdcf3075bfe59801ca33d0cb7f1a"
+      ],
+      "local_sha256": "aa19d4b812a386d881f5e368ed44afe4805b3f8128079acad81d52493008b41b",
+      "frozen_local_sha256": "aa19d4b812a386d881f5e368ed44afe4805b3f8128079acad81d52493008b41b",
+      "hash_authority": "source_data/staging/core4_p0_20260925/partition_bindings_v1.json",
+      "hash_authority_version": "core4_partition_bindings_v1",
+      "hash_authority_sha256": "bc1590a7b967fecc4ae19897b0309be25f788a40891891e7ecb1d8aea939ae76",
+      "hash_basis": "independent_review",
+      "manifest_frozen_basis_note": "independent_review",
+      "copy_status": "PARTITION_SET_AND_AGGREGATE_VERIFIED",
+      "mark_registry_evidence": null
+    },
+    {
+      "dataset_id": "binance_futures_4h_derived_official_1h__btcusdt",
+      "dataset_kind": "derived4h",
+      "symbol": "BTCUSDT",
+      "market_type": "futures_usds_m_perpetual",
+      "timeframe": "4h",
+      "verification_status": "VERIFIED_PERPETUAL_LABEL",
+      "label_evidence": "DERIVED (not independently observed): 4h bars aggregated inside this workspace from the verified official 1h trade klines of batch core4_p0_20260925. Inputs and per-partition SHA256 are recorded in source_data/staging/core4_p0_20260925/DERIVATION.json.",
+      "source_path": "source_data/staging/core4_p0_20260925/derived/BTCUSDT_4h_from_official_1h.parquet",
+      "local_path": "source_data/staging/core4_p0_20260925/derived/BTCUSDT_4h_from_official_1h.parquet",
+      "original_path_in_copy_manifest": "<REDACTED_PRIVATE_PATH>",
+      "source_manifest_sha256": null,
+      "source_partition_sha256": [],
+      "local_sha256": "6b1454edbaddb6a64099f2c692879de15639e4cfe0d4b238670ca49bb265569e",
+      "frozen_local_sha256": "6b1454edbaddb6a64099f2c692879de15639e4cfe0d4b238670ca49bb265569e",
+      "hash_authority": "source_data/staging/core4_p0_20260925/partition_bindings_v1.json",
+      "hash_authority_version": "core4_partition_bindings_v1",
+      "hash_authority_sha256": "bc1590a7b967fecc4ae19897b0309be25f788a40891891e7ecb1d8aea939ae76",
+      "hash_basis": "independent_review",
+      "manifest_frozen_basis_note": "independent_review",
+      "copy_status": "DERIVED_AND_VERIFIED",
+      "mark_registry_evidence": null
+    },
+    {
+      "dataset_id": "binance_futures_1h_staged_official__ethusdt",
+      "dataset_kind": "trade",
+      "symbol": "ETHUSDT",
+      "market_type": "futures_usds_m_perpetual",
+      "timeframe": "1h",
+      "verification_status": "VERIFIED_PERPETUAL_LABEL",
+      "label_evidence": "Batch core4_p0_20260925 (external staging root <REDACTED_PRIVATE_PATH> dataset 'klines' for ETHUSDT. 7 normalized yearly partition(s), each re-hashed and decoded on disk. Market/contract label evidence: Binance USDⓈ-M perpetual archive paths (raw/binance/um/klines/ETHUSDT/) plus the official .CHECKSUM of every raw ZIP and the REST receipts in the batch files.jsonl.",
+      "source_path": "<REDACTED_PRIVATE_PATH>",
+      "local_path": "source_data/staging/core4_p0_20260925/klines/ETHUSDT_1h.parquet",
+      "original_path_in_copy_manifest": "<REDACTED_PRIVATE_PATH>",
+      "source_manifest_sha256": "3cde3d6c15ccce501c95c22abf1304181497e67b1eafaed4d8f626503022771e",
+      "source_partition_sha256": [
+        "4c8745ee200ff2ee2c7b066f1eb7d2c2dd75660ccc79abbd20fff8982a98cabc",
+        "3c807ef823dc9c89cda4b1ee34bf2e2b684aab1579288c195ec0bb63ca3fe080",
+        "3ee4ce0cb90520c69fba92f063e783f250b2b21b08e5e11377cf85d07f5be7c7",
+        "234f70a63ff51c7c1bae538ca311414284db180e33c0a13cc100c48762fc26b1",
+        "a867536562c69c57e4c2d13d97dc40c1f7be17b2232ee7667ad0311dd0cc2174",
+        "1e0e9b34d372a07dc7d16c1512860546a9c8bcf19378033308c4fe5c13bce107",
+        "c50324778c7fd524b8a709a6829f60b84e894495dff98b060fa0264bec622cd6"
+      ],
+      "local_sha256": "8c5f18ff6a0e380bf757819ad0c3502a4516e93fb340a0331c47078e0deaf486",
+      "frozen_local_sha256": "8c5f18ff6a0e380bf757819ad0c3502a4516e93fb340a0331c47078e0deaf486",
+      "hash_authority": "source_data/staging/core4_p0_20260925/partition_bindings_v1.json",
+      "hash_authority_version": "core4_partition_bindings_v1",
+      "hash_authority_sha256": "bc1590a7b967fecc4ae19897b0309be25f788a40891891e7ecb1d8aea939ae76",
+      "hash_basis": "independent_review",
+      "manifest_frozen_basis_note": "independent_review",
+      "copy_status": "PARTITION_SET_AND_AGGREGATE_VERIFIED",
+      "mark_registry_evidence": null
+    },
+    {
+      "dataset_id": "binance_mark_1h_staged_official__ethusdt",
+      "dataset_kind": "mark",
+      "symbol": "ETHUSDT",
+      "market_type": "futures_usds_m_perpetual",
+      "timeframe": "1h",
+      "verification_status": "VERIFIED_PERPETUAL_LABEL",
+      "label_evidence": "Batch core4_p0_20260925 (external staging root <REDACTED_PRIVATE_PATH> dataset 'markPriceKlines' for ETHUSDT. 7 normalized yearly partition(s), each re-hashed and decoded on disk. Market/contract label evidence: Binance USDⓈ-M perpetual archive paths (raw/binance/um/markPriceKlines/ETHUSDT/) plus the official .CHECKSUM of every raw ZIP and the REST receipts in the batch files.jsonl.",
+      "source_path": "<REDACTED_PRIVATE_PATH>",
+      "local_path": "source_data/staging/core4_p0_20260925/mark/ETHUSDT_1h_mark.parquet",
+      "original_path_in_copy_manifest": "<REDACTED_PRIVATE_PATH>",
+      "source_manifest_sha256": "3cde3d6c15ccce501c95c22abf1304181497e67b1eafaed4d8f626503022771e",
+      "source_partition_sha256": [
+        "08d98512429e72689af53b4e8a94318072c8eae237874436fd64b2e447604fea",
+        "93bf4a295932f62f9cba0857c9290972cc6c4aa87f8f4c3f87a790013b35d746",
+        "26ebfc1afbb91423c8b4129c63bc156771499d1f7bb0672e91ba8a045d2dc552",
+        "cdd8bd46a0336847c7bead3a0a3ca7ede074744b44b0bf250814c690545f5fb8",
+        "33096604c043f18d7b2a0b4804b774032846ec4037482ec59ef1e89195ac9107",
+        "4c63aad5fe737a697a12d0dff179d915f715bf9646c553403cfceef3aee3fee7",
+        "8979df0a4a6e4e21f88c004c275353e7d6e06cc0b9839d8d294478f27a504123"
+      ],
+      "local_sha256": "4c4553b54144706ce17e24ee1e4fd707c785510f2e22768ceecb18ef42a8bd11",
+      "frozen_local_sha256": "4c4553b54144706ce17e24ee1e4fd707c785510f2e22768ceecb18ef42a8bd11",
+      "hash_authority": "source_data/staging/core4_p0_20260925/partition_bindings_v1.json",
+      "hash_authority_version": "core4_partition_bindings_v1",
+      "hash_authority_sha256": "bc1590a7b967fecc4ae19897b0309be25f788a40891891e7ecb1d8aea939ae76",
+      "hash_basis": "independent_review",
+      "manifest_frozen_basis_note": "independent_review",
+      "copy_status": "PARTITION_SET_AND_AGGREGATE_VERIFIED",
+      "mark_registry_evidence": {
+        "registry": "archive/catalog/mark_candle_registry.json",
+        "registry_dataset_id": "binance_mark_1h_ethusdt",
+        "registry_sha256": "995b3e309fe7060526d0411ca681e55ec4231f8e2d204fa6823ae6b9adc656a1",
+        "registered_local_source": "source_data/staging/core4_p0_20260925/mark/ETHUSDT_1h_mark.parquet"
+      }
+    },
+    {
+      "dataset_id": "binance_funding_events_staged_official__ethusdt",
+      "dataset_kind": "funding",
+      "symbol": "ETHUSDT",
+      "market_type": "funding_rate",
+      "timeframe": "8h",
+      "verification_status": "VERIFIED_PERPETUAL_LABEL",
+      "label_evidence": "Batch core4_p0_20260925 (external staging root <REDACTED_PRIVATE_PATH> dataset 'fundingRate' for ETHUSDT. 7 normalized yearly partition(s), each re-hashed and decoded on disk. Market/contract label evidence: Binance USDⓈ-M perpetual archive paths (raw/binance/um/fundingRate/ETHUSDT/) plus the official .CHECKSUM of every raw ZIP and the REST receipts in the batch files.jsonl.",
+      "source_path": "<REDACTED_PRIVATE_PATH>",
+      "local_path": "source_data/staging/core4_p0_20260925/funding/ETHUSDT_funding_events.parquet",
+      "original_path_in_copy_manifest": "<REDACTED_PRIVATE_PATH>",
+      "source_manifest_sha256": "3cde3d6c15ccce501c95c22abf1304181497e67b1eafaed4d8f626503022771e",
+      "source_partition_sha256": [
+        "fa58c784ff9362fabad7c0cec7568a085144d3f313c27dc7db8c3796c54bbb33",
+        "10ee51c6ab8af1cfd8ca0f59d1c38c3c066d7afacbe234eaf07b13b985a560c1",
+        "761dcc5e69927eee7399f92bd9314c7adc85eb37b09214116ebfeabbcc4dbab6",
+        "39e67e0c87667d67cbf01daf9d560ce469b577bc85aa4da26497d02255a0bf22",
+        "d649d20f67308df6087c7d4ef02d12be458a3cbcb6c90a77b2b0bb66a98809c1",
+        "ce6131f13b7957286dffa34c37882fadac2b823cffa9773037547aab561762c2",
+        "408fe9376d414004e1573e4cad9ea5e60fe43328c54d06f784eefad3f7f7e100"
+      ],
+      "local_sha256": "cb964c467352c1444ce200aee3fbb749b80a03a3d36624bfb7602b592435b324",
+      "frozen_local_sha256": "cb964c467352c1444ce200aee3fbb749b80a03a3d36624bfb7602b592435b324",
+      "hash_authority": "source_data/staging/core4_p0_20260925/partition_bindings_v1.json",
+      "hash_authority_version": "core4_partition_bindings_v1",
+      "hash_authority_sha256": "bc1590a7b967fecc4ae19897b0309be25f788a40891891e7ecb1d8aea939ae76",
+      "hash_basis": "independent_review",
+      "manifest_frozen_basis_note": "independent_review",
+      "copy_status": "PARTITION_SET_AND_AGGREGATE_VERIFIED",
+      "mark_registry_evidence": null
+    },
+    {
+      "dataset_id": "binance_futures_4h_derived_official_1h__ethusdt",
+      "dataset_kind": "derived4h",
+      "symbol": "ETHUSDT",
+      "market_type": "futures_usds_m_perpetual",
+      "timeframe": "4h",
+      "verification_status": "VERIFIED_PERPETUAL_LABEL",
+      "label_evidence": "DERIVED (not independently observed): 4h bars aggregated inside this workspace from the verified official 1h trade klines of batch core4_p0_20260925. Inputs and per-partition SHA256 are recorded in source_data/staging/core4_p0_20260925/DERIVATION.json.",
+      "source_path": "source_data/staging/core4_p0_20260925/derived/ETHUSDT_4h_from_official_1h.parquet",
+      "local_path": "source_data/staging/core4_p0_20260925/derived/ETHUSDT_4h_from_official_1h.parquet",
+      "original_path_in_copy_manifest": "<REDACTED_PRIVATE_PATH>",
+      "source_manifest_sha256": null,
+      "source_partition_sha256": [],
+      "local_sha256": "fbd594a29b7d39fd9cb4066bd792de9dde03eb435f66228b75f5edb4d55fd5bd",
+      "frozen_local_sha256": "fbd594a29b7d39fd9cb4066bd792de9dde03eb435f66228b75f5edb4d55fd5bd",
+      "hash_authority": "source_data/staging/core4_p0_20260925/partition_bindings_v1.json",
+      "hash_authority_version": "core4_partition_bindings_v1",
+      "hash_authority_sha256": "bc1590a7b967fecc4ae19897b0309be25f788a40891891e7ecb1d8aea939ae76",
+      "hash_basis": "independent_review",
+      "manifest_frozen_basis_note": "independent_review",
+      "copy_status": "DERIVED_AND_VERIFIED",
+      "mark_registry_evidence": null
+    },
+    {
+      "dataset_id": "binance_futures_1h_staged_official__solusdt",
+      "dataset_kind": "trade",
+      "symbol": "SOLUSDT",
+      "market_type": "futures_usds_m_perpetual",
+      "timeframe": "1h",
+      "verification_status": "VERIFIED_PERPETUAL_LABEL",
+      "label_evidence": "Batch core4_p0_20260925 (external staging root <REDACTED_PRIVATE_PATH> dataset 'klines' for SOLUSDT. 7 normalized yearly partition(s), each re-hashed and decoded on disk. Market/contract label evidence: Binance USDⓈ-M perpetual archive paths (raw/binance/um/klines/SOLUSDT/) plus the official .CHECKSUM of every raw ZIP and the REST receipts in the batch files.jsonl.",
+      "source_path": "<REDACTED_PRIVATE_PATH>",
+      "local_path": "source_data/staging/core4_p0_20260925/klines/SOLUSDT_1h.parquet",
+      "original_path_in_copy_manifest": "<REDACTED_PRIVATE_PATH>",
+      "source_manifest_sha256": "3cde3d6c15ccce501c95c22abf1304181497e67b1eafaed4d8f626503022771e",
+      "source_partition_sha256": [
+        "4fb020f7d11a7b6c5d6ad45c87673a43ab97358057fc1bae2841c5fdf2e3ff2c",
+        "2d6272bcc932124aaa0f73a3fa8f8ee041938cf84d604c2072cf7f5bf59dc28d",
+        "24379db9d0e25cad36dbe0c288857d5a1f13160a64c4a89b45d70627a9d3a582",
+        "ceb8c7727988d528062a875136dc6c29ad2bb71f04fad21c394b587ff59a3ef0",
+        "c011a4977a4de3807e657623bea6499771f7ec83abca96083210bed03c3ad2d4",
+        "9ed331714aadd9739edd59a96e0ba7210f3693b21265319056af232508e3c2b8",
+        "24c6346c85ff983a4c43d33e213c26d60b40223565f35bbdc826cbea5bfc51ea"
+      ],
+      "local_sha256": "788e1b968cb0cce615ab86bd136cbed0afc3927ea69a9bf88bda3805ec0ddd26",
+      "frozen_local_sha256": "788e1b968cb0cce615ab86bd136cbed0afc3927ea69a9bf88bda3805ec0ddd26",
+      "hash_authority": "source_data/staging/core4_p0_20260925/partition_bindings_v1.json",
+      "hash_authority_version": "core4_partition_bindings_v1",
+      "hash_authority_sha256": "bc1590a7b967fecc4ae19897b0309be25f788a40891891e7ecb1d8aea939ae76",
+      "hash_basis": "independent_review",
+      "manifest_frozen_basis_note": "independent_review",
+      "copy_status": "PARTITION_SET_AND_AGGREGATE_VERIFIED",
+      "mark_registry_evidence": null
+    },
+    {
+      "dataset_id": "binance_mark_1h_staged_official__solusdt",
+      "dataset_kind": "mark",
+      "symbol": "SOLUSDT",
+      "market_type": "futures_usds_m_perpetual",
+      "timeframe": "1h",
+      "verification_status": "VERIFIED_PERPETUAL_LABEL",
+      "label_evidence": "Batch core4_p0_20260925 (external staging root <REDACTED_PRIVATE_PATH> dataset 'markPriceKlines' for SOLUSDT. 7 normalized yearly partition(s), each re-hashed and decoded on disk. Market/contract label evidence: Binance USDⓈ-M perpetual archive paths (raw/binance/um/markPriceKlines/SOLUSDT/) plus the official .CHECKSUM of every raw ZIP and the REST receipts in the batch files.jsonl.",
+      "source_path": "<REDACTED_PRIVATE_PATH>",
+      "local_path": "source_data/staging/core4_p0_20260925/mark/SOLUSDT_1h_mark.parquet",
+      "original_path_in_copy_manifest": "<REDACTED_PRIVATE_PATH>",
+      "source_manifest_sha256": "3cde3d6c15ccce501c95c22abf1304181497e67b1eafaed4d8f626503022771e",
+      "source_partition_sha256": [
+        "b26ca400f0edb7afab3acf2ae804fad8e2b50f06278e5ca6c78add947c8d33c1",
+        "4f544998174186efefaaba06b97a4ac9abe22c84b4376228d79740be7fb0ae62",
+        "44db59a8b909c30294dcb299e670c14b2e90541f74e209b3a06d554ffcdb489e",
+        "65c075224f5c4b71fc7ee5a8ffe0f86bd52d2bd6caf06072e6315592ebcdfc12",
+        "620131f39f8a5ef11d3e61a24541ff54f68518bf9e6e94791c474327e6815d79",
+        "f5246b39da72f3e029440057d99afd16b4a95039621e2faaf739cf40047f84e0",
+        "ae82bcd9a9172011c8a3dbf47eb04abeaa0a7705ae88e8da2608f8105a9fe6e5"
+      ],
+      "local_sha256": "a3687d9da515be2069ad43156e2138bae9f1d7a4674491f6bcf3e5f85b94869e",
+      "frozen_local_sha256": "a3687d9da515be2069ad43156e2138bae9f1d7a4674491f6bcf3e5f85b94869e",
+      "hash_authority": "source_data/staging/core4_p0_20260925/partition_bindings_v1.json",
+      "hash_authority_version": "core4_partition_bindings_v1",
+      "hash_authority_sha256": "bc1590a7b967fecc4ae19897b0309be25f788a40891891e7ecb1d8aea939ae76",
+      "hash_basis": "independent_review",
+      "manifest_frozen_basis_note": "independent_review",
+      "copy_status": "PARTITION_SET_AND_AGGREGATE_VERIFIED",
+      "mark_registry_evidence": {
+        "registry": "archive/catalog/mark_candle_registry.json",
+        "registry_dataset_id": "binance_mark_1h_solusdt",
+        "registry_sha256": "ebd948812cc11436b543d0c7d5b889550b913b18d17c2968fe18d60c5f9f1b38",
+        "registered_local_source": "source_data/staging/core4_p0_20260925/mark/SOLUSDT_1h_mark.parquet"
+      }
+    },
+    {
+      "dataset_id": "binance_funding_events_staged_official__solusdt",
+      "dataset_kind": "funding",
+      "symbol": "SOLUSDT",
+      "market_type": "funding_rate",
+      "timeframe": "8h",
+      "verification_status": "VERIFIED_PERPETUAL_LABEL",
+      "label_evidence": "Batch core4_p0_20260925 (external staging root <REDACTED_PRIVATE_PATH> dataset 'fundingRate' for SOLUSDT. 7 normalized yearly partition(s), each re-hashed and decoded on disk. Market/contract label evidence: Binance USDⓈ-M perpetual archive paths (raw/binance/um/fundingRate/SOLUSDT/) plus the official .CHECKSUM of every raw ZIP and the REST receipts in the batch files.jsonl.",
+      "source_path": "<REDACTED_PRIVATE_PATH>",
+      "local_path": "source_data/staging/core4_p0_20260925/funding/SOLUSDT_funding_events.parquet",
+      "original_path_in_copy_manifest": "<REDACTED_PRIVATE_PATH>",
+      "source_manifest_sha256": "3cde3d6c15ccce501c95c22abf1304181497e67b1eafaed4d8f626503022771e",
+      "source_partition_sha256": [
+        "1f8c5017af413c91c3e0e16c8fe3f115931162f50a7ba91256547a9944358834",
+        "c64f1e2d7f44437bc5b73e9eda4306783043439d1f255f5c839def12d9617471",
+        "cad2d677c2b2a0218bbcc0a129eaa66353b736f2b0be76b2ee5a4d80c8296bb1",
+        "278c52c43ea0a4025fb332a14fda9381860ef61b3ece381effdc4c02db0020ee",
+        "4c3049252c7d96e359fcd8a492f69ec982e3518ee9972b6e969266c780f0fa61",
+        "b97677aa93b01c4ef0ad60d72917dc053c7ae4310f69103c1bb949c7af7aa6e8",
+        "6509fabeff99999c7905f85b785a1cb5032d0977c62daf8766f315e8a5520eaf"
+      ],
+      "local_sha256": "1617643f5fc6013edfe088b15dd4e45c8f3515868eb25ab3335664dbfd3abaf1",
+      "frozen_local_sha256": "1617643f5fc6013edfe088b15dd4e45c8f3515868eb25ab3335664dbfd3abaf1",
+      "hash_authority": "source_data/staging/core4_p0_20260925/partition_bindings_v1.json",
+      "hash_authority_version": "core4_partition_bindings_v1",
+      "hash_authority_sha256": "bc1590a7b967fecc4ae19897b0309be25f788a40891891e7ecb1d8aea939ae76",
+      "hash_basis": "independent_review",
+      "manifest_frozen_basis_note": "independent_review",
+      "copy_status": "PARTITION_SET_AND_AGGREGATE_VERIFIED",
+      "mark_registry_evidence": null
+    },
+    {
+      "dataset_id": "binance_futures_4h_derived_official_1h__solusdt",
+      "dataset_kind": "derived4h",
+      "symbol": "SOLUSDT",
+      "market_type": "futures_usds_m_perpetual",
+      "timeframe": "4h",
+      "verification_status": "VERIFIED_PERPETUAL_LABEL",
+      "label_evidence": "DERIVED (not independently observed): 4h bars aggregated inside this workspace from the verified official 1h trade klines of batch core4_p0_20260925. Inputs and per-partition SHA256 are recorded in source_data/staging/core4_p0_20260925/DERIVATION.json.",
+      "source_path": "source_data/staging/core4_p0_20260925/derived/SOLUSDT_4h_from_official_1h.parquet",
+      "local_path": "source_data/staging/core4_p0_20260925/derived/SOLUSDT_4h_from_official_1h.parquet",
+      "original_path_in_copy_manifest": "<REDACTED_PRIVATE_PATH>",
+      "source_manifest_sha256": null,
+      "source_partition_sha256": [],
+      "local_sha256": "b0c69313b7167dff8527184647c41f61db425506e82e160b9ca5cc465e500ccc",
+      "frozen_local_sha256": "b0c69313b7167dff8527184647c41f61db425506e82e160b9ca5cc465e500ccc",
+      "hash_authority": "source_data/staging/core4_p0_20260925/partition_bindings_v1.json",
+      "hash_authority_version": "core4_partition_bindings_v1",
+      "hash_authority_sha256": "bc1590a7b967fecc4ae19897b0309be25f788a40891891e7ecb1d8aea939ae76",
+      "hash_basis": "independent_review",
+      "manifest_frozen_basis_note": "independent_review",
+      "copy_status": "DERIVED_AND_VERIFIED",
+      "mark_registry_evidence": null
+    }
+  ],
+  "diagnostics": {
+    "BTCUSDT": {
+      "2020_warmup": {
+        "trade": {
+          "rows": 2208,
+          "first_utc": "2020-10-01T00:00:00+00:00",
+          "last_utc": "2020-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2020_warmup"
+        },
+        "mark": {
+          "rows": 2208,
+          "first_utc": "2020-10-01T00:00:00+00:00",
+          "last_utc": "2020-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2020_warmup"
+        },
+        "derived4h": {
+          "rows": 552,
+          "first_utc": "2020-10-01T00:00:00+00:00",
+          "last_utc": "2020-12-31T20:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "open_time + 0 days 04:00:00 (modeled complete-bucket assumption)",
+          "window": "2020_warmup",
+          "source_match": {
+            "matched_rows": 552,
+            "derivation": "UTC 4 consecutive complete 1h bars",
+            "maximum_abs_numeric_difference": 0.0,
+            "imputation_performed": false
+          }
+        }
+      },
+      "2021": {
+        "trade": {
+          "rows": 8760,
+          "first_utc": "2021-01-01T00:00:00+00:00",
+          "last_utc": "2021-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2021"
+        },
+        "mark": {
+          "rows": 8760,
+          "first_utc": "2021-01-01T00:00:00+00:00",
+          "last_utc": "2021-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2021"
+        },
+        "funding": {
+          "rows": 1095,
+          "first_event_utc": "2021-01-01T00:00:00.002000+00:00",
+          "last_event_utc": "2021-12-31T16:00:00+00:00",
+          "actual_offset_ms_min": 0.0,
+          "actual_offset_ms_max": 47.0,
+          "actual_offset_abs_ms_max": 47.0,
+          "intervals_not_8h_beyond_1s_tolerance": 0,
+          "gap_intervals_reported_beyond_1s_tolerance": 0,
+          "short_intervals_reported_beyond_1s_tolerance": 0,
+          "zero_rate_events_observed": 0,
+          "zero_fill_performed": false,
+          "window": "2021"
+        },
+        "derived4h": {
+          "rows": 2190,
+          "first_utc": "2021-01-01T00:00:00+00:00",
+          "last_utc": "2021-12-31T20:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "open_time + 0 days 04:00:00 (modeled complete-bucket assumption)",
+          "window": "2021",
+          "source_match": {
+            "matched_rows": 2190,
+            "derivation": "UTC 4 consecutive complete 1h bars",
+            "maximum_abs_numeric_difference": 0.0,
+            "imputation_performed": false
+          }
+        }
+      },
+      "2024_warmup": {
+        "trade": {
+          "rows": 2208,
+          "first_utc": "2024-10-01T00:00:00+00:00",
+          "last_utc": "2024-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2024_warmup"
+        },
+        "mark": {
+          "rows": 2208,
+          "first_utc": "2024-10-01T00:00:00+00:00",
+          "last_utc": "2024-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2024_warmup"
+        },
+        "derived4h": {
+          "rows": 552,
+          "first_utc": "2024-10-01T00:00:00+00:00",
+          "last_utc": "2024-12-31T20:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "open_time + 0 days 04:00:00 (modeled complete-bucket assumption)",
+          "window": "2024_warmup",
+          "source_match": {
+            "matched_rows": 552,
+            "derivation": "UTC 4 consecutive complete 1h bars",
+            "maximum_abs_numeric_difference": 0.0,
+            "imputation_performed": false
+          }
+        }
+      },
+      "2025": {
+        "trade": {
+          "rows": 8760,
+          "first_utc": "2025-01-01T00:00:00+00:00",
+          "last_utc": "2025-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2025"
+        },
+        "mark": {
+          "rows": 8760,
+          "first_utc": "2025-01-01T00:00:00+00:00",
+          "last_utc": "2025-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2025"
+        },
+        "funding": {
+          "rows": 1095,
+          "first_event_utc": "2025-01-01T00:00:00.015000+00:00",
+          "last_event_utc": "2025-12-31T16:00:00.001000+00:00",
+          "actual_offset_ms_min": 0.0,
+          "actual_offset_ms_max": 16.0,
+          "actual_offset_abs_ms_max": 16.0,
+          "intervals_not_8h_beyond_1s_tolerance": 0,
+          "gap_intervals_reported_beyond_1s_tolerance": 0,
+          "short_intervals_reported_beyond_1s_tolerance": 0,
+          "zero_rate_events_observed": 0,
+          "zero_fill_performed": false,
+          "window": "2025"
+        },
+        "derived4h": {
+          "rows": 2190,
+          "first_utc": "2025-01-01T00:00:00+00:00",
+          "last_utc": "2025-12-31T20:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "open_time + 0 days 04:00:00 (modeled complete-bucket assumption)",
+          "window": "2025",
+          "source_match": {
+            "matched_rows": 2190,
+            "derivation": "UTC 4 consecutive complete 1h bars",
+            "maximum_abs_numeric_difference": 0.0,
+            "imputation_performed": false
+          }
+        }
+      }
+    },
+    "ETHUSDT": {
+      "2020_warmup": {
+        "trade": {
+          "rows": 2208,
+          "first_utc": "2020-10-01T00:00:00+00:00",
+          "last_utc": "2020-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2020_warmup"
+        },
+        "mark": {
+          "rows": 2208,
+          "first_utc": "2020-10-01T00:00:00+00:00",
+          "last_utc": "2020-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2020_warmup"
+        },
+        "derived4h": {
+          "rows": 552,
+          "first_utc": "2020-10-01T00:00:00+00:00",
+          "last_utc": "2020-12-31T20:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "open_time + 0 days 04:00:00 (modeled complete-bucket assumption)",
+          "window": "2020_warmup",
+          "source_match": {
+            "matched_rows": 552,
+            "derivation": "UTC 4 consecutive complete 1h bars",
+            "maximum_abs_numeric_difference": 0.0,
+            "imputation_performed": false
+          }
+        }
+      },
+      "2021": {
+        "trade": {
+          "rows": 8760,
+          "first_utc": "2021-01-01T00:00:00+00:00",
+          "last_utc": "2021-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2021"
+        },
+        "mark": {
+          "rows": 8760,
+          "first_utc": "2021-01-01T00:00:00+00:00",
+          "last_utc": "2021-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2021"
+        },
+        "funding": {
+          "rows": 1095,
+          "first_event_utc": "2021-01-01T00:00:00.002000+00:00",
+          "last_event_utc": "2021-12-31T16:00:00+00:00",
+          "actual_offset_ms_min": 0.0,
+          "actual_offset_ms_max": 47.0,
+          "actual_offset_abs_ms_max": 47.0,
+          "intervals_not_8h_beyond_1s_tolerance": 0,
+          "gap_intervals_reported_beyond_1s_tolerance": 0,
+          "short_intervals_reported_beyond_1s_tolerance": 0,
+          "zero_rate_events_observed": 0,
+          "zero_fill_performed": false,
+          "window": "2021"
+        },
+        "derived4h": {
+          "rows": 2190,
+          "first_utc": "2021-01-01T00:00:00+00:00",
+          "last_utc": "2021-12-31T20:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "open_time + 0 days 04:00:00 (modeled complete-bucket assumption)",
+          "window": "2021",
+          "source_match": {
+            "matched_rows": 2190,
+            "derivation": "UTC 4 consecutive complete 1h bars",
+            "maximum_abs_numeric_difference": 0.0,
+            "imputation_performed": false
+          }
+        }
+      },
+      "2024_warmup": {
+        "trade": {
+          "rows": 2208,
+          "first_utc": "2024-10-01T00:00:00+00:00",
+          "last_utc": "2024-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2024_warmup"
+        },
+        "mark": {
+          "rows": 2208,
+          "first_utc": "2024-10-01T00:00:00+00:00",
+          "last_utc": "2024-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2024_warmup"
+        },
+        "derived4h": {
+          "rows": 552,
+          "first_utc": "2024-10-01T00:00:00+00:00",
+          "last_utc": "2024-12-31T20:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "open_time + 0 days 04:00:00 (modeled complete-bucket assumption)",
+          "window": "2024_warmup",
+          "source_match": {
+            "matched_rows": 552,
+            "derivation": "UTC 4 consecutive complete 1h bars",
+            "maximum_abs_numeric_difference": 0.0,
+            "imputation_performed": false
+          }
+        }
+      },
+      "2025": {
+        "trade": {
+          "rows": 8760,
+          "first_utc": "2025-01-01T00:00:00+00:00",
+          "last_utc": "2025-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2025"
+        },
+        "mark": {
+          "rows": 8760,
+          "first_utc": "2025-01-01T00:00:00+00:00",
+          "last_utc": "2025-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2025"
+        },
+        "funding": {
+          "rows": 1095,
+          "first_event_utc": "2025-01-01T00:00:00.015000+00:00",
+          "last_event_utc": "2025-12-31T16:00:00.001000+00:00",
+          "actual_offset_ms_min": 0.0,
+          "actual_offset_ms_max": 16.0,
+          "actual_offset_abs_ms_max": 16.0,
+          "intervals_not_8h_beyond_1s_tolerance": 0,
+          "gap_intervals_reported_beyond_1s_tolerance": 0,
+          "short_intervals_reported_beyond_1s_tolerance": 0,
+          "zero_rate_events_observed": 0,
+          "zero_fill_performed": false,
+          "window": "2025"
+        },
+        "derived4h": {
+          "rows": 2190,
+          "first_utc": "2025-01-01T00:00:00+00:00",
+          "last_utc": "2025-12-31T20:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "open_time + 0 days 04:00:00 (modeled complete-bucket assumption)",
+          "window": "2025",
+          "source_match": {
+            "matched_rows": 2190,
+            "derivation": "UTC 4 consecutive complete 1h bars",
+            "maximum_abs_numeric_difference": 0.0,
+            "imputation_performed": false
+          }
+        }
+      }
+    },
+    "SOLUSDT": {
+      "2020_warmup": {
+        "trade": {
+          "rows": 2208,
+          "first_utc": "2020-10-01T00:00:00+00:00",
+          "last_utc": "2020-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2020_warmup"
+        },
+        "mark": {
+          "rows": 2208,
+          "first_utc": "2020-10-01T00:00:00+00:00",
+          "last_utc": "2020-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2020_warmup"
+        },
+        "derived4h": {
+          "rows": 552,
+          "first_utc": "2020-10-01T00:00:00+00:00",
+          "last_utc": "2020-12-31T20:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "open_time + 0 days 04:00:00 (modeled complete-bucket assumption)",
+          "window": "2020_warmup",
+          "source_match": {
+            "matched_rows": 552,
+            "derivation": "UTC 4 consecutive complete 1h bars",
+            "maximum_abs_numeric_difference": 0.0,
+            "imputation_performed": false
+          }
+        }
+      },
+      "2021": {
+        "trade": {
+          "rows": 8760,
+          "first_utc": "2021-01-01T00:00:00+00:00",
+          "last_utc": "2021-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2021"
+        },
+        "mark": {
+          "rows": 8760,
+          "first_utc": "2021-01-01T00:00:00+00:00",
+          "last_utc": "2021-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2021"
+        },
+        "funding": {
+          "rows": 1095,
+          "first_event_utc": "2021-01-01T00:00:00.002000+00:00",
+          "last_event_utc": "2021-12-31T16:00:00+00:00",
+          "actual_offset_ms_min": 0.0,
+          "actual_offset_ms_max": 47.0,
+          "actual_offset_abs_ms_max": 47.0,
+          "intervals_not_8h_beyond_1s_tolerance": 0,
+          "gap_intervals_reported_beyond_1s_tolerance": 0,
+          "short_intervals_reported_beyond_1s_tolerance": 0,
+          "zero_rate_events_observed": 1,
+          "zero_fill_performed": false,
+          "window": "2021"
+        },
+        "derived4h": {
+          "rows": 2190,
+          "first_utc": "2021-01-01T00:00:00+00:00",
+          "last_utc": "2021-12-31T20:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "open_time + 0 days 04:00:00 (modeled complete-bucket assumption)",
+          "window": "2021",
+          "source_match": {
+            "matched_rows": 2190,
+            "derivation": "UTC 4 consecutive complete 1h bars",
+            "maximum_abs_numeric_difference": 0.0,
+            "imputation_performed": false
+          }
+        }
+      },
+      "2024_warmup": {
+        "trade": {
+          "rows": 2208,
+          "first_utc": "2024-10-01T00:00:00+00:00",
+          "last_utc": "2024-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2024_warmup"
+        },
+        "mark": {
+          "rows": 2208,
+          "first_utc": "2024-10-01T00:00:00+00:00",
+          "last_utc": "2024-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2024_warmup"
+        },
+        "derived4h": {
+          "rows": 552,
+          "first_utc": "2024-10-01T00:00:00+00:00",
+          "last_utc": "2024-12-31T20:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "open_time + 0 days 04:00:00 (modeled complete-bucket assumption)",
+          "window": "2024_warmup",
+          "source_match": {
+            "matched_rows": 552,
+            "derivation": "UTC 4 consecutive complete 1h bars",
+            "maximum_abs_numeric_difference": 0.0,
+            "imputation_performed": false
+          }
+        }
+      },
+      "2025": {
+        "trade": {
+          "rows": 8760,
+          "first_utc": "2025-01-01T00:00:00+00:00",
+          "last_utc": "2025-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2025"
+        },
+        "mark": {
+          "rows": 8760,
+          "first_utc": "2025-01-01T00:00:00+00:00",
+          "last_utc": "2025-12-31T23:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "close_time_utc + 1ms (modeled assumption; actual publication delay unknown)",
+          "window": "2025"
+        },
+        "funding": {
+          "rows": 1095,
+          "first_event_utc": "2025-01-01T00:00:00.015000+00:00",
+          "last_event_utc": "2025-12-31T16:00:00.001000+00:00",
+          "actual_offset_ms_min": 0.0,
+          "actual_offset_ms_max": 16.0,
+          "actual_offset_abs_ms_max": 16.0,
+          "intervals_not_8h_beyond_1s_tolerance": 0,
+          "gap_intervals_reported_beyond_1s_tolerance": 0,
+          "short_intervals_reported_beyond_1s_tolerance": 0,
+          "zero_rate_events_observed": 0,
+          "zero_fill_performed": false,
+          "window": "2025"
+        },
+        "derived4h": {
+          "rows": 2190,
+          "first_utc": "2025-01-01T00:00:00+00:00",
+          "last_utc": "2025-12-31T20:00:00+00:00",
+          "gap_count": 0,
+          "non_cadence_intervals": 0,
+          "available_time_semantics": "open_time + 0 days 04:00:00 (modeled complete-bucket assumption)",
+          "window": "2025",
+          "source_match": {
+            "matched_rows": 2190,
+            "derivation": "UTC 4 consecutive complete 1h bars",
+            "maximum_abs_numeric_difference": 0.0,
+            "imputation_performed": false
+          }
+        }
+      }
+    }
+  },
+  "blocking_reasons": []
+}

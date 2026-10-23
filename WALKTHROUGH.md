@@ -1,9 +1,13 @@
 # 4h Cross-Asset Relational Transformer Crypto Trading System
 # 4小时跨资产关系 Transformer 加密量化交易系统综合研究结题报告
 
-This comprehensive report synthesizes the institutional design, multi-asset comparative evaluation (**BTC vs. ETH vs. SOL**), multi-frequency optimization (**3x/day, 1x/day, 1x/3days, 1x/week, and Adaptive**), and strict 3-way temporal walk-forward evaluation (**2020–2023 Train, 2024–2025 Validation, 2026 Blind Test**) for cryptocurrency trading using a Spatio-Temporal Relational Transformer.
+> **2026-10-23：本文件为 `LEGACY_RESEARCH` 历史叙事档案。** 当前结论见[最终研究清单](FINAL_RESEARCH_RESULTS_ZH.md)与[修正记录](research_archive/CORRECTIONS_ZH.md)。保留各代历史数值以便审计，不代表已验证盈利、当前服务状态或资金配置建议。
+>
+> 2024–2025 用于早停、选模、标的/频率筛选，2026 也被后续开发使用。下文旧称“盲测”“严格零泄露”“最优”“黄金推荐”和“全部审核合格”均不能视为当前有效判定；局部因果测试不能消除选择偏差。旧主回测缺失 funding，杠杆表不具备完整强平路径，Phase 17 表格又存在冲突，详见[方法论审计](reports/backtest_methodology_audit.md)与[声明一致性审计](docs/CLAIM_CONSISTENCY_AUDIT.md)。本次未重跑这些旧实验。
 
-本综合研究报告系统阐述了**时空跨资产关系 Transformer（CryptoSTTransformer）** 在加密货币多标的（**BTC vs ETH vs SOL**）横向对比、多交易频次（**日内3次、每日1次、3日1次、每周1次及自适应动量持仓**）优选，以及采用严苛三段式数据切分（**2020–2023 样本内训练、2024–2025 验证探索、2026 年初至今封存盲测**）的实证研究全过程与核心结论。
+This historical report records multi-asset comparative evaluation (**BTC vs. ETH vs. SOL**) and multi-frequency optimization (**3x/day, 1x/day, 1x/3days, 1x/week, and Adaptive**) with **2020–2023 training, 2024–2025 validation and reused 2026 development/stress data**. It does not establish an untouched test window.
+
+本历史报告记录**时空跨资产关系 Transformer（CryptoSTTransformer）** 的多标的、多交易频次探索。数据角色为 **2020–2023 训练、2024–2025 验证探索、2026 事后开发与压力测试**；“封存盲测”的旧定性已撤回。
 
 ---
 
@@ -123,7 +127,7 @@ SOLUSDT    | 1x / Week (168h)       |   +35.66% | +16.46% | -48.37% |   0.55 |  
 针对同行评审提出的 13 项细节，本系统已在底层源码与统计口径上完成闭环落实，以下提供确切证据：
 
 ### 1. z-score 标准化与 shift(1) 代码证据 (解决问题 5)
-- **代码位置**: [`crypto_quant/evaluate_frequencies.py`](file:///C:/Users/liuqi/crypto/crypto_quant/evaluate_frequencies.py#L61-L64) 与 [`crypto_quant/backtest_transformer.py`](file:///C:/Users/liuqi/crypto/crypto_quant/backtest_transformer.py#L125-L128)
+- **代码位置**: [`crypto_quant/evaluate_frequencies.py`](crypto_quant/evaluate_frequencies.py#L61-L64) 与 [`crypto_quant/backtest_transformer.py`](crypto_quant/backtest_transformer.py#L125-L128)
 - **实现源码**:
   ```python
   prior_mean = p_series.shift(1).rolling(rolling_w).mean()
@@ -133,7 +137,7 @@ SOLUSDT    | 1x / Week (168h)       |   +35.66% | +16.46% | -48.37% |   0.55 |  
 - **结论**: 经全局 grep 检索，所有交易决策所依赖的滚动 z-score 均已施加 `shift(1)`，当前预测值绝不污染历史滚动均值与方差。
 
 ### 2. 严格无偏开盘价执行确认 (解决问题 6)
-- **代码位置**: [`crypto_quant/evaluate_frequencies.py`](file:///C:/Users/liuqi/crypto/crypto_quant/evaluate_frequencies.py#L108-L111) 与 [`crypto_quant/backtest_transformer.py`](file:///C:/Users/liuqi/crypto/crypto_quant/backtest_transformer.py#L106-L112)
+- **代码位置**: [`crypto_quant/evaluate_frequencies.py`](crypto_quant/evaluate_frequencies.py#L108-L111) 与 [`crypto_quant/backtest_transformer.py`](crypto_quant/backtest_transformer.py#L106-L112)
 - **实现源码**:
   ```python
   o_series = pd.Series(opens.values if hasattr(opens, 'values') else opens)
@@ -150,7 +154,7 @@ SOLUSDT    | 1x / Week (168h)       |   +35.66% | +16.46% | -48.37% |   0.55 |  
 - **实证对比**: ETH 4h 夏普 2.09 vs 日频夏普 **2.18**；BTC 4h 夏普 1.78 vs 日频夏普 **1.79**。充分证实高夏普比率来源于高胜率与大盈亏比，而非空仓零收益压缩波动率。
 
 ### 4. 日频特征前向填充的日内动态机制 (解决问题 8)
-- **代码位置**: [`crypto_quant/dataset_builder.py`](file:///C:/Users/liuqi/crypto/crypto_quant/dataset_builder.py#L93-L97)
+- **代码位置**: [`crypto_quant/dataset_builder.py`](crypto_quant/dataset_builder.py#L93-L97)
 - **实现源码**:
   ```python
   hours = df.index.hour
@@ -161,7 +165,7 @@ SOLUSDT    | 1x / Week (168h)       |   +35.66% | +16.46% | -48.37% |   0.55 |  
 - 配合美股时段标记与正余弦时钟嵌入，让模型能明锐区分全天 6 根 4h K 线的流动性状态。
 
 ### 5. 多资产联合非空有效掩码 (解决问题 9)
-- **代码位置**: [`crypto_quant/dataset_builder.py`](file:///C:/Users/liuqi/crypto/crypto_quant/dataset_builder.py#L180-L187)
+- **代码位置**: [`crypto_quant/dataset_builder.py`](crypto_quant/dataset_builder.py#L180-L187)
 - **实现源码**:
   ```python
   valid_mask = pd.Series(True, index=feat_dfs['BTCUSDT'].index)
@@ -194,7 +198,7 @@ SOLUSDT    | 1x / Week (168h)       |   +35.66% | +16.46% | -48.37% |   0.55 |  
 针对实盘运作中“能否加杠杆”以及“单笔交易收益分布”的关切，本节对 ETH 与 SOL 策略的全部独立离散交易进行了统计分布建模，并对 1.0x 至 3.0x 杠杆进行了包含资金费率与滑点扣除的严格压力测试。
 
 ### 1. 单笔交易收益分布对比图 (ETH vs SOL)
-![ETH & SOL Trade Return Distribution](C:\Users\liuqi\.gemini\antigravity\brain\16cb006d-026f-4685-aa82-3db788cd48f6\eth_sol_trade_distribution.png)
+![ETH & SOL Trade Return Distribution](docs/eth_sol_trade_distribution.png)
 
 #### 核心分布统计特征 / Distributional Statistics (2024–2025):
 | 统计指标 / Metric | 以太坊 ETHUSDT (Adaptive) | 索拉纳 SOLUSDT (Adaptive) | 风险与统计特征解读 |
@@ -212,7 +216,7 @@ SOLUSDT    | 1x / Week (168h)       |   +35.66% | +16.46% | -48.37% |   0.55 |  
 ---
 
 ### 2. 杠杆敏感性回测净值对比 (1.0x ~ 3.0x vs 现货基准)
-![ETH & SOL Leverage Comparison](C:\Users\liuqi\.gemini\antigravity\brain\16cb006d-026f-4685-aa82-3db788cd48f6\eth_sol_leverage_comparison.png)
+![ETH & SOL Leverage Comparison](docs/eth_sol_leverage_comparison.png)
 
 #### 杠杆压力测试全景表 / Leverage Performance Matrix (2024–2025):
 | 标的代币 | 杠杆倍数 | 累计收益 Total Ret | 年化复合 (CAGR) | 最大回撤 Max DD | 日频重采样夏普 | 卡尔玛 Calmar | 实盘评级与配置建议 |
@@ -282,7 +286,7 @@ SOLUSDT    | 1x / Week (168h)       |   +35.66% | +16.46% | -48.37% |   0.55 |  
 
 ### 1. 图像渲染失效根因剖析 / Root Cause Analysis
 1. **Windows 反斜杠转义破坏路径 (Backslash Escaping Corruption)**：
-   在 Windows 路径 `C:\Users\liuqi\.gemini\...` 中，反斜杠 `\U`、`\b` 在 Markdown 渲染引擎中会被作为 Unicode 字符与正则退格符转义解析，导致链接完全损坏失效。
+   在 Windows 路径 `LOCAL_SOURCE_PATH` 中，反斜杠 `\U`、`\b` 在 Markdown 渲染引擎中会被作为 Unicode 字符与正则退格符转义解析，导致链接完全损坏失效。
 2. **Electron / Chromium 沙箱与 CSP 本地文件限制 (Local File Security Sandbox)**：
    现代 Agent 交互界面基于 Electron / Chromium 构建，浏览器内核默认禁止网页通过 `file:///` 直接读取渲染本地静态图片。
 
@@ -321,7 +325,7 @@ VERDICT: ✅ SAFE TO INSTALL & PERMANENTLY ENABLED
 2. **Mode B: 全功能交互看板 Artifact (`eth_sol_interactive_dashboard.html` / `docs/index.html`)**：
    支持收益分布、全档位杠杆、以太坊累计超额 Alpha 三大多维度标签页一键切换，包含缩放检查与核心风控指标卡片，已同步发布至 GitHub 仓库。
 3. **Mode C: 正斜杠标准化 Markdown 原生链接**：
-   全面纠正路径格式为正斜杠绝对路径 `file:///C:/Users/...`，提供直达原图的高清入口。
+   本次公开归档改用仓库相对路径，避免依赖个人机器上的绝对路径。
 
 ---
 
@@ -493,7 +497,7 @@ In response to the user's critical insight—**"a rigid 16-hour lockout will cau
 在同行评审（Peer Review）针对 Phase 13 提交的深度审计中，评审员执行了全部单元测试、主回测、对称多空引擎复现脚本以及 2026 盲测，指出了 5 项严重问题：
 During an in-depth external audit of Phase 13, the reviewer executed all unit tests, primary backtests, the symmetrical engine replication script, and the 2026 blind test, identifying 5 critical deficiencies:
 
-1. **绝对路径硬编码 (Hardcoded Absolute Paths)**: `scripts/test_symmetrical_engine.py` 硬编码了 `root_dir = 'C:/Users/liuqi/crypto'`，导致外部开箱即报 `FileNotFoundError`。
+1. **绝对路径硬编码 (Hardcoded Absolute Paths)**: `scripts/test_symmetrical_engine.py` 硬编码了 `root_dir = 'SOURCE_ROOT'`，导致外部开箱即报 `FileNotFoundError`。
    - *整改方案 (Remediation)*: 全仓清除所有硬编码绝对路径，全部改用 `Path(__file__).resolve().parent.parent` 动态解析工程根目录，任何外部克隆即可无痛开箱即跑。
 2. **回测引擎分歧与指标夸大 (Simulation Engine Divergence & Metric Discrepancy)**: README 宣称 +102.20% (ETH) / +141.47% (SOL) 与 -26.6% 回撤，而实测复现脚本为 +64.75% / +74.53% 与 -45.6% / -52.8% 回撤。
    - *整改方案 (Remediation)*: 废除 `test_symmetrical_engine.py` 中的私自分歧循环，全面统一调用生产级 `crypto_quant.dual_sleeve_portfolio.compute_sleeve_adaptive` 引擎，彻底消除脚本与生产引擎的双轨分歧。

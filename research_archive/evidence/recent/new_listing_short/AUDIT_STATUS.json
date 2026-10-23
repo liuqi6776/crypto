@@ -1,0 +1,71 @@
+{
+  "schema": "bounded_new_listing_short_review_v1",
+  "review_date_utc": "2026-10-21",
+  "research_status": "REVIEW_COMPLETE_NEW_STRATEGY_NOT_RUN_DATA_GATES",
+  "automated_receipt_status": "NOT_RUN_PATH_RESOLUTION_DENIED",
+  "verified_new_listing_sample_size": null,
+  "new_factor_ic_or_pnl_computed": false,
+  "carry_recomputed": false,
+  "observations": {
+    "root_independent_powershell_csv_count": {
+      "source": "<SOURCE_ROOT:crypto-leverage>/reports/strategy_validation/btc_noncore_ic_20261013/numerical/selected_features.csv",
+      "rows": 15354,
+      "symbols": 325,
+      "weekly_decisions": 257,
+      "first_decision_utc": "2021-01-04T00:00:00+00:00",
+      "last_decision_utc": "2025-12-01T00:00:00+00:00",
+      "interpretation": "Old weekly research coverage, not historical listing age or shortability."
+    },
+    "root_direct_json_reads": {
+      "universe_status": "BLOCKED_CRYPTO_ASSET_CLASS_UNVERIFIED",
+      "window_start_inclusive": "2021-01-01T00:00:00Z",
+      "window_end_exclusive": "2026-01-01T00:00:00Z",
+      "archive_candidates": 897,
+      "window_observed_symbols": 634,
+      "provisional_after_exclusions": 623,
+      "historical_contract_status": "UNVERIFIED",
+      "strategy_universe_status": "BLOCKED_ASSET_CLASS_AND_HISTORICAL_MEMBERSHIP_UNVERIFIED",
+      "mark_candle_readiness_claim": false,
+      "daily_series_with_gaps_or_missing_archives": 51,
+      "acquisition_planning_weekly_decisions_not_strategy_decisions": 313,
+      "endpoint_audit_rows_from_source_receipt_not_recomputed": 122832,
+      "positive_activity_rows": 122584,
+      "zero_or_negative_activity_rows": 177,
+      "missing_archive_rows": 71
+    },
+    "lifecycle_agent_direct_metadata_review": {
+      "catalog_token_rows": 146,
+      "unique_perpetual_notices": 17,
+      "unique_contracts": 17,
+      "explicit_continuation": 7,
+      "no_new_positions_and_settlement": 10,
+      "launch_or_relaunch_actions_in_this_catalog": 0,
+      "catalog_is_complete_perpetual_lifecycle_census": false,
+      "known_at_equivalent_verified": false,
+      "scope_limit": "Bounded known local entries only; absence is not a whole-computer inventory claim."
+    }
+  },
+  "source_hashes_verified_by_lifecycle_agent": {
+    "research_data/binance_noncore_ic_20261013/universe_audit_v2.json": "2b557f042d0ce7d2f0bafd68c864a3957f6750e668a73772d890fc8d84763b64",
+    "research_data/noncore_event_sources_20261014/event_source_audit.json": "74e6044f2ce90e8582512c246d0a1ceafa54673009d9e75dfdd502428bbb8172",
+    "reports/strategy_validation/btc_noncore_news_event_v1_20261015/source_freeze_expanded/source_catalog.csv": "19d21d4c9ca1b5828e86eb7d51d65e5705ab3281830cdb09ba256d703904d2c1",
+    "reports/strategy_validation/btc_noncore_news_event_v1_20261015/review/root_post_result_lifecycle_finding.json": "eb522c4b06ddab6ca7513a980e7b405f25c21401a6ad604dca86bbe6bc31a2c2"
+  },
+  "permission_blocker": {
+    "operation": "Path(__file__).resolve(strict=False) during synthetic audit-script initialization",
+    "target": "<SOURCE_ROOT:research-runs>/2026-10-21/task/new_listing_short_round_20261021/audit_existing_inputs.py",
+    "reason": "PermissionError: [WinError 5] Access is denied",
+    "status": "DENIED_STOPPED",
+    "fallback_used_for_synthetic_checks_then_removed_after_review": true,
+    "final_code_validated": false,
+    "real_source_script_run": false,
+    "final_resolve_retried": false
+  },
+  "artifacts": {
+    "conclusion": "REPORT_ZH.md",
+    "lifecycle_evidence": "LIFECYCLE_GATE_REVIEW_ZH.md",
+    "candidate_and_gates": "PROTOCOL_AND_DATA_GATES_ZH.md",
+    "code_status": "CODE_REVIEW_AND_BLOCKER_ZH.md",
+    "prior_audit": "../carry_short_round2_20261021/SHORT_EXISTING_AUDIT_ZH.md"
+  }
+}

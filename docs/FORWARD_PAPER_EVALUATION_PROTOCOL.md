@@ -1,6 +1,8 @@
 # Forward Paper Tracking & Out-of-Sample Evaluation Protocol
 # 前向模拟与真实样本外前瞻跟踪标准协议
 
+> **2026-10-23 归档状态**：本文件是历史前向验证协议，不是当前运行状态或门禁通过凭据。下文“已开始”“operational”仅为写作时的叙述；本次未核验它的持续运行、180 天/30 笔门槛或有效成交账本。不要将此旧系统协议与 crypto-leverage 的采集器、30 日观察计划混为一项。当前结果与各自状态见[最终研究清单](../FINAL_RESEARCH_RESULTS_ZH.md)。
+
 ---
 
 > [!CAUTION]

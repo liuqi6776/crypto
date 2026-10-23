@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "study_id": "three_coin_15m_perpetual_diagnostic_2024_2025",
+  "status": "FROZEN",
+  "data_policy_status": "CONDITIONAL_HISTORY_DATA_QUALITY_UNRESOLVED",
+  "fraction_convention": "decimal_fraction",
+  "source_scope": {
+    "symbols": ["BTCUSDT", "ETHUSDT", "SOLUSDT"],
+    "raw_execution_timeframe": "1m",
+    "signal_timeframe": "15m",
+    "warmup_start_utc": "2024-01-01T00:00:00Z",
+    "selected_files": 72,
+    "source_plan_identity_required": true,
+    "preserve_all_source_rows": true,
+    "zero_volume_flat_rows": "preserve as observed; source content conflicts with older 5m/15m files and authenticity remains unresolved",
+    "content_quality_flag": "CONTENT_CONFLICT_UNRESOLVED",
+    "gap_policy": "fail closed; no filling, forward-filling, omission, or synthetic OHLC",
+    "aggregate_policy": "derive 15m bars from complete groups of 15 observed 1m bars; no incomplete-bucket reconstruction",
+    "funding_timestamp_policy": "retain observed calc_time; never snap to nominal settlement time",
+    "funding_mark_proxy": "observed 1h mark-price candle open at exact nominal settlement time; proxy only, not event-time markPrice"
+  },
+  "signal_spec": {
+    "signal_bar_timeframe": "15m",
+    "indicator_price_series": "15m OHLC; all rolling breakout and ATR inputs use 15m bars",
+    "atr": {"period": 14, "method": "Wilder; initial seed is mean of first 14 true ranges; next=(previous*13+TR)/14"},
+    "prior_channel": {"lookback_bars": 20, "exclude_current_bar": true, "high": "max(prior20.high)", "low": "min(prior20.low)"},
+    "prior_volume": {"field": "volume (base-asset volume)", "lookback_bars": 20, "exclude_current_bar": true, "aggregation": "simple mean"},
+    "hourly_trend": {"timeframe": "1h", "complete_15m_groups_only": true, "rules": ["hourly close > EMA20", "EMA20 > EMA50", "EMA20 > EMA20 three hours earlier"], "ema_adjust": false, "minimum_warmup_hours": 200},
+    "relative_strength": {"timeframe": "1h", "lookback_hours": 24, "symbols": ["ETHUSDT", "SOLUSDT"], "rule": "candidate symbol 24h close return >= BTCUSDT 24h close return"},
+    "A_entry": {"compression_width_max_atr": 6.0, "compression_width_atr_reference": "previous completed 15m ATR14, excluding current signal bar", "breakout": "current completed 15m close > prior20 high", "volume_multiple_strictly_greater_than": 1.5, "fill": "next 15m open"},
+    "B_entry": {
+      "breakout_reference": "same signal as A; freeze prior20 channel and previous completed 15m ATR14 (excluding the breakout signal bar)",
+      "retest_zone": "[level - 0.5*previous_ATR, level + 0.5*previous_ATR]",
+      "first_touch": "first post-breakout 15m bar whose [low, high] intersects the retest zone",
+      "retest_invalidation": "any post-breakout low < level - 0.5*previous_ATR",
+      "confirmation": "after the first-touch bar, inspect subsequent bars 1 through 8; confirm on the first completed close > max(high) of the two immediately preceding 15m bars",
+      "maximum_wait_bars": 8,
+      "fill": "next 15m open after confirmation",
+      "initial_stop": "minimum low from first-touch bar through confirmation bar - 0.1*previous_ATR"
+    },
+    "initial_stop_atr_buffer": 0.1,
+    "signal_atr": "ATR14 from the previous completed 15m bar, excluding the current signal bar; frozen through setup and position",
+    "A_initial_stop": "prior20 channel low - 0.1*previous completed 15m ATR14; both values exclude the current signal bar",
+    "take_profit_R": 2.0,
+    "breakeven_activation": "a completed 15m close reaches +1R; move stop to entry for the following bar",
+    "maximum_holding_bars": 96,
+    "trend_baseline": "enter next 15m open after hourly filter confirmation; exit next open after filter failure; no stop, target or time exit",
+    "buy_hold_baseline": "buy equal 1/3 symbol sleeves at each phase start; no adds; hold to forced endpoint exit"
+  },
+  "phases": [
+    {
+      "name": "full",
+      "start": "2024-01-10T00:00:00Z",
+      "end": "2025-12-31T23:45:00Z",
+      "end_exclusive": true,
+      "force_liquidation_at_endpoint_open": true,
+      "interpretation": "full continuous diagnostic window; price-history content quality remains unresolved"
+    },
+    {
+      "name": "research_2024",
+      "start": "2024-01-10T00:00:00Z",
+      "end": "2025-01-01T00:00:00Z",
+      "end_exclusive": true,
+      "force_liquidation_at_endpoint_open": true,
+      "interpretation": "research year"
+    },
+    {
+      "name": "locked_2025",
+      "start": "2025-01-01T00:00:00Z",
+      "end": "2025-12-31T23:45:00Z",
+      "end_exclusive": true,
+      "force_liquidation_at_endpoint_open": true,
+      "interpretation": "locked diagnostic year; no OOS claim; endpoint open is used for liquidation and its following 15m interval is not simulated"
+    }
+  ],
+  "strategy_groups": [
+    {"name": "A_fixed", "variant": "A", "exit_rule": "fixed"},
+    {"name": "A_be", "variant": "A", "exit_rule": "breakeven"},
+    {"name": "B_fixed", "variant": "B", "exit_rule": "fixed"},
+    {"name": "B_be", "variant": "B", "exit_rule": "breakeven"},
+    {"name": "TREND", "variant": "TREND", "exit_rule": "none"},
+    {"name": "BUY_HOLD", "variant": "BUY_HOLD", "exit_rule": "none"}
+  ],
+  "cost_tiers": [
+    {"name": "base", "fee_rate_per_side_fraction": 0.0006, "slippage_rate_per_side_fraction": 0.0005},
+    {"name": "stress", "fee_rate_per_side_fraction": 0.0012, "slippage_rate_per_side_fraction": 0.001}
+  ],
+  "engine_config": {
+    "initial_equity": 10000.0,
+    "risk_fraction": 0.005,
+    "per_symbol_notional_fraction": 0.3333333333333333,
+    "total_notional_fraction": 1.0,
+    "fee_reserve_sides": 2,
+    "max_holding_bars": 96,
+    "b_wait_bars": 8,
+    "warmup_hours": 200,
+    "funding_required": true
+  },
+  "execution_order": {
+    "funding_at_exact_bar_open": "before existing exits and new entries",
+    "positive_offset_funding": "after bar-open entries and before first intrabar barrier; conservative within the selected-window observed 0-16ms offset uncertainty",
+    "within_minute_barriers": "chronological 1m candles; if both stop and target are touched in one minute, use conservative stop-first ordering",
+    "zero_volume_minute": "no fills during zero-volume minutes; an entry whose first 15m minute is zero-volume is canceled; exits due during zero-volume minutes defer to first positive-volume minute; funding events remain charged at observed event times"
+  },
+  "scenario_count_expected": 36,
+  "output_policy": "new outputs/vN directory only; fail if target exists; preserve every scenario's equity, events, trades and aggregate metrics",
+  "claim_status": "EXPLORATORY_DIAGNOSTIC_ONLY; conditional on unresolved source-content conflict; no tradability or out-of-sample claim"
+}

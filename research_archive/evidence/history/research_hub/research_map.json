@@ -1,0 +1,2173 @@
+{
+  "schema_version": "1.0.0",
+  "status": "DRAFT_NAVIGATION_AND_EVIDENCE_MAP_NOT_A_GATE",
+  "registry": {
+    "path": "experiment_registry.json",
+    "version": "1.1.0",
+    "record_count": 25,
+    "refs_base": "research_hub/"
+  },
+  "primary_record_rule": "Every historical registry ID has one unique primary_card. related_cards are navigation only and do not duplicate research records.",
+  "factor_catalog": [
+    {
+      "factor_id": "iv-dvol30-annualized",
+      "card": "factor_research/factor_cards/shared_iv_dvol30_annualized.md",
+      "status": "EXPLORATORY_UNVERIFIED",
+      "definition_status": "reported_concept_only",
+      "definition": "D1/R3K and the six-factor report identify DVOL as a 30-day annualized implied-volatility estimate derived from option prices. This does not establish the exact local field, unit conversion, contract/tenor mapping, or timestamp semantics.",
+      "availability": "UNKNOWN: source-specific publication and local observation timestamps were not established; do not assume availability at row time.",
+      "units": "annualized volatility concept; local raw unit UNKNOWN",
+      "source_refs": [
+        "../reports/EMA_IV_FIRST_CONCLUSION_CN_20261005.md",
+        "../reports/strategy_validation/sixfactor_longcycle_v1/SIXFACTOR_LONGCYCLE_RESULTS_CN_20261003.md"
+      ],
+      "related_records": [
+        "d1-r3k-20261005",
+        "factor-calibration-causal-2023"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "r3k-market-state-input",
+      "card": "factor_research/factor_cards/shared_r3k_market_state_input.md",
+      "status": "EXPLORATORY_UNVERIFIED",
+      "definition_status": "d1_three_state_onehot_frozen",
+      "definition": "D1 price_iv_btc_state uses one-hot UP/DOWN/SIDEWAYS. The separate nine continuous BTC-daily columns belong to another arm; raw upstream state-source mapping and publication time remain unknown.",
+      "availability": "UNKNOWN; verify each source field's publication/availability time against the decision timestamp.",
+      "units": "three binary indicator columns, one active state per implementation schema",
+      "source_refs": [
+        "../reports/strategy_validation/r3k_20261005/d1_r3k_20261005.md",
+        "../reports/EMA_IV_FIRST_CONCLUSION_CN_20261005.md"
+      ],
+      "related_records": [
+        "d1-r3k-20261005"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "forward-realized-variance-1h24-label",
+      "card": "factor_research/factor_cards/shared_forward_realized_variance_1h24.md",
+      "status": "DEFINITION_DOCUMENTED_LABEL_NOT_FACTOR_EVIDENCE",
+      "definition_status": "contract_defined",
+      "definition": "Core4 contract: V_1h24 is the mean of next 24 completed H1 close log returns squared, non-annualized. Core3 has a separate frozen forward-variance target path. This shared card records the target family only; each study retains its own exact maturity/cutoff contract. Always a future target, never an input.",
+      "availability": "At maturity only after all 24 future hourly returns are observed; exact source contract is in the cited contract. It cannot be used before maturity for fitting/scoring.",
+      "units": "squared log-return",
+      "source_refs": [
+        "../reports/strategy_validation/trend_vol_1h_risk2021_v1/core_run_contract.json",
+        "../tools/perptools/core3_trend_risk_v1.py",
+        "../scripts/run_core3_trend_risk_v1.py"
+      ],
+      "related_records": [
+        "ridge-1h24-risk-2021",
+        "core3-trend-risk-v1"
+      ],
+      "kind": "label",
+      "role": "future_target_label_not_a_consumed_input"
+    },
+    {
+      "factor_id": "core3-trailing-return-variance-4h",
+      "card": "factor_research/factor_cards/shared_core3_trailing_return_variance_4h.md",
+      "status": "IMPLEMENTATION_DEFINED_EXPLORATORY_UNVERIFIED",
+      "definition_status": "code_defined_core3_only",
+      "definition": "Core3-only: own-symbol and BTC trailing 4h close-to-close log-return variance for windows 6, 42 and 180, natural-log transformed; fixed one-hot columns symbol_ETH, symbol_SOL, symbol_BNB (BNB dummy is always zero). Ordered schema has nine columns. This is not the older Core4 Ridge feature list.",
+      "availability": "Core3 models close availability at source close + 1 second; actual upstream publication latency is UNKNOWN. See the frozen protocol and code checks before any use.",
+      "units": "log of trailing return variance; symbol flags dimensionless",
+      "source_refs": [
+        "platform_data/contracts/core3_trend_risk_protocol_v1.md",
+        "../reports/strategy_validation/core3_trend_risk_v1/results_v1r3/results.json"
+      ],
+      "related_records": [
+        "core3-trend-risk-v1"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "core3-ema200-close-trend",
+      "card": "factor_research/factor_cards/shared_core3_ema200.md",
+      "status": "IMPLEMENTATION_DEFINED_EXPLORATORY_UNVERIFIED",
+      "definition_status": "code_defined_core3_only",
+      "definition": "Core3 benchmark uses close > EMA200; the EMA seed is the mean of the first 200 closes, then the recursive EMA update. This is a simple rule signal, not a model prediction.",
+      "availability": "Modeled after the completed 4h bar plus 1 second; actual source publication time remains UNKNOWN.",
+      "units": "price level; signal boolean",
+      "source_refs": [
+        "../tools/perptools/core3_trend_risk_v1.py",
+        "platform_data/contracts/core3_trend_risk_protocol_v1.md"
+      ],
+      "related_records": [
+        "core3-trend-risk-v1",
+        "longcycle-trend-12-rules"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "core3-macd-histogram-12-26-9",
+      "card": "factor_research/factor_cards/shared_core3_macd_histogram.md",
+      "status": "IMPLEMENTATION_DEFINED_EXPLORATORY_UNVERIFIED",
+      "definition_status": "code_defined_core3_only",
+      "definition": "Core3 calls TA-Lib MACD with fast=12, slow=26, signal=9 and uses its histogram; MACD_EMA200 state requires histogram > 0 and close > EMA200.",
+      "availability": "Modeled after the completed 4h bar plus 1 second; actual source publication time remains UNKNOWN.",
+      "units": "price difference; signal boolean",
+      "source_refs": [
+        "../tools/perptools/core3_trend_risk_v1.py",
+        "platform_data/contracts/core3_trend_risk_protocol_v1.md"
+      ],
+      "related_records": [
+        "core3-trend-risk-v1",
+        "longcycle-trend-12-rules"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "core3-donchian-55-20",
+      "card": "factor_research/factor_cards/shared_core3_donchian_55_20.md",
+      "status": "IMPLEMENTATION_DEFINED_EXPLORATORY_UNVERIFIED",
+      "definition_status": "code_defined_core3_only",
+      "definition": "Core3 defines a 55/20 channel breakout from shifted prior-bar highs/lows, with persistence reset OFF at a segment start. Do not generalize this specific implementation to every Donchian result.",
+      "availability": "Modeled after completed 4h input bars plus 1 second; actual source publication time remains UNKNOWN.",
+      "units": "price level; state boolean",
+      "source_refs": [
+        "../tools/perptools/core3_trend_risk_v1.py",
+        "platform_data/contracts/core3_trend_risk_protocol_v1.md"
+      ],
+      "related_records": [
+        "core3-trend-risk-v1",
+        "longcycle-trend-12-rules"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "observed-funding-event-features",
+      "card": "factor_research/factor_cards/shared_observed_funding_events.md",
+      "status": "DEFINITION_BOUNDED_BY_REFERENCED_STUDIES",
+      "definition_status": "study_specific_observed_event_definitions",
+      "definition": "Where explicitly documented in the six-factor study, Core4 features include latest observed funding rate, event age, and observed 7-day cumulative rate/count; some analyses use only events available by event time + 5 minutes and age <=16h. This is study-specific; it is not a general funding feature interface.",
+      "availability": "Use observed settlement timestamps only. Never forward-fill, zero-fill, or relabel onto candle grids. Other study availability clocks remain UNKNOWN.",
+      "units": "rate, elapsed time, observed event sum/count (study-specific)",
+      "source_refs": [
+        "../reports/strategy_validation/sixfactor_longcycle_v1/SIXFACTOR_LONGCYCLE_RESULTS_CN_20261003.md",
+        "../reports/strategy_validation/research_hub_review_20261011_v1/NUMERICAL_REVIEW_ZH.md"
+      ],
+      "related_records": [
+        "factor-calibration-causal-2023",
+        "event-meta-2021-23",
+        "core3-trend-risk-v1"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "basis-cross-venue-price-spread",
+      "card": "factor_research/factor_cards/shared_basis_cross_venue_spread.md",
+      "status": "BLOCKED_NOT_TESTED",
+      "definition_status": "concept_named_clock_and_units_unresolved",
+      "definition": "Cross-venue basis/spread is named in the six-factor research inventory; the exact price fields, interval label, unit contract, and availability clock are not resolved in the cited summary.",
+      "availability": "UNKNOWN; do not forward-fill or align without source evidence.",
+      "units": "UNKNOWN",
+      "source_refs": [
+        "../reports/strategy_validation/sixfactor_longcycle_v1/SIXFACTOR_LONGCYCLE_RESULTS_CN_20261003.md"
+      ],
+      "related_records": [
+        "factor-calibration-causal-2023"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "atr14-stop-distance",
+      "card": "factor_research/factor_cards/shared_atr14_stop_distance.md",
+      "status": "RULE_TRANSFORM_DOCUMENTED_EXPLORATORY_UNVERIFIED",
+      "definition_status": "risk_shrink_report_defined",
+      "definition": "C3 risk map defines d_stop=2*ATR14/reference_close. The 13 Phase-A model feature names/formulas are separately recorded in c3-phase-a-price-feature-schema-v1; source publication time remains unverified.",
+      "availability": "UNKNOWN for the underlying feature set; verify actual ATR and close availability before a decision.",
+      "units": "dimensionless relative stop distance and clipped weight",
+      "source_refs": [
+        "../docs/C3_RISK_TRAIN_REFINEMENT_REPORT_AUDITED_V1R3.md"
+      ],
+      "related_records": [
+        "c3-risk-train-shrink"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "sixfactor-support-event-family",
+      "card": "factor_research/factor_cards/shared_support_event_family.md",
+      "status": "SEMANTIC_DEFINITION_INCOMPLETE",
+      "definition_status": "documented_event_examples_not_validated_full_semantics",
+      "definition": "The six-factor report describes support/event state sequences and saved support episodes. It explicitly reports definition defects (including zone-floor break not terminating a waiting state); positive event examples do not mean profitable trades. Exact reusable support semantics remain unresolved.",
+      "availability": "Per-bar event timing is study-specific; validate completed-bar/decision availability from the event code before use.",
+      "units": "categorical/event state; exact schema UNKNOWN",
+      "source_refs": [
+        "../reports/strategy_validation/sixfactor_longcycle_v1/SIXFACTOR_LONGCYCLE_RESULTS_CN_20261003.md"
+      ],
+      "related_records": [
+        "factor-calibration-causal-2023",
+        "pattern-support-meta"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "sixfactor-option-eoh-atm-volatility",
+      "card": "factor_research/factor_cards/shared_option_eoh_atm_volatility.md",
+      "status": "LIMITED_EXPOSED_PREDICTION_EVIDENCE",
+      "definition_status": "study_summary_definition_availability_unresolved",
+      "definition": "EOH/ATM option-derived volatility calibration is documented for a 2023 BTC/ETH conditional sample. The report distinguishes ATM calibration from raw/price-only heads. Exact source schema and option strike/tenor construction are not established by the summary.",
+      "availability": "UNKNOWN: exact EOH publication time, local field unit and point-in-time availability remain unresolved.",
+      "units": "variance/volatility calibration target; exact EOH local unit UNKNOWN",
+      "source_refs": [
+        "../reports/strategy_validation/sixfactor_longcycle_v1/SIXFACTOR_LONGCYCLE_RESULTS_CN_20261003.md",
+        "../reports/strategy_validation/eoh_train_scale_calibration_v1/calibration_metrics.json"
+      ],
+      "related_records": [
+        "factor-calibration-causal-2023",
+        "c3-x3-overlay-2023"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "sixfactor-trend-ema-macd-bollinger-family",
+      "card": "factor_research/factor_cards/shared_sixfactor_trend_family.md",
+      "status": "EXPLORATORY_UNVERIFIED",
+      "definition_status": "families_named_specific_formula_not_in_shared_summary",
+      "definition": "The older twelve-rule account catalog contains EMA200, EMA20_60, MACD(hist>0), MACD_EMA200(hist>0 and close>EMA200), DONCHIAN55_20, and BB120_EMA200_ATR3, each on 4h and 1d. The source code computes EMA20/60/200, TA-Lib MACD(12,26,9), BB120 +/- 2 standard deviations, and ATR14; ATR3 stop behavior is a separate ledger rule. Keep these older rules distinct from Core3 benchmarks.",
+      "availability": "UNKNOWN per rule until its own completed-bar source and decision timing are checked.",
+      "units": "rule-specific price/technical indicator units",
+      "source_refs": [
+        "../reports/strategy_validation/sixfactor_longcycle_v1/SIXFACTOR_LONGCYCLE_RESULTS_CN_20261003.md",
+        "../reports/strategy_validation/longcycle_trend_catalog_v1/ACCOUNT_RESULTS_V3_20261003.md"
+      ],
+      "related_records": [
+        "factor-calibration-causal-2023",
+        "longcycle-trend-12-rules"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "sixfactor-btc-relative-strength-family",
+      "card": "factor_research/factor_cards/shared_btc_relative_strength_family.md",
+      "status": "EXPLORATORY_UNVERIFIED",
+      "definition_status": "direction_reported_exact_transform_unknown",
+      "definition": "BTC strength/trend and BTC-residual targets are discussed in the source evidence. This family card does not equate different horizons or residual constructions; exact versioned field/formula must be read from the sub-study contract.",
+      "availability": "UNKNOWN by sub-study; require UTC decision-time evidence.",
+      "units": "UNKNOWN by version",
+      "source_refs": [
+        "../reports/strategy_validation/sixfactor_longcycle_v1/SIXFACTOR_LONGCYCLE_RESULTS_CN_20261003.md",
+        "../reports/strategy_validation/focused_followup_v1/FOCUSED_FOLLOWUP_RESULTS_CN_20261003_v1r2.md"
+      ],
+      "related_records": [
+        "factor-calibration-causal-2023"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "btc-minute-multihorizon-ohlcv-features-v1",
+      "card": "factor_research/factor_cards/shared_btc_minute_ohlcv_feature_set.md",
+      "status": "FROZEN_INPUT_SCHEMA_EXPOSED_HISTORY",
+      "definition_status": "config_schema_defined",
+      "definition": "BTC minute-probability frozen config lists 23 causal OHLCV features: 1/5/15/40/60m log-return lags; return standard deviations at 5/15/60m; close means 14/60m; body/range over close; close over EMA20/EMA60; close location over 60/288m; log-volume vs prior 60m mean; completed 5/15/60m return and range. Higher-timeframe aggregates are as-of joined only after bars are complete.",
+      "availability": "Decision time is minute open + 1m. Higher-timeframe fields are available only at their completed-bar open + timeframe. No missing-value imputation; nonfinite warmup rows are excluded. Historical windows were inspected/exposed.",
+      "units": "mixed, mostly normalized/log OHLCV statistics; symbol-specific exact transform is recorded by feature names/config",
+      "source_refs": [
+        "../reports/strategy_validation/btc_minute_probability_v1/run_20261007_v3/RESULTS_中文.md"
+      ],
+      "related_records": [
+        "btc-minute-probability-2023"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "channel-ml-d6i500-feature-set",
+      "card": "factor_research/factor_cards/shared_channel_ml_d6i500_features.md",
+      "status": "FROZEN_SELECTED_MODEL_FEATURE_IMPORTANCE_SUMMARY",
+      "definition_status": "feature_names_reported_formula_partial",
+      "definition": "Selected CatBoost D6/I500 descriptor lists 29 inputs: entry_distance_from_close_fraction, channel_position, atr14_fraction, lower_wick_fraction, stop_risk_price_fraction, trend_ema_spacing_fraction, past_return_5m, channel_width_fraction, past_return_15m, past_return_60m, body_fraction, volume_vs_prior_60m_median, symbol, upper_wick_fraction, mid_slope_width_4bars, stop_width_fraction, planned_reward_risk, sma5_cross_age_bars, entry_channel_position, past_return_1m, edge_fraction, channel_minutes, ema5_cross_age_bars, entry_ttl_minutes, entry_style, planned_target_gross_bps, ma_cross_kind, ema5_cross_side, target_fraction. The descriptor is marked `descriptive_only_no_validation_profit_based_selection`; the report summarizes 513 actual base fills including an unknown-execution ledger, while stress fills are excluded. This is descriptive evidence, not fresh validation or model selection.",
+      "availability": "The resume report says features are causal; exact per-column publication/availability timing and feature-generation formula should be checked in the frozen feature/code manifest.",
+      "units": "mostly dimensionless fractions, returns, bps/count/categorical fields; exact units are column-specific",
+      "source_refs": [
+        "../reports/strategy_validation/channel_ml_validation_resume_v1/model_feature_and_action_summary_20261008T132354Z.json",
+        "../reports/strategy_validation/channel_ml_validation_resume_v1/selected_catboost_d6_i500_20261008T132354Z.md"
+      ],
+      "related_records": [
+        "channel-ml-maker-2024-25"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "btc-minute-direction-and-return-labels-v1",
+      "card": "factor_research/factor_cards/shared_btc_minute_labels.md",
+      "status": "FROZEN_LABEL_CONTRACT_EXPOSED_HISTORY",
+      "definition_status": "config_defined",
+      "definition": "For horizon h in {1,5,15,40,60} minutes, target log(close[t+h]/close[t]); class sign gives DOWN=-1, FLAT=0 only when close is exactly equal, UP=+1. A separate Ridge head predicts return magnitude. Decision=open_time+1m; label availability=decision_time+h.",
+      "availability": "Label is available only at the future horizon boundary; split purge requires the 60m label strictly before each window end. This is a future target, never an input feature.",
+      "units": "log return; class label dimensionless",
+      "source_refs": [
+        "../reports/strategy_validation/btc_minute_probability_v1/run_20261007_v3/RESULTS_中文.md"
+      ],
+      "related_records": [
+        "btc-minute-probability-2023"
+      ],
+      "kind": "label",
+      "role": "future_target_label_not_a_consumed_input"
+    },
+    {
+      "factor_id": "r3k-price-anchor-features-v1",
+      "card": "factor_research/factor_cards/shared_r3k_price_anchor_features.md",
+      "status": "FROZEN_INPUT_SCHEMA_EXPOSED_HISTORY",
+      "definition_status": "code_schema_defined",
+      "definition": "The V1 feature schema defines exactly 47 anchor columns: eth_log_ret_1, eth_log_ret_2, eth_log_ret_5, eth_log_ret_15, eth_log_ret_30, eth_log_ret_60, eth_abs_ret_1, eth_abs_ret_5, eth_abs_ret_15, eth_rv_5, eth_rv_15, eth_rv_30, eth_rv_60, eth_rv_ratio_5_30, eth_rv_ratio_15_60, eth_vol_z_60, eth_range_1, btc_log_ret_1, btc_log_ret_2, btc_log_ret_5, btc_log_ret_15, btc_log_ret_30, btc_log_ret_60, btc_abs_ret_1, btc_abs_ret_5, btc_rv_15, btc_rv_60, btc_eth_ret_spread_5, btc_eth_ret_spread_15, btc_eth_ret_spread_30, eth_log_vol_5, eth_log_vol_30, eth_vol_ratio_5_30, eth_trades_z_30, eth_taker_imb_5, eth_taker_imb_30, ema_sep, ema_slope, ema_bars_since_ready, tod_sin_1, tod_cos_1, tod_sin_2, tod_cos_2, tod_sin_3, tod_cos_3, dow_sin, dow_cos. D1 selects the `price` family according to the frozen arm contract; this is distinct from the daily BTC family.",
+      "availability": "Decision-origin availability and input timing are governed by the V1 feature builder/protocol; verify each source's publication clock. No inference from the experiment name.",
+      "units": "mixed price/return/volume/indicator/UTC-time features; see exact columns",
+      "source_refs": [
+        "../tools/perptools/ema_iv_v1/features.py",
+        "../tools/perptools/ema_iv_v2/protocol_v2.py",
+        "../tools/perptools/ema_iv_v2/runner_v3.py"
+      ],
+      "related_records": [
+        "d1-r3k-20261005"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "r3k-iv-derived-features-v1",
+      "card": "factor_research/factor_cards/shared_r3k_iv_features.md",
+      "status": "FROZEN_INPUT_SCHEMA_EXPOSED_HISTORY",
+      "definition_status": "code_schema_defined",
+      "definition": "The V1 IV family has exactly 10 columns: iv_level, iv_range, iv_change_1d, iv_change_5d, iv_change_20d, iv_mean_20d, iv_z_20d, iv_rank_252d, iv_rv_ratio_30m_1d, iv_age_min. This records transformed columns; the local raw IV/DVOL mapping, units and publication clock remain unresolved.",
+      "availability": "`iv_age_min` is an explicit age feature; exact raw source timestamp and point-in-time availability require source/production evidence.",
+      "units": "mixed volatility levels, changes, ratios, ranks, z-score and age; raw unit mapping UNKNOWN",
+      "source_refs": [
+        "../tools/perptools/ema_iv_v1/features.py",
+        "../tools/perptools/ema_iv_v2/runner_v3.py"
+      ],
+      "related_records": [
+        "d1-r3k-20261005"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "r3k-btc-daily-state-onehot-v1",
+      "card": "factor_research/factor_cards/shared_r3k_btc_daily_state_onehot.md",
+      "status": "FROZEN_INPUT_SCHEMA_EXPOSED_HISTORY",
+      "definition_status": "code_and_arm_contract_defined",
+      "definition": "D1's `price_iv_btc_state` information family uses three BTC daily-state one-hot columns (UP, DOWN, SIDEWAYS); missing state is ineligible, not an all-zero imputation. The nine continuous/binary daily features are a separate family and are not D1 inputs.",
+      "availability": "State one-hot requires the V1 availability mask and rejects missing rows; modeled availability is not proof of upstream publication latency.",
+      "units": "three dimensionless indicators",
+      "source_refs": [
+        "../tools/perptools/ema_iv_v2/protocol_v2.py",
+        "../tools/perptools/ema_iv_v2/runner_v3.py",
+        "../tools/perptools/ema_iv_v2/production_v6.py"
+      ],
+      "related_records": [
+        "d1-r3k-20261005"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "r3k-sequence-channels-v1",
+      "card": "factor_research/factor_cards/shared_r3k_sequence_channels.md",
+      "status": "FROZEN_INPUT_SCHEMA_EXPOSED_HISTORY",
+      "definition_status": "code_schema_defined",
+      "definition": "The transformer sequence contains exactly 90 completed one-minute steps x 7 channels: ret_1_norm, log_vol_z, log_quote_vol_z, trades_z, taker_imb, abs_ret_norm, hl_range_norm. Channel code comments define return/volume/range normalizations; no zero-padding is allowed for incomplete history.",
+      "availability": "Each sequence row is tied to a completed minute source bar and the decision clock; validate source publication timestamps independently.",
+      "units": "normalized return, volume/quote/trade z-scores, taker imbalance and range",
+      "source_refs": [
+        "../tools/perptools/ema_iv_v1/features.py",
+        "../tools/perptools/ema_iv_v2/production_v6.py"
+      ],
+      "related_records": [
+        "d1-r3k-20261005"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "r3k-btc-daily-nine-feature-family",
+      "card": "factor_research/factor_cards/shared_r3k_btc_daily_nine_features.md",
+      "status": "FROZEN_INPUT_SCHEMA_EXPOSED_HISTORY",
+      "definition_status": "code_schema_defined",
+      "definition": "The separate BTC-daily family contains exactly nine columns: btc_daily_distance, btc_daily_slope, btc_daily_er28, btc_daily_gate_a, btc_daily_gate_b, btc_daily_state_up, btc_daily_state_down, btc_daily_state_sideways, btc_daily_age_seconds. D1's frozen information family does not declare this continuous/daily-feature family.",
+      "availability": "Daily fields use the frozen BTC daily state/build protocol and explicit age seconds; check delayed publication view for each consuming arm.",
+      "units": "mixed normalized price distance/slope, ER, binary gates/state and age seconds",
+      "source_refs": [
+        "../tools/perptools/ema_iv_v1/features.py",
+        "../tools/perptools/ema_iv_v2/runner_v3.py"
+      ],
+      "related_records": [
+        "d1-r3k-20261005"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "core4-ridge-1h24-feature-schema-v1",
+      "card": "factor_research/factor_cards/shared_core4_ridge_1h24_features.md",
+      "status": "FROZEN_TRAIN_ONLY_DESCRIPTOR_EXPOSED",
+      "definition_status": "descriptor_and_manifest_defined",
+      "definition": "The independent legacy Core4 Ridge descriptor uses nine columns: own_log_trailing_var_6/42/180, btc_log_trailing_var_6/42/180, symbol_ETH, symbol_SOL, symbol_BNB. Unlike Core3, the BNB dummy is part of this four-symbol fit and is not a constant-zero column. This same-looking schema is independently pinned; do not copy Core3 semantics.",
+      "availability": "Source-window timing is specified by its own run manifest/contract; actual exchange publication latency remains unverified.",
+      "units": "log trailing return variance plus symbol dummies",
+      "source_refs": [
+        "../reports/strategy_validation/trend_vol_1h_risk2021_v1/model_descriptors_train_only.json",
+        "../reports/strategy_validation/trend_vol_1h_risk2021_v1/run_manifest.json",
+        "../reports/strategy_validation/trend_vol_1h_risk2021_v1/core_run_contract.json"
+      ],
+      "related_records": [
+        "ridge-1h24-risk-2021"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "neighbor-ml-microstructure-24d-v1",
+      "card": "factor_research/factor_cards/shared_neighbor_ml_microstructure_24d.md",
+      "status": "LEGACY_SOURCE_SCHEMA_EXPOSED_RUN_BINDING_PARTIAL",
+      "definition_status": "feature_constant_and_pipeline_code_defined_saved_run_binding_partial",
+      "definition": "The adjacent source `crypto_quant/ml/models.py::FEATURE_COLUMNS` defines 24 columns: ma_order_type, ma_cross_count_12, congestion_ratio, congestion_ratio_delta_3, price_location, dist_to_u, dist_to_l, dist_to_ma200, ma20_slope_3/6/12, ma50_slope_3/6/12, ma100_slope_3/6/12, ma200_slope_12, atr_ratio, vol_ratio_20, taker_buy_ratio, candle_body_ratio, upper_shadow_ratio, lower_shadow_ratio. `run_ma_ml_study.py` binds congestion_dataset, purged_cv and models. This is a legacy adjacent spot pipeline; exact saved-run binding remains unverified.",
+      "availability": "The dataset builder uses closed bars and features at close, with T+1-open execution. Per-feature upstream publication timestamps are not established. Missing taker volume may use a legacy volume*0.5 fallback; do not reuse that as a new contract.",
+      "units": "24 mixed microstructure/price/flow columns; see exact names",
+      "source_refs": [
+        "../../crypto/crypto_quant/ml/models.py",
+        "../../crypto/scripts/run_ma_ml_study.py",
+        "../../crypto/crypto_quant/ml/congestion_dataset.py",
+        "../../crypto/crypto_quant/ml/purged_cv.py",
+        "../../crypto/reports/ma_ml/ML_RESEARCH_SUMMARY.md"
+      ],
+      "related_records": [
+        "source-ma-ml-legacy"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "neighbor-token-feature-code-family-v1",
+      "card": "factor_research/factor_cards/shared_neighbor_token_feature_code_family.md",
+      "status": "LEGACY_CODE_REFERENCE_NOT_CHECKPOINT_BOUND",
+      "definition_status": "current_source_builder_fields_exposed_checkpoint_binding_unknown",
+      "definition": "The adjacent read-only dataset_builder.py compute_token_features code exposes OHLCV cross-return horizons 1/3/6/18/42, EMA20/60 bias, ATR14 ratio/high-low/Bollinger20 percent-B and width, taker/volume, cross-asset, lagged daily macro/on-chain, basis/funding/OKX and optional eight-channel inputs. prepare_crypto_datasets uses L=12 and 4h/8h log-return labels; prepare_chan_wave_datasets uses 3/6/12-day (18/36/72-bar) labels and its own expansion/purge/embargo protocol. These current code facts are not proof that a legacy checkpoint consumed them.",
+      "availability": "Code-level timing and lag fields are study-specific; confirm exact historical dataset/model binding before use.",
+      "units": "mixed token feature families; per-column source/availability requires the old manifest",
+      "source_refs": [
+        "../../crypto/crypto_quant/dataset_builder.py",
+        "../../crypto/docs/model_provenance.json"
+      ],
+      "related_records": [
+        "source-transformer-stchan-legacy"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "spot-bb120x2-rule-v1",
+      "card": "factor_research/factor_cards/shared_spot_bb120x2_rule.md",
+      "status": "LEGACY_SPOT_RULE_DOCUMENTED",
+      "definition_status": "report_rule_parameters_named",
+      "definition": "The source spot benchmark uses Bollinger n=120, k=2 with EMA200 gate; enter above upper band and exit below middle band or when the EMA gate fails. Report-selected configuration is fixed-slot, no-stop. This is a spot rule and not a perpetual model.",
+      "availability": "Rule evaluates bar-derived indicators; exact historical decision/publish availability requires its source implementation.",
+      "units": "close-price bands and boolean gates",
+      "source_refs": [
+        "../../crypto/trend_research/reports/TREND_RESEARCH_REPORT.md"
+      ],
+      "related_records": [
+        "source-spot-bb-benchmark"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "source-top1-annual-trend-rule-v1",
+      "card": "factor_research/factor_cards/shared_source_top1_annual_trend_rule.md",
+      "status": "LEGACY_SPOT_RULE_DOCUMENTED",
+      "definition_status": "source_formula_known_historical_run_binding_partial",
+      "definition": "The annual trend source formula is score=BB_z120 + close/close.shift(120)-1, with EMA200 gating, BTC market gate, asset hysteresis of +/-0.005, and challenger score buffer default 0; it selects one position and uses ATR14 x 1.5 stop. Do not reduce this to a generic EMA200 rule. Historical run/source binding remains partial.",
+      "availability": "Bar-close inputs are named by source code; exact publication time and historical run binding remain unverified.",
+      "units": "BB z-score, 120-bar return, EMA gate, hysteresis and ATR stop",
+      "source_refs": [
+        "../../crypto/reports/V1_1X_per_year_decision.md",
+        "../../crypto/crypto_quant/core/top1_decision_engine.py"
+      ],
+      "related_records": [
+        "source-top1-annual-trend"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "support-catboost-dev25-v4-feature-sets",
+      "card": "factor_research/factor_cards/shared_support_catboost_dev25_v4_feature_sets.md",
+      "status": "FROZEN_MODEL_FEATURE_ORDER_RECORDED",
+      "definition_status": "saved_model_feature_order_and_protocol_whitelists_recorded",
+      "definition": "2025 CatBoost support/meta development evaluation uses the frozen v8 F0/F1/F2 feature sets. Exact ordered columns: {\"F0\": [\"decision_close_vs_zone_high_atr\", \"bars_since_touch\", \"decision_candle_bullish\", \"decision_close_location\", \"support_unbroken_at_close\", \"touch_depth_atr\", \"zone_width_atr\", \"decision_atr_pct\", \"bar_return_1\", \"bar_return_3\", \"bar_return_6\", \"bar_return_12\", \"bar_return_24\", \"return_vol_6\", \"return_vol_12\", \"return_vol_24\", \"bar_range_atr\", \"bar_body_atr\", \"upper_wick_atr\", \"lower_wick_atr\", \"volume_log_relative_6\", \"volume_log_relative_24\", \"volume_zscore_24\", \"symbol\"], \"F1\": [\"decision_close_vs_zone_high_atr\", \"bars_since_touch\", \"decision_candle_bullish\", \"decision_close_location\", \"support_unbroken_at_close\", \"touch_depth_atr\", \"zone_width_atr\", \"decision_atr_pct\", \"bar_return_1\", \"bar_return_3\", \"bar_return_6\", \"bar_return_12\", \"bar_return_24\", \"return_vol_6\", \"return_vol_12\", \"return_vol_24\", \"bar_range_atr\", \"bar_body_atr\", \"upper_wick_atr\", \"lower_wick_atr\", \"volume_log_relative_6\", \"volume_log_relative_24\", \"volume_zscore_24\", \"1h_trend_slope5\", \"4h_trend_slope5\", \"1h_body_engulf\", \"4h_body_engulf\", \"1h_full_outside\", \"4h_full_outside\", \"1h_breakout_age_bars\", \"4h_breakout_age_bars\", \"1h_support_overlap\", \"4h_support_overlap\", \"1h_support_gap_atr\", \"4h_support_gap_atr\", \"1h_breakout_retest_active\", \"4h_breakout_retest_active\", \"1h_structure_bullish\", \"4h_structure_bullish\", \"both_htf_trends_bullish\", \"both_htf_structure_bullish\", \"1h_ma_hhhl_aligned_bullish\", \"4h_ma_hhhl_aligned_bullish\", \"1h_ma_hhhl_conflict\", \"4h_ma_hhhl_conflict\", \"any_htf_body_engulf\", \"any_htf_full_outside\", \"any_htf_breakout_retest\", \"any_htf_support_overlap\", \"1h_trend\", \"4h_trend\", \"1h_structure_hhhl\", \"4h_structure_hhhl\", \"1h_trend_structure_state\", \"4h_trend_structure_state\", \"symbol\"], \"F2\": [\"decision_close_vs_zone_high_atr\", \"bars_since_touch\", \"decision_candle_bullish\", \"decision_close_location\", \"support_unbroken_at_close\", \"touch_depth_atr\", \"zone_width_atr\", \"decision_atr_pct\", \"bar_return_1\", \"bar_return_3\", \"bar_return_6\", \"bar_return_12\", \"bar_return_24\", \"return_vol_6\", \"return_vol_12\", \"return_vol_24\", \"bar_range_atr\", \"bar_body_atr\", \"upper_wick_atr\", \"lower_wick_atr\", \"volume_log_relative_6\", \"volume_log_relative_24\", \"volume_zscore_24\", \"1h_trend_slope5\", \"4h_trend_slope5\", \"1h_body_engulf\", \"4h_body_engulf\", \"1h_full_outside\", \"4h_full_outside\", \"1h_breakout_age_bars\", \"4h_breakout_age_bars\", \"1h_support_overlap\", \"4h_support_overlap\", \"1h_support_gap_atr\", \"4h_support_gap_atr\", \"1h_breakout_retest_active\", \"4h_breakout_retest_active\", \"1h_structure_bullish\", \"4h_structure_bullish\", \"both_htf_trends_bullish\", \"both_htf_structure_bullish\", \"1h_ma_hhhl_aligned_bullish\", \"4h_ma_hhhl_aligned_bullish\", \"1h_ma_hhhl_conflict\", \"4h_ma_hhhl_conflict\", \"any_htf_body_engulf\", \"any_htf_full_outside\", \"any_htf_breakout_retest\", \"any_htf_support_overlap\", \"1h_trend\", \"4h_trend\", \"1h_structure_hhhl\", \"4h_structure_hhhl\", \"1h_trend_structure_state\", \"4h_trend_structure_state\", \"funding_rate_asof\", \"funding_age_hours\", \"funding_mean_last3\", \"funding_std_last3\", \"symbol\"]}. The protocol says CatBoost 1.2.10 models were trained on 2024 only, with F0/F1/F2 thresholds 0.0005/0.0/-0.002 and no refit/recalibration/drop/tuning. Rebuilt causal OHLCV includes 2024 warm-up; completed 1h/4h data must have availability_time < 5m decision_time. Funding columns appear only in F2 and use observed settlements available at settlement+5m < decision, max age 12h, no resampling/fill; funding is not a cashflow in this price-only ledger.",
+      "availability": "Modeled availability is the protocol's strict HTF and observed-funding cut; real provider publication latency beyond source evidence remains unasserted.",
+      "units": "Mixed normalized 5m event geometry, return/volatility/volume, HTF structure and funding rate/age features; exact ordered names in definition.",
+      "source_refs": [
+        "../reports/strategy_validation/support_rebound_mtf/catboost_meta_dev_2025_v4/protocol_dev_2025_v4.json",
+        "../scripts/run_support_rebound_catboost_meta_dev_2025_v4.py",
+        "../reports/strategy_validation/support_rebound_mtf/catboost_meta_dev_2025_v4/dev25_v4_manifest.json"
+      ],
+      "related_records": [
+        "pattern-support-meta"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "minute-return-2026-price-flow-v1",
+      "card": "factor_research/factor_cards/shared_minute_return_2026_price_flow.md",
+      "status": "FROZEN_PROTOCOL_FEATURE_SCHEMA_EXPOSED",
+      "definition_status": "protocol_and_feature_builder_defined",
+      "definition": "The protocol defines 18 price/volume/count columns P: p_logret_1/5/15/30/60/120m, p_rvol_5/15/30/60m, p_range_rel, p_body_rel, p_close_pos_range, p_log_volume, p_relvol_5/15/60m, and p_log_trades. The flow arm F is exactly P plus f_signed_volume_ratio_1m, f_signed_quote_ratio_1m, f_flow_imbalance_5/15/30/60m, and f_signed_volume_ratio_z_60m.",
+      "availability": "Features are decision-origin indexed; decision=t+61s, entry=t+120s. Feature source publication details beyond protocol timing are not inferred. Missing continuous price paths are not filled.",
+      "units": "price returns/relative range/volume/count and dimensionless signed-flow ratios",
+      "source_refs": [
+        "../tools/perptools/minute_return_2026_v1/protocol.py",
+        "../tools/perptools/minute_return_2026_v1/features.py"
+      ],
+      "related_records": [
+        "minute-return-2026"
+      ],
+      "kind": "factor",
+      "role": "feature_or_rule_definition"
+    },
+    {
+      "factor_id": "minute-return-2026-forward-open-return-label-v1",
+      "card": "factor_research/factor_cards/shared_minute_return_2026_forward_open_label.md",
+      "status": "FROZEN_PROTOCOL_LABEL_SCHEMA_EXPOSED",
+      "definition_status": "protocol_label_builder_defined",
+      "definition": "For h in {5,15,30} minutes, label=(open[t+2m+h]/open[t+2m])-1. This is a future open-to-open simple return label, not a log close-return target.",
+      "availability": "The label is known only after the future open is observed; exit must be strictly before phase_end. Label is not a consumed input feature.",
+      "units": "simple return fraction",
+      "source_refs": [
+        "../tools/perptools/minute_return_2026_v1/features.py",
+        "../tools/perptools/minute_return_2026_v1/protocol.py"
+      ],
+      "related_records": [
+        "minute-return-2026"
+      ],
+      "kind": "label",
+      "role": "future_target_label_not_a_consumed_input"
+    },
+    {
+      "factor_id": "event-meta-fixed24-features-v2",
+      "card": "factor_research/factor_cards/shared_event_meta_fixed24_features_v2.md",
+      "status": "IMPLEMENTATION_AND_ARTIFACT_DEFINED_EXPLORATORY_UNVERIFIED",
+      "definition_status": "fixed_2021_meta_fit_v2_schema",
+      "definition": "The bound 2021 meta-fit schema has 24 columns: own/BTC/relative returns at 1h,4h,24h,168h; own and BTC EMA50 slope, ER24 and ATR14 fraction on 4h; reference stop gap, max entry gap, setup age hours, own funding rate, own funding age hours, and is_H2. This is specific to the fixed meta-fit v2 schema; do not generalize to all regime/event substudies.",
+      "availability": "Rows carry source availability timestamps and the model uses feature-ready rows; actual upstream publication latency beyond recorded source clocks remains to be verified per source.",
+      "units": "Mixed: return/relative-return fractions, slopes and fractions; funding rate and age; binary is_H2.",
+      "source_refs": [
+        "../reports/strategy_validation/regime_event_round2_20260930/meta_fit2021_v2/fit_results_v2.json",
+        "../reports/strategy_validation/regime_event_round2_20260930/meta_fit2021_v2/model_schema_forensic_v1.json"
+      ],
+      "related_records": [
+        "event-meta-2021-23"
+      ],
+      "kind": "factor",
+      "role": "actual_supervised_model_input_schema"
+    },
+    {
+      "factor_id": "event-meta-shadow-net-r-label-v2",
+      "card": "factor_research/factor_cards/shared_event_meta_shadow_net_r_label_v2.md",
+      "status": "DEFINITION_DOCUMENTED_LABEL_NOT_VALIDATION",
+      "definition_status": "fixed_2021_meta_fit_v2_contract",
+      "definition": "The 2021 fixed meta-fit v2 target is a per-event counterfactual shadow label net_R; label availability is the native natural exit time plus one second. It is not an account return or profitability evidence.",
+      "availability": "Mature only when the native natural exit is known and one second has elapsed; train/validation label availability must be strictly before each split boundary.",
+      "units": "R multiple per event.",
+      "source_refs": [
+        "../reports/strategy_validation/regime_event_round2_20260930/meta_fit2021_v2/fit_results_v2.json"
+      ],
+      "related_records": [
+        "event-meta-2021-23"
+      ],
+      "kind": "label",
+      "role": "future_target_label_not_a_consumed_input"
+    },
+    {
+      "factor_id": "c3-phase-a-price-feature-schema-v1",
+      "card": "factor_research/factor_cards/shared_c3_phase_a_price_features.md",
+      "status": "IMPLEMENTATION_DEFINED_EXPLORATORY_UNVERIFIED",
+      "definition_status": "phase_a_runner_frozen_feature_names_and_formulas",
+      "definition": "The Phase-A C3 runner defines 13 columns: atr14_rel=ATR14/close; upper55_break_atr=(close-prior_upper55)/ATR14; ema50_gap_atr=(close-EMA50)/ATR14; rv24/rv72=sqrt(sum of squared completed log returns); downside_rv24/downside_rv72=sqrt(sum of squared min(logret,0)); logret24/logret72=sum of completed log returns; range24_rel=(24-bar high max-low min)/close; close_to_low24_rel=(close-24-bar low min)/close; c3_entry_candidate and is_btc indicators. This is the C3 Phase-A schema only.",
+      "availability": "Runner assigns feature availability at signal close + 1001 ms and decision one millisecond later; this is the implementation clock, not proof of real upstream publication latency.",
+      "units": "Mixed normalized returns/ranges, volatility magnitudes, and binary indicators.",
+      "source_refs": [
+        "../scripts/run_c3_entry_anchored_risk_phase_a_v1r2.py",
+        "../reports/strategy_validation/c3_entry_anchored_risk_v1/phase_a_output_v1r2/phase_a_model_descriptors.json"
+      ],
+      "related_records": [
+        "c3-risk-train-shrink"
+      ],
+      "kind": "factor",
+      "role": "actual_supervised_model_input_schema"
+    },
+    {
+      "factor_id": "maker-v2-channel-rule-contract",
+      "card": "factor_research/factor_cards/shared_maker_v2_channel_rule_contract.md",
+      "status": "FROZEN_RULE_SCHEMA_EXPLORATORY_UNVERIFIED",
+      "definition_status": "frozen_config_and_framework_rule_contract",
+      "definition": "Deterministic candidate families use completed 5m/15m channel bars, Bollinger 20 with 2 standard deviations (ddof=0), range-width/mid stability and outside-close checks; trend EMA20/EMA50 with 3-bar momentum; optional EMA5/20 or SMA5/10 crossover. Candidate order geometry uses channel edges, edge/stop/target fractions and fixed activation/TTL/hold/cooldown rules. There is no supervised prediction target.",
+      "availability": "Feature framework tracks completed-bar available_at and enforces configured freshness; the frozen files do not prove real queue/fill availability.",
+      "units": "Price fractions, indicator values, booleans, and minutes/basis points as specified by frozen config.",
+      "source_refs": [
+        "../reports/strategy_validation/mtf_trend_range_maker_v2_r1/frozen_config.json",
+        "../scripts/mtf_trend_range_maker_v2_framework.py"
+      ],
+      "related_records": [
+        "maker-v2-r1"
+      ],
+      "kind": "factor",
+      "role": "deterministic_rule_input_and_execution_schema"
+    }
+  ],
+  "records": [
+    {
+      "registry_id": "channel-c1-c3-20261010",
+      "title": "MTF channel C1-C3 limited comparison",
+      "category": "strategy",
+      "primary_directory": "strategy_models",
+      "primary_card": "strategy_models/experiments/channel-c1-c3-20261010.md",
+      "related_cards": [],
+      "factor_ids": [],
+      "label_evidence": "Deterministic channel rule variants, not a supervised prediction label.",
+      "label_factor_ids": [],
+      "research_notes": [
+        "Deterministic channel comparison, not supervised prediction. This pass verified that FINAL_MANIFEST pins source hashes and comparison.json contains result/output structures; actual consumed inputs were not verified. The cited one-page and full-results reports remain denied; no retry or bypass."
+      ],
+      "model_input_evidence": {
+        "known": [],
+        "related_evidence": [],
+        "unknown": [
+          {
+            "field": "actual C1/C2/C3 rule input columns, formula parameters and per-version binding",
+            "reason": "The one-page review and full-results report were denied reads (WinError 5) and will not be retried. Readable FINAL_MANIFEST establishes code/artifact hashes; comparison.json establishes outputs and disclosed run cells, but neither alone exposes a verified source-level feature schema or exact binding for each C variant.",
+            "evidence_to_check": "Use an authorized readable source protocol/code review or permitted review artifact enumerating each variant; do not infer inputs from C1/C2/C3 names."
+          }
+        ]
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/mtf_channel_limited_compare_20261010_v1/root_review/ONE_PAGE_REVIEW_ZH.md",
+          "access_status": "READ_DENIED_WINERROR_5",
+          "audit_scope": "Latest comparison one-page review."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/mtf_channel_limited_compare_20261010_v1/delivery_v1/FULL_RESULTS_ZH.md",
+          "access_status": "READ_DENIED_WINERROR_5",
+          "audit_scope": "Detailed reported cases and assumptions."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/mtf_channel_limited_compare_20261010_v1/FINAL_MANIFEST.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Final code hashes and artifact manifest."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/mtf_channel_limited_compare_20261010_v1/comparison_run_v1/comparison.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Machine-readable comparison results."
+        }
+      ]
+    },
+    {
+      "registry_id": "longcycle-trend-12-rules",
+      "title": "Long-cycle trend catalog, twelve rules",
+      "category": "strategy",
+      "primary_directory": "strategy_models",
+      "primary_card": "strategy_models/experiments/longcycle-trend-12-rules.md",
+      "related_cards": [
+        "strategy_models/experiments/core3-trend-risk-v1.md"
+      ],
+      "factor_ids": [
+        "sixfactor-trend-ema-macd-bollinger-family"
+      ],
+      "label_evidence": "Deterministic rule catalog, not a supervised prediction label.",
+      "label_factor_ids": [],
+      "research_notes": [],
+      "model_input_evidence": {
+        "known": [
+          {
+            "factor_id": "sixfactor-trend-ema-macd-bollinger-family",
+            "claim": "Older code and its account report define six rule families, each at 4h and 1d: EMA200, EMA20_60, MACD(hist>0), MACD_EMA200, shifted DONCHIAN55_20, and BB120_EMA200_ATR3. Indicators include EMA20/60/200, MACD(12,26,9), BB120 +/-2 std, ATR14; do not conflate this catalog with Core3 benchmarks.",
+            "refs": [
+              "../reports/strategy_validation/trend_or_2026_v1/audit_snapshots/pre_pipeline_snapshot_20261004_v1/files/scripts/longcycle_signal_cases_luna_v1.py",
+              "../reports/strategy_validation/longcycle_trend_catalog_v1/ACCOUNT_RESULTS_V3_20261003.md",
+              "../reports/strategy_validation/sixfactor_longcycle_v1/SIXFACTOR_LONGCYCLE_RESULTS_CN_20261003.md"
+            ],
+            "binding_scope": "named_input_family"
+          }
+        ],
+        "related_evidence": [],
+        "unknown": []
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/longcycle_trend_catalog_v1/ACCOUNT_RESULTS_V3_20261003.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Twelve rule account-result summary and shared assumptions."
+        }
+      ]
+    },
+    {
+      "registry_id": "d1-r3k-20261005",
+      "title": "D1 and R3K minute model first conclusion",
+      "category": "model",
+      "primary_directory": "strategy_models",
+      "primary_card": "strategy_models/experiments/d1-r3k-20261005.md",
+      "related_cards": [
+        "factor_research/factor_cards/factor-calibration-causal-2023.md"
+      ],
+      "factor_ids": [
+        "r3k-price-anchor-features-v1",
+        "r3k-iv-derived-features-v1",
+        "r3k-btc-daily-state-onehot-v1",
+        "r3k-sequence-channels-v1"
+      ],
+      "label_evidence": "Frozen V1 label builder defines log(exit_open/entry_open), entry at anchor open and exit at anchor+h. Protocol horizons are 5/15/30 minutes with primary 15m; maturity is exit plus 1 second, and runner_v3 includes a row only when maturity is strictly before sealed/cutoff. Applies to the frozen D1/R3K arm only.",
+      "label_factor_ids": [],
+      "research_notes": [
+        "V1 label is log(exit_open/entry_open) at anchor+h; v2 primary horizon is 15m from {5,15,30}, maturity adds one second, and runner_v3 requires maturity strictly before cutoff. Frozen Standardizer uses sampled-train column mean/std (ddof=0), maps zero std to 1, rejects nonfinite or wholly unobserved columns without imputation; SampleScalers share the anchor transform by column; TargetScaler is per horizon on sampled-train target mean/std and blocks zero/nonfinite std without epsilon. Direction z=(d*r-d*mu)/sigma; inverse d*mu+sigma*z is applied once. Numeric saved scaler values and checkpoint-to-output binding remain separate unknowns."
+      ],
+      "model_input_evidence": {
+        "known": [
+          {
+            "factor_id": "r3k-price-anchor-features-v1",
+            "claim": "D1 arm contract selects the price information family; the cited code defines the exact V1 anchor columns.",
+            "refs": [
+              "../tools/perptools/ema_iv_v1/features.py",
+              "../tools/perptools/ema_iv_v2/protocol_v2.py",
+              "../tools/perptools/ema_iv_v2/runner_v3.py"
+            ],
+            "binding_scope": "actual_frozen_columns"
+          },
+          {
+            "factor_id": "r3k-iv-derived-features-v1",
+            "claim": "D1 arm contract selects the IV information family; V1 code names its ten derived IV columns. Raw input mapping/unit/clock remain separate unknowns.",
+            "refs": [
+              "../tools/perptools/ema_iv_v1/features.py",
+              "../tools/perptools/ema_iv_v2/protocol_v2.py"
+            ],
+            "binding_scope": "actual_frozen_columns"
+          },
+          {
+            "factor_id": "r3k-sequence-channels-v1",
+            "claim": "Transformer D1 also consumes its frozen 90x7 completed-minute sequence channel tensor, defined by V1 feature code.",
+            "refs": [
+              "../tools/perptools/ema_iv_v1/features.py",
+              "../tools/perptools/ema_iv_v2/production_v6.py"
+            ],
+            "binding_scope": "actual_frozen_columns"
+          },
+          {
+            "factor_id": "r3k-btc-daily-state-onehot-v1",
+            "claim": "D1 arm is price_iv_btc_state and consumes three-state one-hot UP/DOWN/SIDEWAYS; the separate nine continuous BTC-daily fields belong to another arm and are not attributed to D1.",
+            "refs": [
+              "../tools/perptools/ema_iv_v2/protocol_v2.py",
+              "../tools/perptools/ema_iv_v2/runner_v3.py"
+            ],
+            "binding_scope": "actual_frozen_columns"
+          }
+        ],
+        "related_evidence": [
+          {
+            "factor_id": "iv-dvol30-annualized",
+            "claim": "Related report describes DVOL as a 30-day annualized option-implied-volatility concept, but its exact local mapping to D1 raw input fields is unresolved.",
+            "refs": [
+              "../reports/EMA_IV_FIRST_CONCLUSION_CN_20261005.md"
+            ],
+            "binding_scope": "related_evidence_only"
+          },
+          {
+            "factor_id": "sixfactor-btc-relative-strength-family",
+            "claim": "The first-conclusion narrative discusses BTC daily EMA/efficiency proxies in related research; D1's frozen arm contract has no BTC-daily family, so this is not recorded as a D1 consumed input.",
+            "refs": [
+              "../reports/EMA_IV_FIRST_CONCLUSION_CN_20261005.md"
+            ],
+            "binding_scope": "related_evidence_only"
+          }
+        ],
+        "unknown": [
+          {
+            "field": "raw IV source field, local units and true point-in-time publication timestamp",
+            "reason": "Derived IV feature names and model-side transforms are frozen, but exact mapping from bounded DVOL values, unit conversion and upstream publication clock to each row are not established.",
+            "evidence_to_check": "R3K bounded source manifests and upstream publication metadata for bounded_dvol."
+          },
+          {
+            "field": "per-fold serialized scaler values and exact checkpoint-to-historical-output binding",
+            "reason": "Frozen code specifies scaler algorithms and D1 arm binding; numeric per-fold scaler objects/checkpoint identity were not inspected or independently bound in this pass.",
+            "evidence_to_check": "Read exact run-bound serialized descriptor/checkpoint identity only if needed; do not infer numeric scaler state from implementation."
+          }
+        ]
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../reports/EMA_IV_FIRST_CONCLUSION_CN_20261005.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Existing first conclusion."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/r3k_20261005/d1_r3k_20261005.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Correctly named detailed report."
+        },
+        {
+          "relative_path": "../tools/perptools/ema_iv_v1/features.py",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Frozen label builder and feature schema."
+        },
+        {
+          "relative_path": "../tools/perptools/ema_iv_v1/daily.py",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "V1 daily feature/label implementation."
+        },
+        {
+          "relative_path": "../tools/perptools/ema_iv_v2/protocol_v2.py",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Horizon and maturity constants."
+        },
+        {
+          "relative_path": "../tools/perptools/ema_iv_v2/models_v2.py",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Train-only scaler algorithms and inverse target transform."
+        },
+        {
+          "relative_path": "../tools/perptools/ema_iv_v2/runner_v3.py",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "D1 arm binding, maturity cutoff and sample selection."
+        },
+        {
+          "relative_path": "../tools/perptools/ema_iv_v2/production_v6.py",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Transformer task applies frozen transforms."
+        }
+      ]
+    },
+    {
+      "registry_id": "ridge-1h24-risk-2021",
+      "title": "Ridge 1h/24 risk prediction arithmetic audit",
+      "category": "model",
+      "primary_directory": "strategy_models",
+      "primary_card": "strategy_models/experiments/ridge-1h24-risk-2021.md",
+      "related_cards": [
+        "factor_research/factor_cards/factor-calibration-causal-2023.md"
+      ],
+      "factor_ids": [
+        "core4-ridge-1h24-feature-schema-v1"
+      ],
+      "label_evidence": "Known label from its own Core4 contract: V_1h24 = mean of the next 24 completed H1 close log returns squared, non-annualized; label becomes mature only after all 24 future H1 bars are observed. This is a target, not a feature. Its independent nine-column Core4 input schema is enumerated above and is not inherited from Core3.",
+      "label_factor_ids": [
+        "forward-realized-variance-1h24-label"
+      ],
+      "research_notes": [],
+      "model_input_evidence": {
+        "known": [
+          {
+            "factor_id": "core4-ridge-1h24-feature-schema-v1",
+            "claim": "The run-manifest-bound training-only descriptor names the independent nine-column Core4 Ridge schema; lambda=10, 4,324 training rows (1,081 each for BTC/ETH/SOL/BNB), train-only mean/scale, geometric exp(log forecast) with no clipping/smearing.",
+            "refs": [
+              "../reports/strategy_validation/trend_vol_1h_risk2021_v1/model_descriptors_train_only.json",
+              "../reports/strategy_validation/trend_vol_1h_risk2021_v1/run_manifest.json"
+            ],
+            "binding_scope": "actual_frozen_columns"
+          }
+        ],
+        "related_evidence": [],
+        "unknown": [
+          {
+            "field": "per-feature upstream publication timing",
+            "reason": "Descriptor enumerates the feature columns and train-only scaler but does not establish real exchange publish timestamps.",
+            "evidence_to_check": "source timestamp/publication evidence for each source series in the run manifest."
+          }
+        ]
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/trend_vol_1h_risk2021_v1/derived_arithmetic_audit_v1r3.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Derived arithmetic checks and metrics."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/trend_vol_1h_risk2021_v1/core_run_contract.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Run contract and declared windows."
+        }
+      ]
+    },
+    {
+      "registry_id": "c3-x3-overlay-2023",
+      "title": "C3/X3 volatility overlay",
+      "category": "strategy",
+      "primary_directory": "strategy_models",
+      "primary_card": "strategy_models/experiments/c3-x3-overlay-2023.md",
+      "related_cards": [
+        "factor_research/factor_cards/factor-calibration-causal-2023.md"
+      ],
+      "factor_ids": [],
+      "label_evidence": "Option/EOH calibration target is discussed; exact target unit, publication clock and point-in-time exposure remain UNKNOWN. The documented exposed calibration result is not a trading label or alpha proof.",
+      "label_factor_ids": [],
+      "research_notes": [],
+      "model_input_evidence": {
+        "known": [],
+        "related_evidence": [
+          {
+            "factor_id": "sixfactor-option-eoh-atm-volatility",
+            "claim": "The cited EOH calibration is part of the volatility-risk evidence; it is not proof that C3/X3 traded on a known, available IV field. Exact C3/X3 factor and label remain UNKNOWN.",
+            "refs": [
+              "../reports/strategy_validation/c3_vol_overlay2023_v1r3/C3_VOL_OVERLAY_2023_V1R3_GATE_REPORT_CN_V1R2.md",
+              "../reports/strategy_validation/sixfactor_longcycle_v1/SIXFACTOR_LONGCYCLE_RESULTS_CN_20261003.md"
+            ],
+            "binding_scope": "related_evidence_only"
+          }
+        ],
+        "unknown": [
+          {
+            "field": "exact C3/X3 forecast inputs/label",
+            "reason": "The final supplement describes forecast-supported arms and EOH calibration but does not list raw feature columns or exact label formula.",
+            "evidence_to_check": "linked C3 report's frozen protocol/config and input/code manifests."
+          },
+          {
+            "field": "true forecast publication time",
+            "reason": "Final report explicitly says actual prediction publication time is unknown.",
+            "evidence_to_check": "exchange/provider source timestamp and event publication metadata."
+          },
+          {
+            "field": "actual feature/factor columns consumed by each C3/X3 model",
+            "reason": "The EOH calibration report is related evidence, not direct proof that the C3/X3 forecast or overlay consumes those columns.",
+            "evidence_to_check": "C3/X3 frozen model descriptor and input manifest bound to its run."
+          }
+        ]
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/c3_vol_overlay2023_v1r3/C3_VOL_OVERLAY_2023_V1R3_GATE_REPORT_CN_V1R2.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Existing limited gate report."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/c3_vol_overlay2023_v1r3/C3_VOL_OVERLAY_2023_V1R3_RESULTS_CN.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Existing overlay results."
+        }
+      ]
+    },
+    {
+      "registry_id": "c3-risk-train-shrink",
+      "title": "C3 risk-training position shrink",
+      "category": "strategy",
+      "primary_directory": "strategy_models",
+      "primary_card": "strategy_models/experiments/c3-risk-train-shrink.md",
+      "related_cards": [
+        "factor_research/factor_cards/factor-calibration-causal-2023.md"
+      ],
+      "factor_ids": [
+        "atr14-stop-distance",
+        "c3-phase-a-price-feature-schema-v1"
+      ],
+      "label_evidence": "Phase-A 24-hour labels use the 24 consecutive H1 bars beginning at the deterministic strictly-later entry open. Entry reference is raw entry open × 1.0005; MAE=max(0,(entry_reference-min future low)/entry_reference); terminal target=log(last future close/entry_reference); stop-touch=1 when future min low <= signal close - 2*ATR14. Mature at the 24th bar close; gaps, invalid bars and split-end immature labels are excluded rather than filled. These are risk-sizing targets, not evidence of alpha.",
+      "label_factor_ids": [],
+      "research_notes": [
+        "13 input formulas and future target construction were statically checked in the Phase-A runner and descriptor. FIT is 2021-01-01 through 2022-07-01 and CAL 2022-07-08 through 2023-01-01; CAL-derived calibration remains in-sample to CAL. Downstream shrink uses d_stop=2*ATR14/reference_close; current result remains exploratory/unverified.",
+        "Saved Phase-A recipe: MAE q90 and terminal-return q10 use GradientBoostingRegressor quantile loss (alpha .90/.10, 100 trees, depth 2, min leaf 100, learning rate .05, seed 0); stop-touch uses train-only StandardScaler plus LogisticRegression(C=1, lbfgs, max_iter=2000, seed 0). Refinement run_manifest records phase_a_model_loaded=false, model_fit=false, model_predict=false: refinement reuses saved Phase-A prediction outputs for arithmetic diagnostics; it did not refit/re-predict or validate an untouched window."
+      ],
+      "model_input_evidence": {
+        "known": [
+          {
+            "factor_id": "atr14-stop-distance",
+            "claim": "Risk map uses d_stop=2*ATR14/reference_close; Phase-A feature builder also uses ATR14/close as a frozen price feature. This is distinct from the 13-column model matrix.",
+            "refs": [
+              "../docs/C3_RISK_TRAIN_REFINEMENT_REPORT_AUDITED_V1R3.md",
+              "../scripts/run_c3_entry_anchored_risk_phase_a_v1r2.py"
+            ],
+            "binding_scope": "actual_frozen_columns"
+          },
+          {
+            "factor_id": "c3-phase-a-price-feature-schema-v1",
+            "claim": "Phase-A model input columns and formulas are explicitly listed in the factor card and frozen runner. No IV, skew, or OI input is in this 13-column schema.",
+            "refs": [
+              "../reports/strategy_validation/c3_entry_anchored_risk_v1/phase_a_output_v1r2/phase_a_model_descriptors.json",
+              "../scripts/run_c3_entry_anchored_risk_phase_a_v1r2.py"
+            ],
+            "binding_scope": "actual_frozen_columns"
+          }
+        ],
+        "related_evidence": [],
+        "unknown": [
+          {
+            "field": "real source publication time of Phase-A price inputs",
+            "reason": "Runner clock is a configured signal-close + 1001ms availability assumption; source publication latency itself is not proven by the feature formulas.",
+            "evidence_to_check": "Verified source timestamp/publication evidence for each frozen source series."
+          }
+        ]
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../docs/C3_RISK_TRAIN_REFINEMENT_REPORT_AUDITED_V1R3.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Existing risk training refinement summary."
+        },
+        {
+          "relative_path": "../scripts/run_c3_entry_anchored_risk_phase_a_v1r2.py",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Static 13-feature formulas, feature availability clock and exact 24 H1 future-label construction; not executed."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/c3_entry_anchored_risk_v1/phase_a_output_v1r2/phase_a_model_descriptors.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Saved Phase-A feature names and FIT/CAL descriptor; descriptor only, no model binary."
+        },
+        {
+          "relative_path": "../docs/C3_RISK_TRAIN_REFINEMENT_PROTOCOL_V1R1.md",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Saved-only diagnostic scope, target heads and exposure limits."
+        },
+        {
+          "relative_path": "../docs/C3_RISK_TRAIN_REFINEMENT_REPORT_AUDITED_V1R3.md",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Existing exploratory result and risk mapping summary."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/c3_entry_anchored_risk_v1/phase_a_output_v1r2/phase_a_model_descriptors.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Saved Phase-A estimator recipes and train/cal counts; descriptor only, no model binary loaded."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/c3_risk_train_refinement_v1/training_output_v1r1/run_manifest.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Refinement provenance flags record phase_a_model_loaded=false, model_fit=false, model_predict=false; saved predictions reused."
+        }
+      ]
+    },
+    {
+      "registry_id": "event-meta-2021-23",
+      "title": "Regime, event and meta-account families",
+      "category": "model",
+      "primary_directory": "strategy_models",
+      "primary_card": "strategy_models/experiments/event-meta-2021-23.md",
+      "related_cards": [
+        "factor_research/factor_cards/factor-calibration-causal-2023.md"
+      ],
+      "factor_ids": [
+        "event-meta-fixed24-features-v2"
+      ],
+      "label_evidence": "For the fixed 2021 meta-fit v2 arm, target is per-event counterfactual shadow net_R; maturity is native_natural_exit_time + 1s and labels must be available strictly before split boundaries. Other regime/event substudies in this cluster use their own deterministic route/account definitions; do not transfer this label to them.",
+      "label_factor_ids": [
+        "event-meta-shadow-net-r-label-v2"
+      ],
+      "research_notes": [
+        "The fixed 2021 meta-fit v2 schema/label are explicit in fit_results_v2 and model_schema_forensic_v1. It fits CatBoost and Ridge on 2021 labelled event rows with a 7-day embargo and overlap-group purging; H1/H2 share a model with is_H2. 2022-23 results are exposed, and shadow net_R is not account profit. Round1/other rule arms remain separately scoped.",
+        "Fixed fit_results_v2 records split_train n=149 and validation n=139 after overlap purge; separate full_2021_refit uses n=300 and explicitly sets full_2021_refit_is_not_validation_evidence=true. Decision passes predicted net_R >= 0.1; below threshold maps to CASH; missing/nonfinite features or prediction map to ABSTAIN. The 300-row refit is not OOS or validation evidence."
+      ],
+      "model_input_evidence": {
+        "known": [
+          {
+            "factor_id": "event-meta-fixed24-features-v2",
+            "claim": "Fixed meta-fit v2 uses the exact 24-column schema catalogued on the linked factor card. This binding is limited to that fixed meta-fit model; BTC state tags are metadata-only, not model input.",
+            "refs": [
+              "../reports/strategy_validation/regime_event_round2_20260930/meta_fit2021_v2/fit_results_v2.json",
+              "../reports/strategy_validation/regime_event_round2_20260930/meta_fit2021_v2/model_schema_forensic_v1.json"
+            ],
+            "binding_scope": "actual_frozen_columns"
+          }
+        ],
+        "related_evidence": [
+          {
+            "factor_id": "observed-funding-event-features",
+            "claim": "The event v5 feature artifact contains funding rate and age columns, but fixed v2 is the only bound consumed-input list recorded above; no blanket binding to every sub-study is inferred.",
+            "refs": [
+              "../reports/strategy_validation/regime_event_round2_20260930/meta_account_2022_2023_v5/event_features_v5.json"
+            ],
+            "binding_scope": "related_evidence_only"
+          }
+        ],
+        "unknown": [
+          {
+            "field": "round1 and non-meta round2 route-arm exact per-variant input/threshold binding",
+            "reason": "The registry groups deterministic regime routing and event-family account comparisons with the fitted meta model. Exact per-arm inputs/thresholds for every non-meta variant were not established by readable summaries.",
+            "evidence_to_check": "Read each arm-specific frozen contract separately; do not apply the fixed 24-column meta schema to deterministic arms."
+          }
+        ]
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/market_regime_round1_20260930/final_review_v1/README_CN.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Regime round 1 conclusion."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/regime_event_round2_20260930/evaluation2023_v1/ROOT_REVIEW_CN_v2_WITH_ALPHA.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Event round 2 review."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/regime_event_round2_20260930/meta_account_2022_2023_v5_independent_audit_v1/README_AUDIT_RESULTS_CN_v1.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Meta-account audit and financing blockers."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/regime_event_round2_20260930/meta_fit2021_v2/fit_results_v2.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Fixed 24 features, target, maturity, chronological split, 7-day embargo and overlap purge."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/regime_event_round2_20260930/meta_fit2021_v2/model_schema_forensic_v1.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Forensic verification of fixed 24-column schema / model metadata."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/regime_event_round2_20260930/meta_account_2022_2023_v5/event_features_v5.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Readable v5 event-feature row schema; not by itself proof every field is consumed."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/regime_event_round2_20260930/meta_account_2022_2023_v5/meta_predictions_v5.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Saved Ridge/CatBoost prediction/action output schema, not source feature schema."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/regime_event_round2_20260930/meta_fit2021_v2/fit_results_v2.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Split-train/validation/full-2021-refit counts, explicit refit evidence limit and decision rule."
+        }
+      ]
+    },
+    {
+      "registry_id": "channel-ml-maker-2024-25",
+      "title": "Channel ML R4 resume, selected CatBoost D6/I500",
+      "category": "model",
+      "primary_directory": "strategy_models",
+      "primary_card": "strategy_models/experiments/channel-ml-maker-2024-25.md",
+      "related_cards": [],
+      "factor_ids": [
+        "channel-ml-d6i500-feature-set"
+      ],
+      "label_evidence": "The selected descriptor samples hourly action labels; exact action-label generation formula remains UNKNOWN. Purpose is descriptive only and does not validate profit-based selection.",
+      "label_factor_ids": [],
+      "research_notes": [
+        "The selected descriptor exposes 29 named features. Its purpose is `descriptive_only_no_validation_profit_based_selection`; 513 actual base fills include an unknown-execution ledger, and stress fills are excluded. This is not new validation or selection."
+      ],
+      "model_input_evidence": {
+        "known": [
+          {
+            "factor_id": "channel-ml-d6i500-feature-set",
+            "claim": "The selected CatBoost descriptor lists 29 named feature columns and importance weights; names are known but several definitions/formulas/availability fields need the frozen feature/code manifest.",
+            "refs": [
+              "../reports/strategy_validation/channel_ml_validation_resume_v1/model_feature_and_action_summary_20261008T132354Z.json"
+            ],
+            "binding_scope": "actual_frozen_columns"
+          }
+        ],
+        "related_evidence": [],
+        "unknown": [
+          {
+            "field": "exact supervised action-label formula and per-feature transforms/availability",
+            "reason": "The report gives hourly action-label sampling and selected feature names/importance, but not the complete label-generation or every source-column formula.",
+            "evidence_to_check": "linked frozen R4 feature and label-generation code/config manifest."
+          }
+        ]
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/channel_ml_validation_resume_v1/selected_catboost_d6_i500_20261008T132354Z.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Selected channel ML run."
+        }
+      ]
+    },
+    {
+      "registry_id": "maker-v2-r1",
+      "title": "MTF trend-range Maker v2_r1",
+      "category": "model",
+      "primary_directory": "strategy_models",
+      "primary_card": "strategy_models/experiments/maker-v2-r1.md",
+      "related_cards": [],
+      "factor_ids": [
+        "maker-v2-channel-rule-contract"
+      ],
+      "label_evidence": "Deterministic candidate-grid evaluation of three rule families; no supervised target/label is asserted. The completion reports 72 candidates and zero qualified-positive candidates.",
+      "label_factor_ids": [],
+      "research_notes": [
+        "Deterministic rule/grid comparison: 72 candidates across the three named families; no supervised label or fitted prediction target. Frozen development selection required positive mean on both ETH/SOL and at least 50 completed trades per symbol; no qualified family/global winner. Completion is identity-bound to runner/framework/config/grid hashes."
+      ],
+      "model_input_evidence": {
+        "known": [
+          {
+            "factor_id": "maker-v2-channel-rule-contract",
+            "claim": "Three deterministic families are edge_prepositioned, ma_crossover, and edge_plus_cross. Frozen config binds 5m/15m channel bars, Bollinger 20/2 (ddof=0), range/mid/outside-close tests, EMA20/50 trend with 3-bar momentum and optional EMA5/20 or SMA5/10 cross; grid config supplies edge/stop/target, activation, TTL, hold, cooldown and order timing. This is rule input/execution configuration, not an ML feature matrix.",
+            "refs": [
+              "../reports/strategy_validation/mtf_trend_range_maker_v2_r1/frozen_config.json",
+              "../reports/strategy_validation/mtf_trend_range_maker_v2_r1/candidate_grid.json",
+              "../scripts/mtf_trend_range_maker_v2_framework.py"
+            ],
+            "binding_scope": "actual_frozen_columns"
+          }
+        ],
+        "related_evidence": [],
+        "unknown": [
+          {
+            "field": "historical queue/fill microstructure and exact per-order execution realization",
+            "reason": "The replay models posted-price trade-through and configured fees/slippage, but live queue position, quoted spread/capacity, exact mark at funding calc_time and intraminute order are unavailable; no account margin/liquidation/10x model exists.",
+            "evidence_to_check": "Execution-source evidence and a separately reviewed account/queue model; current replay cannot establish these."
+          }
+        ]
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/mtf_trend_range_maker_v2_r1/completion.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Maker v2_r1 candidate/ledger completion counts."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/mtf_trend_range_maker_v2_r1/frozen_config.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Bound rule, feature, execution, selection and window contracts."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/mtf_trend_range_maker_v2_r1/candidate_grid.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "72 candidate family/parameter grid."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/mtf_trend_range_maker_v2_r1/run_manifest.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Runner/framework/config/grid SHA identity."
+        },
+        {
+          "relative_path": "../scripts/mtf_trend_range_maker_v2_framework.py",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Static channel/trend/crossover feature and deterministic signal implementation; not executed."
+        }
+      ]
+    },
+    {
+      "registry_id": "pattern-support-meta",
+      "title": "Pattern, execution-horizon, support-rebound and meta candidates",
+      "category": "mixed",
+      "primary_directory": "strategy_models",
+      "primary_card": "strategy_models/experiments/pattern-support-meta.md",
+      "related_cards": [],
+      "factor_ids": [
+        "support-catboost-dev25-v4-feature-sets"
+      ],
+      "label_evidence": "UNKNOWN; verify the study-specific label and maturity contract.",
+      "label_factor_ids": [],
+      "research_notes": [],
+      "model_input_evidence": {
+        "known": [
+          {
+            "factor_id": "support-catboost-dev25-v4-feature-sets",
+            "claim": "For the 2025 CatBoost support/meta sub-study, protocol v4 records the saved F0/F1/F2 feature order and trained-model feature-name check. F0/F1/F2 are distinct whitelists; only F2 adds observed-funding rate/age/summary features. Frozen models were trained on 2024 only and evaluated without refit or threshold tuning in previously exposed 2025 development data.",
+            "refs": [
+              "../reports/strategy_validation/support_rebound_mtf/catboost_meta_dev_2025_v4/protocol_dev_2025_v4.json",
+              "../scripts/run_support_rebound_catboost_meta_dev_2025_v4.py",
+              "../reports/strategy_validation/support_rebound_mtf/catboost_meta_dev_2025_v4/dev25_v4_manifest.json"
+            ],
+            "binding_scope": "actual_frozen_columns"
+          }
+        ],
+        "related_evidence": [
+          {
+            "factor_id": "sixfactor-support-event-family",
+            "claim": "A support/event family is directly described in the six-factor evidence and a support-rebound family is present in this registry cluster; exact per-substudy input/label alignment is still UNKNOWN.",
+            "refs": [
+              "../reports/strategy_validation/sixfactor_longcycle_v1/SIXFACTOR_LONGCYCLE_RESULTS_CN_20261003.md"
+            ],
+            "binding_scope": "related_evidence_only"
+          }
+        ],
+        "unknown": [
+          {
+            "field": "feature/label bindings for the 24-case pattern and 405-candidate execution-horizon sub-studies",
+            "reason": "The primary registry item groups different families. Reviewed summaries establish exposure and outcomes but do not supply frozen per-case feature and target manifests.",
+            "evidence_to_check": "Each sub-study's own pinned protocol and model/runner descriptor; do not transfer the support CatBoost schema to these studies."
+          },
+          {
+            "field": "exact support-rule implementation columns and CatBoost event-label arithmetic",
+            "reason": "The support report/protocol exposes the frozen CatBoost feature order and exit treatment, but the full candidate label arithmetic and every state-machine source definition are not established in this bounded card.",
+            "evidence_to_check": "The bound Stage-A v3 and Stage-C v2 protocol/runner source, plus dev25-v4 target-generation code."
+          }
+        ]
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/pattern_comparison_round2_20261009/codex_final_review.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Pattern family review."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/b_execution_horizon_round3_20261009/codex_final_review_zh.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Execution horizon review."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/support_rebound_mtf/STAGE_C_DEV_VALIDATION_REPORT_V2.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Support rebound validation report."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/support_rebound_mtf/catboost_meta_dev_2025_v4/dev25_validation_report.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Four-coin meta model report."
+        }
+      ]
+    },
+    {
+      "registry_id": "minute-return-2026",
+      "title": "Minute-return prediction and dynamic strategy",
+      "category": "mixed",
+      "primary_directory": "strategy_models",
+      "primary_card": "strategy_models/experiments/minute-return-2026.md",
+      "related_cards": [],
+      "factor_ids": [
+        "minute-return-2026-price-flow-v1"
+      ],
+      "label_evidence": "Label=(open[t+2m+h]/open[t+2m])-1 for h={5,15,30}; three expanding folds start at 2022, calibrate on the prior quarter and evaluate 2026Q1, Q2, and partial Q3 (July-August). MSE comparison F versus P uses Holm correction over six comparisons and did not show stable significant improvement. Dynamic policy comparison reuses P-arm saved predictions without retraining.",
+      "label_factor_ids": [
+        "minute-return-2026-forward-open-return-label-v1"
+      ],
+      "research_notes": [],
+      "model_input_evidence": {
+        "known": [
+          {
+            "factor_id": "minute-return-2026-price-flow-v1",
+            "claim": "Frozen protocol and builder bind P=18 named price/volume/count features and F=P+7 named flow features; HistGB uses the P arm for saved predictions. Ridge alpha=10 with StandardScaler; HistGB has 100 iterations, depth 3, learning rate .05, L2=1, no early stopping, random_state=20261004. Train stride 5 and evaluation stride 1.",
+            "refs": [
+              "../tools/perptools/minute_return_2026_v1/protocol.py",
+              "../tools/perptools/minute_return_2026_v1/features.py",
+              "../tools/perptools/minute_return_2026_v1/experiment.py"
+            ],
+            "binding_scope": "named_input_family"
+          }
+        ],
+        "related_evidence": [
+          {
+            "factor_id": "minute-return-2026-price-flow-v1",
+            "claim": "Sibling dynamic protocol loads parent predictions.npz/index for the P price/volume arm and tree model, verifies both pinned SHA256 values, and does not retrain/refit/smooth/edit forecasts. bars.py reuses the parent bounded minute reader and requires exact clock continuity; four policies cross original/frequency cutoff with fixed/dynamic sizing.",
+            "binding_scope": "related_evidence_only",
+            "refs": [
+              "../tools/perptools/minute_return_dynamic_2026_v1/protocol.py",
+              "../tools/perptools/minute_return_dynamic_2026_v1/bars.py"
+            ]
+          }
+        ],
+        "unknown": [
+          {
+            "field": "raw source lineage and point-in-time publication latency for each feature input",
+            "reason": "Protocol and feature builder establish derived column names and decision indexing, but not all upstream exchange publication clocks.",
+            "evidence_to_check": "Bound source manifest and per-source timestamp metadata for the frozen minute-return snapshot."
+          },
+          {
+            "field": "historical validation exposure beyond the documented folds",
+            "reason": "The report uses expanding folds and multiple 2026 evaluation periods; no untouched future holdout is asserted.",
+            "evidence_to_check": "The cited result report and run manifest for each snapshot."
+          }
+        ]
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/minute_return_2026_v1/EMPIRICAL_RESULTS_CN_minute_return_2026_v1_20261004.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Static minute-return results."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/minute_return_dynamic_2026_v1/CODEX_REVIEW_20261004.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Dynamic strategy review."
+        },
+        {
+          "relative_path": "../tools/perptools/minute_return_dynamic_2026_v1/protocol.py",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Dynamic policy protocol and parent forecast SHA bindings."
+        },
+        {
+          "relative_path": "../tools/perptools/minute_return_dynamic_2026_v1/bars.py",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Saved P/tree forecast loader verifies pinned archive/index SHA256 and does not retrain; imports parent reader for bars."
+        }
+      ]
+    },
+    {
+      "registry_id": "btc-minute-probability-2023",
+      "title": "BTC minute-probability model",
+      "category": "model",
+      "primary_directory": "strategy_models",
+      "primary_card": "strategy_models/experiments/btc-minute-probability-2023.md",
+      "related_cards": [],
+      "factor_ids": [
+        "btc-minute-multihorizon-ohlcv-features-v1"
+      ],
+      "label_evidence": "Five direction horizons, exact-equality FLAT class, separate Ridge return head, and label-availability/purge rule are defined in frozen config.",
+      "label_factor_ids": [
+        "btc-minute-direction-and-return-labels-v1"
+      ],
+      "research_notes": [],
+      "model_input_evidence": {
+        "known": [
+          {
+            "factor_id": "btc-minute-multihorizon-ohlcv-features-v1",
+            "claim": "Frozen config enumerates 23 causal OHLCV lag/volatility/range/trend/volume features with completed 5m/15m/60m aggregates as-of joined only after completion.",
+            "refs": [
+              "../reports/strategy_validation/btc_minute_probability_v1/run_20261007_v3/RESULTS_中文.md"
+            ],
+            "binding_scope": "actual_frozen_columns"
+          }
+        ],
+        "related_evidence": [],
+        "unknown": [
+          {
+            "field": "feature generation implementation hash/code equivalence",
+            "reason": "Config describes the schema and availability policy; this doc pass does not verify every feature implementation against source code.",
+            "evidence_to_check": "artifact_manifest.json plus frozen feature-engine source/code pins."
+          }
+        ]
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/btc_minute_probability_v1/run_20261007_v3/RESULTS_中文.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Existing run result summary."
+        }
+      ]
+    },
+    {
+      "registry_id": "source-spot-bb-benchmark",
+      "title": "Source spot BB120x2 benchmark",
+      "category": "strategy",
+      "primary_directory": "strategy_models",
+      "primary_card": "strategy_models/experiments/source-spot-bb-benchmark.md",
+      "related_cards": [],
+      "factor_ids": [
+        "spot-bb120x2-rule-v1"
+      ],
+      "label_evidence": "Deterministic spot BB benchmark; no supervised label asserted.",
+      "label_factor_ids": [],
+      "research_notes": [],
+      "model_input_evidence": {
+        "known": [
+          {
+            "factor_id": "spot-bb120x2-rule-v1",
+            "claim": "Direct rule evidence: Bollinger n=120, k=2; EMA200 gate; enter above upper band, exit below middle or when EMA gate fails; fixed_slot with no stop. Historical selected configuration is a deterministic rule, not supervised prediction.",
+            "refs": [
+              "../../crypto/trend_research/tr/signals.py",
+              "../../crypto/trend_research/reports/TREND_RESEARCH_REPORT.md"
+            ],
+            "binding_scope": "named_input_family"
+          }
+        ],
+        "related_evidence": [],
+        "unknown": [
+          {
+            "field": "complete historical run pin and source-bar availability contract",
+            "reason": "Rule family is identified, but all parameters/source identity and publication timing are not bound by the historical summary.",
+            "evidence_to_check": "The complete historical run manifest and source implementation hash."
+          }
+        ]
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../../crypto/trend_research/reports/TREND_RESEARCH_REPORT.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Spot BB120x2/no-stop/four-slot benchmark."
+        }
+      ]
+    },
+    {
+      "registry_id": "source-top1-annual-trend",
+      "title": "Source Top1 annual trend result",
+      "category": "strategy",
+      "primary_directory": "strategy_models",
+      "primary_card": "strategy_models/experiments/source-top1-annual-trend.md",
+      "related_cards": [],
+      "factor_ids": [
+        "source-top1-annual-trend-rule-v1"
+      ],
+      "label_evidence": "Deterministic annual trend result; no supervised label asserted.",
+      "label_factor_ids": [],
+      "research_notes": [],
+      "model_input_evidence": {
+        "known": [
+          {
+            "factor_id": "source-top1-annual-trend-rule-v1",
+            "claim": "Direct report/source evidence: one-position BTC/asset EMA200 gate, momentum ranking and ATR14 x 1.5 stop. Exact historic run-parameter/source binding remains partial.",
+            "refs": [
+              "../../crypto/reports/V1_1X_per_year_decision.md",
+              "../../crypto/crypto_quant/core/top1_decision_engine.py"
+            ],
+            "binding_scope": "named_input_family"
+          }
+        ],
+        "related_evidence": [],
+        "unknown": [
+          {
+            "field": "complete historical run pin and source-bar availability contract",
+            "reason": "Rule family is identified, but all parameters/source identity and publication timing are not bound by the historical summary.",
+            "evidence_to_check": "The complete historical run manifest and source implementation hash."
+          }
+        ]
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../../crypto/reports/V1_1X_per_year_decision.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Updated source trend result and recent period."
+        }
+      ]
+    },
+    {
+      "registry_id": "source-ma-ml-legacy",
+      "title": "Source MA/ML legacy",
+      "category": "model",
+      "primary_directory": "strategy_models",
+      "primary_card": "strategy_models/experiments/source-ma-ml-legacy.md",
+      "related_cards": [],
+      "factor_ids": [
+        "neighbor-ml-microstructure-24d-v1"
+      ],
+      "label_evidence": "Code-level action construction uses T+1 open with slippage, minimum risk distance 0.5% of entry, 2R take-profit, at most 12 bars, and stop-first ordering. A direction is BUY/SELL when return reaches at least 0.3R; otherwise FLAT. Long side reports spot 8bp; short side reports futures 5bp plus a hardcoded 0.0001 funding drag. The hardcoded drag is not observed funding. Saved-run binding is not fully confirmed.",
+      "label_factor_ids": [],
+      "research_notes": [],
+      "model_input_evidence": {
+        "known": [
+          {
+            "factor_id": "neighbor-ml-microstructure-24d-v1",
+            "claim": "The source feature constant exposes all 24 names listed on its factor card, and the study runner imports the matching congestion dataset, purged CV and model modules. The report records close-time features/T+1-open execution, synchronized four-symbol five-fold evaluation and fixed/LR/XGBoost families. Saved-run-to-current-code identity remains UNKNOWN; this is adjacent spot research, not a perp contract.",
+            "refs": [
+              "../../crypto/crypto_quant/ml/models.py",
+              "../../crypto/scripts/run_ma_ml_study.py",
+              "../../crypto/crypto_quant/ml/congestion_dataset.py",
+              "../../crypto/crypto_quant/ml/purged_cv.py",
+              "../../crypto/reports/ma_ml/ML_RESEARCH_SUMMARY.md"
+            ],
+            "binding_scope": "named_input_family"
+          }
+        ],
+        "related_evidence": [],
+        "unknown": [
+          {
+            "field": "saved-run binding to the currently readable 24-column constant and exact fold-specific preprocessing",
+            "reason": "Runner imports the defining modules, but a full saved-run code/config pin was not established.",
+            "evidence_to_check": "Original run manifest and fold-specific model descriptor."
+          },
+          {
+            "field": "real observed funding settlement series in historical short-side account costs",
+            "reason": "The adjacent code hardcodes funding_drag=0.0001 and does not consume the passed funding_series; this is not an observed settlement ledger.",
+            "evidence_to_check": "A verified per-run settlement-event input and account ledger, if one exists."
+          }
+        ]
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../../crypto/reports/ma_ml/ML_RESEARCH_SUMMARY.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Legacy ML summary."
+        }
+      ]
+    },
+    {
+      "registry_id": "source-transformer-stchan-legacy",
+      "title": "Source legacy Transformer/STChan models",
+      "category": "model",
+      "primary_directory": "strategy_models",
+      "primary_card": "strategy_models/experiments/source-transformer-stchan-legacy.md",
+      "related_cards": [],
+      "factor_ids": [],
+      "label_evidence": "Current builder code defines L=12 and 4h/8h log-return labels for crypto datasets. Channel-wave labels are 3/6/12 days (18/36/72 bars), with 12-day expansion >3%, 72-bar purge and 18-bar embargo. These are code-level candidate protocols, not checkpoint-bound confirmed targets. Provenance names crypto_quant/train_transformer.py and scripts/train_chan_transformer.py; train period is 2020-08 through 2023, while 2024-2025 validation was used for selection and 2026 observations were followed by rule changes.",
+      "label_factor_ids": [],
+      "research_notes": [],
+      "model_input_evidence": {
+        "known": [],
+        "related_evidence": [
+          {
+            "factor_id": "neighbor-token-feature-code-family-v1",
+            "claim": "Current adjacent-source dataset_builder code defines these candidate token feature families and transforms; model_provenance names generating scripts and train/validation periods. This is not proof of a specific legacy checkpoint's actual consumed columns.",
+            "binding_scope": "related_evidence_only",
+            "refs": [
+              "../../crypto/crypto_quant/dataset_builder.py",
+              "../../crypto/docs/model_provenance.json",
+              "../../crypto/crypto_quant/train_transformer.py",
+              "../../crypto/scripts/train_chan_transformer.py"
+            ]
+          }
+        ],
+        "unknown": [
+          {
+            "field": "checkpoint-specific actual input columns, exact preprocessing binding and warm-start provenance",
+            "reason": "The source builder is readable, but best_crypto(_augmented) has no verified generator binding and the model provenance flags warm-start risk; truncated sha256_16 values are not full content hashes.",
+            "evidence_to_check": "A full checkpoint-bound manifest or reproducible training artifact with complete SHA256."
+          },
+          {
+            "field": "untouched holdout exposure",
+            "reason": "Validation 2024-2025 was used for selection, with 2026 observations followed by rule changes; it is not untouched holdout evidence.",
+            "evidence_to_check": "Complete dated selection log and checkpoint provenance."
+          }
+        ]
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../../crypto/docs/model_provenance.json",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Legacy Transformer/STChan provenance; 2024/25 selection and post-hoc 2026 changes summarized from existing audit."
+        },
+        {
+          "relative_path": "../../crypto/docs/model_incremental_value.json",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Legacy incremental-value summary; no stable increment reported."
+        }
+      ]
+    },
+    {
+      "registry_id": "factor-calibration-causal-2023",
+      "title": "Factor calibration, volatility and causal-timing evidence",
+      "category": "factor",
+      "primary_directory": "factor_research",
+      "primary_card": "factor_research/factor_cards/factor-calibration-causal-2023.md",
+      "related_cards": [],
+      "factor_ids": [],
+      "label_evidence": "UNKNOWN; verify the study-specific label and maturity contract.",
+      "label_factor_ids": [],
+      "research_notes": [
+        "The associated six-factor evidence describes six research directions: support events, EOH/ATM IV, EMA/MACD/Bollinger trend, BTC relative strength, cross-exchange spread, and observed Core4 funding. This registry cluster is factor research; these directions are not asserted as inputs to an unrelated model.",
+        "The spread direction is BLOCKED/NOT_TESTED, not a negative factor result. EOH publication timing, units and point-in-time availability remain UNKNOWN. A calibration MSE improvement is limited calibration evidence, not alpha.",
+        "Funding evidence uses the last observed event rate and age plus observed 7-day sum/count and cross-section; event+5m and age<=16h are study assumptions. Reported daily gross-return difference is negative and there is no account-cost validation."
+      ],
+      "model_input_evidence": {
+        "known": [],
+        "related_evidence": [
+          {
+            "factor_id": "sixfactor-support-event-family",
+            "claim": "Support/event evidence is one of six study directions; event semantics include reported failure cases and are not a validated strategy input.",
+            "refs": [
+              "../reports/strategy_validation/sixfactor_longcycle_v1/SIXFACTOR_LONGCYCLE_RESULTS_CN_20261003.md"
+            ],
+            "binding_scope": "related_evidence_only"
+          },
+          {
+            "factor_id": "sixfactor-option-eoh-atm-volatility",
+            "claim": "EOH/ATM calibration and its limited exposed-sample result are explicitly summarized.",
+            "refs": [
+              "../reports/strategy_validation/sixfactor_longcycle_v1/SIXFACTOR_LONGCYCLE_RESULTS_CN_20261003.md"
+            ],
+            "binding_scope": "related_evidence_only"
+          },
+          {
+            "factor_id": "sixfactor-trend-ema-macd-bollinger-family",
+            "claim": "EMA/MACD/Bollinger trend account family is one documented direction; formulas remain rule-specific.",
+            "refs": [
+              "../reports/strategy_validation/sixfactor_longcycle_v1/SIXFACTOR_LONGCYCLE_RESULTS_CN_20261003.md"
+            ],
+            "binding_scope": "related_evidence_only"
+          },
+          {
+            "factor_id": "sixfactor-btc-relative-strength-family",
+            "claim": "BTC direction/relative-strength family is described, with exact transforms varying by sub-study.",
+            "refs": [
+              "../reports/strategy_validation/sixfactor_longcycle_v1/SIXFACTOR_LONGCYCLE_RESULTS_CN_20261003.md"
+            ],
+            "binding_scope": "related_evidence_only"
+          },
+          {
+            "factor_id": "basis-cross-venue-price-spread",
+            "claim": "Cross-venue spread is explicitly BLOCKED/NOT TESTED; clock and units unresolved, not an invalid factor finding.",
+            "refs": [
+              "../reports/strategy_validation/sixfactor_longcycle_v1/SIXFACTOR_LONGCYCLE_RESULTS_CN_20261003.md"
+            ],
+            "binding_scope": "related_evidence_only"
+          },
+          {
+            "factor_id": "observed-funding-event-features",
+            "claim": "Report documents event rate/age/7-day sum/count and the event+5m, age<=16h research availability assumption; no OHLC-grid fill.",
+            "refs": [
+              "../reports/strategy_validation/sixfactor_longcycle_v1/SIXFACTOR_LONGCYCLE_RESULTS_CN_20261003.md"
+            ],
+            "binding_scope": "related_evidence_only"
+          }
+        ],
+        "unknown": [
+          {
+            "field": "per-direction model/rule input map",
+            "reason": "The six-direction summary is a research inventory; these associations do not imply all methods consume all six factors.",
+            "evidence_to_check": "Each direction-specific report/protocol independently; preserve unknown per-substudy links."
+          }
+        ]
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/eoh_train_scale_calibration_v1/calibration_metrics.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Calibration metrics summary."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/binance_bvol_increment_2023/core_run_contract.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "BVOL contract and row count."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/focused_followup_v1/FOCUSED_FOLLOWUP_RESULTS_CN_20261003_v1r2.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Focused residual follow-up."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/sixfactor_longcycle_v1/SIXFACTOR_LONGCYCLE_RESULTS_CN_20261003.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Six-factor results and data limits."
+        }
+      ]
+    },
+    {
+      "registry_id": "source-universe-forward",
+      "title": "Source spot-universe and paper-forward status snapshots",
+      "category": "data",
+      "primary_directory": "platform_data",
+      "primary_card": "platform_data/records/source-universe-forward.md",
+      "related_cards": [
+        "platform_data/records/platform-boundary.md"
+      ],
+      "factor_ids": [],
+      "label_evidence": "UNKNOWN; verify the study-specific label and maturity contract.",
+      "label_factor_ids": [],
+      "research_notes": [],
+      "model_input_evidence": {
+        "known": [],
+        "related_evidence": [],
+        "unknown": []
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../../crypto/universe_research/reports/pit_spot_fullmarket_20260924_172948/D_GATE_STATUS.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Spot universe gate status snapshot."
+        },
+        {
+          "relative_path": "../../crypto/trend_research/paper_forward/runs/20260924_143017/STATUS.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Historical paper-forward status snapshot only."
+        }
+      ]
+    },
+    {
+      "registry_id": "platform-boundary",
+      "title": "Source interfaces and platform capability boundary",
+      "category": "platform",
+      "primary_directory": "platform_data",
+      "primary_card": "platform_data/records/platform-boundary.md",
+      "related_cards": [
+        "platform_data/records/local-conversion-boundary.md"
+      ],
+      "factor_ids": [],
+      "label_evidence": "UNKNOWN; verify the study-specific label and maturity contract.",
+      "label_factor_ids": [],
+      "research_notes": [],
+      "model_input_evidence": {
+        "known": [],
+        "related_evidence": [],
+        "unknown": []
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../../crypto/crypto_quant/data/research_adapter.py",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Source adapter entry point."
+        },
+        {
+          "relative_path": "../../crypto/crypto_quant/framework/engine.py",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Spot-only capability declaration."
+        },
+        {
+          "relative_path": "../../crypto/crypto_quant/framework_v3/engine.py",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Spot-only capability declaration."
+        },
+        {
+          "relative_path": "../../crypto/crypto_quant/dataset_builder.py",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Incompatible fill behavior; not a reusable contract."
+        },
+        {
+          "relative_path": "../../crypto/data/data_catalog_status.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Timestamped status snapshot only."
+        }
+      ]
+    },
+    {
+      "registry_id": "local-conversion-boundary",
+      "title": "Local source-copy, conversion and bounded mark readiness snapshot",
+      "category": "data",
+      "primary_directory": "platform_data",
+      "primary_card": "platform_data/records/local-conversion-boundary.md",
+      "related_cards": [],
+      "factor_ids": [],
+      "label_evidence": "UNKNOWN; verify the study-specific label and maturity contract.",
+      "label_factor_ids": [],
+      "research_notes": [],
+      "model_input_evidence": {
+        "known": [],
+        "related_evidence": [],
+        "unknown": []
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../source_data/MANIFEST.json",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Prior audit-reported source-copy snapshot; not regenerated."
+        },
+        {
+          "relative_path": "../archive/inventory/conversion_report.json",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Prior audit-reported readiness and refusal status."
+        },
+        {
+          "relative_path": "../archive/catalog/mark_candle_registry.json",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Existing bounded mark declarations; no new registration."
+        }
+      ]
+    },
+    {
+      "registry_id": "permission-denied-result",
+      "title": "Access-restricted trend result directory",
+      "category": "strategy",
+      "primary_directory": "platform_data",
+      "primary_card": "platform_data/records/permission-denied-result.md",
+      "related_cards": [],
+      "factor_ids": [],
+      "label_evidence": "UNKNOWN; verify the study-specific label and maturity contract.",
+      "label_factor_ids": [],
+      "research_notes": [],
+      "model_input_evidence": {
+        "known": [],
+        "related_evidence": [],
+        "unknown": [
+          {
+            "field": "restricted result contents",
+            "reason": "WinError 5 denied read access; no retry or bypass.",
+            "evidence_to_check": "The cited source path, only after its owner grants ordinary read access."
+          }
+        ]
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/high_return_trend_20260928/stage_e/e2_pit_volatility_input_audit_v1/results_c_c100_v1",
+          "access_status": "NOT_VERIFIED_PERMISSION_DENIED",
+          "audit_scope": "Directory existence/path as reported by prior audit; contents not read."
+        }
+      ]
+    },
+    {
+      "registry_id": "garch-har-leakage-invalidated",
+      "title": "GARCH/HAR leakage-era volatility scores",
+      "category": "factor",
+      "primary_directory": "factor_research",
+      "primary_card": "factor_research/factor_cards/garch-har-leakage-invalidated.md",
+      "related_cards": [],
+      "factor_ids": [],
+      "label_evidence": "UNKNOWN; verify the study-specific label and maturity contract.",
+      "label_factor_ids": [],
+      "research_notes": [
+        "The historical leakage-affected score and downstream conclusion are INVALIDATED. A synthetic repaired condition passed only that controlled check; this does not establish method-wide invalidity or validate market performance."
+      ],
+      "model_input_evidence": {
+        "known": [],
+        "related_evidence": [],
+        "unknown": []
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/foundation_review_20260930/VOLATILITY_CAUSAL_LEAKAGE_REPAIR.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Leakage invalidation and repair status."
+        }
+      ]
+    },
+    {
+      "registry_id": "eth-btc-leadlag-invalidated",
+      "title": "ETH/BTC lead-lag inference with incomplete matched control",
+      "category": "factor",
+      "primary_directory": "factor_research",
+      "primary_card": "factor_research/factor_cards/eth-btc-leadlag-invalidated.md",
+      "related_cards": [],
+      "factor_ids": [],
+      "label_evidence": "UNKNOWN; verify the study-specific label and maturity contract.",
+      "label_factor_ids": [],
+      "research_notes": [],
+      "model_input_evidence": {
+        "known": [],
+        "related_evidence": [],
+        "unknown": []
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/c3_timing_eth_btc_v4/B_INFERENCE_VALIDITY_NOTICE_V1.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Lead-lag inference validity notice."
+        }
+      ]
+    },
+    {
+      "registry_id": "core3-trend-risk-v1",
+      "title": "Core3 4h trend and 1h/24h risk-sizing adapter",
+      "category": "mixed",
+      "primary_directory": "strategy_models",
+      "primary_card": "strategy_models/experiments/core3-trend-risk-v1.md",
+      "related_cards": [
+        "strategy_models/experiments/longcycle-trend-12-rules.md",
+        "platform_data/records/research-hub-admission-v1r2.md"
+      ],
+      "factor_ids": [
+        "core3-trailing-return-variance-4h",
+        "core3-ema200-close-trend",
+        "core3-macd-histogram-12-26-9",
+        "core3-donchian-55-20"
+      ],
+      "label_evidence": "Core3 frozen protocol/runner define its forward realized-variance target path; it is future-label data only, not a consumed input. Core3 source-specific maturity/cutoff rules govern use; the Core4 contract is not inherited.",
+      "label_factor_ids": [
+        "forward-realized-variance-1h24-label"
+      ],
+      "research_notes": [
+        "The frozen Ridge implementation uses lambda=10; training-only mean/std with ddof=0; zero-variance scale is set to 1; intercept is unpenalized. The prediction target is log(V_1h24), with no smearing correction.",
+        "Reference variance is 0.0002824090500991152; entry-only risk multiplier q=min(1,sqrt(reference/prediction)). In the 2025 strategies (95 + 155 + 41 = 291 entries), every entry q=1 and trades/NAV CSVs are byte-equal to q=1. This does not mean every forecast was below reference: paired 2025 forecasts include 6 ETH and 50 SOL origins above reference, not at these entry times."
+      ],
+      "model_input_evidence": {
+        "known": [
+          {
+            "factor_id": "core3-trailing-return-variance-4h",
+            "claim": "Exact nine-column schema: own/BTC trailing return variance at 6/42/180 4h observations, natural-log transformed, plus fixed symbol_ETH/symbol_SOL/symbol_BNB dummies (BNB dummy is always zero); Core3 only. Do not generalize to the older Core4 Ridge.",
+            "refs": [
+              "../tools/perptools/core3_trend_risk_v1.py",
+              "platform_data/contracts/core3_trend_risk_protocol_v1.md"
+            ],
+            "binding_scope": "actual_frozen_columns"
+          },
+          {
+            "factor_id": "core3-ema200-close-trend",
+            "claim": "EMA200 close-above rule benchmark; frozen code implementation only.",
+            "refs": [
+              "../tools/perptools/core3_trend_risk_v1.py"
+            ],
+            "binding_scope": "actual_frozen_columns"
+          },
+          {
+            "factor_id": "core3-macd-histogram-12-26-9",
+            "claim": "MACD(12,26,9) histogram + EMA200 rule benchmark; frozen code implementation only.",
+            "refs": [
+              "../tools/perptools/core3_trend_risk_v1.py"
+            ],
+            "binding_scope": "actual_frozen_columns"
+          },
+          {
+            "factor_id": "core3-donchian-55-20",
+            "claim": "Shifted Donchian 55/20 rule benchmark; frozen code implementation only.",
+            "refs": [
+              "../tools/perptools/core3_trend_risk_v1.py"
+            ],
+            "binding_scope": "actual_frozen_columns"
+          }
+        ],
+        "related_evidence": [],
+        "unknown": [
+          {
+            "field": "actual public/exchange feature publication latency",
+            "reason": "Code uses a modeled close + 1 second availability lag; real upstream publication time is not established.",
+            "evidence_to_check": "exchange/source publication timestamp evidence."
+          }
+        ]
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "platform_data/contracts/core3_trend_risk_protocol_v1.md",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Frozen Core3 protocol; no numeric run."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r3.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Superseded implementation snapshot; preserved unchanged after more test/registry changes."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/longcycle_trend_catalog_v1/accounts_v3_frozen_20261003/account_summary.csv",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Unchanged full-precision prior Core3 2025 comparison rows; original Core4 identity applies to Ridge, not this benchmark summary."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/research_hub_admission_20261011_v1r2/admission_report.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Accepted bounded Stage 1 source admission; not feature, timing, or execution clearance."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Historical superseded receipt; wrong Stage 1 binding, preserved unchanged."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r1.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Historical superseded code snapshot receipt; preserved unchanged in the failed-version lineage."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r2.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Historical superseded receipt; preserved unchanged in the failed-version lineage."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r4.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Superseded hash-only receipt; exact 1,001ms lag metadata correction and optimized strict-next-open implementation require v1r5."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r5.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Superseded pending-review receipt; independent review found and documented the multiple-fillable-origins ndarray truth-value bug. Preserved unchanged; see v1r6."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r6.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Superseded pending-review receipt; the first approved attempt stopped during source loading before any fit because source files extend beyond the selected 2025 window. Preserved unchanged; v1r7 now scopes full-history price/mark/funding inputs explicitly."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r7.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Superseded after loader incorrectly applied 8h identity to unconsumed historical years; first numeric attempts stopped before fit. Preserved unchanged; v1r8 scopes interval identity to the admitted native 2021 and 2025 windows."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r8.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Superseded no-refit parent receipt. The first approved replay returned its single 2021 fit, then the process was interrupted after 3 accounts and 5 controls without writing results.json. Preserved unchanged; v1r9 binds the saved model and independent training checkpoint for a zero-refit resume."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r9.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Current exact no-refit resume receipt. Its approved execution completed the bounded replay with 60 accounts, 3 legacy sidecars and 9,714 paired forecasts; independent reconstruction is PASS_RECONSTRUCTION_ONLY_NOT_A_STRATEGY_GATE. See results_v1r3 and the independent audit; no strategy gate passed."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/results_v1r3/results.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Completed V1R9 result: 60/60 accounts, 3 legacy sidecars, 9,714 paired forecasts; zero refits. All strategy-effectiveness, trading-readiness and formal-causality claims are false."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/research_hub_review_20261011_v1/INDEPENDENT_NUMERIC_AUDIT_V1R3.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "PASS_RECONSTRUCTION_ONLY_NOT_A_STRATEGY_GATE; independent reconstruction of all account, legacy and forecast rows, with checkpoint model identity and ledger/NAV reconciliation."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/research_hub_review_20261011_v1/LEGACY_REFERENCE_DECIMAL_PARSE_AUDIT.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Original CSV literal-to-binary64 round-trip check of the three legacy sidecar returns and trade counts; no replay/refit/production change. Runner’s false flags for EMA200 and Donchian are preserved."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/research_hub_review_20261011_v1/FULL_SUITE_FAILURE_CLASSIFICATION_FINAL.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Terminal full workspace pytest failure classification; distinguishes pre-existing issues and environment failures from implementation regressions."
+        }
+      ]
+    },
+    {
+      "registry_id": "research-hub-admission-v1r2",
+      "title": "Core3 minimal source admission v1r2",
+      "category": "data",
+      "primary_directory": "platform_data",
+      "primary_card": "platform_data/records/research-hub-admission-v1r2.md",
+      "related_cards": [
+        "strategy_models/experiments/core3-trend-risk-v1.md"
+      ],
+      "factor_ids": [],
+      "label_evidence": "Not applicable: this is a bounded source-admission/identity inventory, not a supervised model or strategy experiment; it has no prediction target or label-maturity contract.",
+      "label_factor_ids": [],
+      "research_notes": [],
+      "model_input_evidence": {
+        "known": [],
+        "related_evidence": [],
+        "unknown": []
+      },
+      "refs_base": "research_hub/",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/research_hub_admission_20261011_v1r2/admission_report.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Accepted v1r2 bounded input admission report."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/research_hub_admission_20261011_v1r2/full_price_mark_warmup_independent.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Independent full-history structure and source identity evidence for the 6 price/mark frames; loader repeats checks on decoded frames."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/research_hub_admission_20261011_v1/admission_report.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Superseded failed first admission attempt; retained as lineage, not authority."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/research_hub_admission_20261011_v1r1/admission_report.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Superseded failed v1r1 attempt; retained as lineage, not authority."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r3.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Current Phase 2 source-byte binding, pending independent review."
+        }
+      ]
+    }
+  ],
+  "access_errors": [
+    {
+      "relative_path": "../reports/strategy_validation/mtf_channel_limited_compare_20261010_v1/root_review/ONE_PAGE_REVIEW_ZH.md",
+      "error_type": "PermissionError",
+      "winerror": 5,
+      "message": "Access is denied; read stopped; no bypass or retry attempted."
+    },
+    {
+      "relative_path": "../reports/strategy_validation/mtf_channel_limited_compare_20261010_v1/delivery_v1/FULL_RESULTS_ZH.md",
+      "error_type": "PermissionError",
+      "winerror": 5,
+      "message": "Access is denied while resolving the evidence path; read stopped; no bypass or retry attempted."
+    },
+    {
+      "relative_path": "../reports/strategy_validation/high_return_trend_20260928/stage_e/e2_pit_volatility_input_audit_v1/results_c_c100_v1",
+      "error_type": "HistoricalPermissionDenied",
+      "winerror": null,
+      "message": "The unchanged registry records NOT_VERIFIED_PERMISSION_DENIED; prior audit recorded path/status only and did not inspect contents. No retry attempted."
+    },
+    {
+      "relative_path": "../reports/strategy_validation/high_return_trend_20260928/stage_e/e2_pit_volatility_input_audit_v1/results_c_c100_v1",
+      "error_type": "PermissionError",
+      "winerror": null,
+      "message": "A recursive file-name search of the reports tree returned PowerShell Access denied at this path. No content was read; no retry or bypass was attempted. The error record did not expose WinError/HRESULT."
+    }
+  ]
+}

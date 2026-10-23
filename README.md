@@ -1,20 +1,23 @@
-# Institutional Crypto Spatio-Temporal Transformer Quantitative Trading Framework
-# 机构级跨资产时空 Transformer 加密量化交易研究与回测系统
+# Crypto Quantitative Research Archive
+# 加密量化研究与回测档案
+
+> **2026-10-23 研究归档与纠正入口**：[最终研究结果清单](FINAL_RESEARCH_RESULTS_ZH.md) · [修正记录与证据边界](research_archive/CORRECTIONS_ZH.md)。
+>
+> 本仓库保存多个时期、不同引擎的研究材料。下方早期正文为 `LEGACY_RESEARCH`：历史回测数值不等于已验证收益，不能混用不同版本、成本和样本口径。2024–2025 参与了选模与调参，2026 也用于后续开发，均不能整体称为未看样本外。
+>
+> 现有证据不支持“稳定盈利”“无风险套利”“机构级已验证”或任何实盘就绪结论。本次整理没有重跑历史策略、启动采集器或验证正在运行的服务；测试数量和运行状态均须附具体版本与日期。
 
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-orange.svg)](https://pytorch.org/)
-[![Data](https://img.shields.io/badge/Data-100%25%20Offline%20Included-brightgreen.svg)]()
-[![Status](https://img.shields.io/badge/Status-100%25%20Reproducible%20%26%20Peer--Reviewed-purple.svg)]()
+[![Status](https://img.shields.io/badge/Status-Exploratory%20Research-orange.svg)](FINAL_RESEARCH_RESULTS_ZH.md)
 
 [English](#english) | [中文说明](#chinese) | [20X Leverage Research / 杠杆量化研究](leverage_research/README.md) | [Cross-Sectional Selection & Carry Plan / 截面轮动与资金费套利落地方案](docs/CROSS_SECTIONAL_ROTATION_IMPLEMENTATION_PLAN.md)
 
 > [!IMPORTANT]
-> **🚀 Live Production System & Dedicated Public Dashboard / 实盘服务与专属公网监控看板**:
-> - **Public URL / 专属固定公网地址**: **[`https://percolate-zipfile-corned.ngrok-free.dev`](https://percolate-zipfile-corned.ngrok-free.dev)** *(Local: `http://127.0.0.1:8088`)*
-> - **Active Production Strategy / 当前激活生产策略**: **🔥 3.0x Leverage Compact Adaptive Top-1 Rotation & USDT Cash Defense (SL 1.5x ATR + Trailing Stop) / 3.0x 杠杆紧凑自适应 (1.5x ATR 止损 + 移动追踪止盈)**.
-> - **Universe / 标的池**: Core liquid crypto assets (BTC, ETH, SOL, BNB) + 100% USDT Defensive Cash.
-> - **Liquidation Protection / 强平安全缓冲**: Binance 3X Maintenance Margin liquidation threshold is at **-32.83%**, while 1.5x ATR stop-loss is set at **~ -2.0%**, maintaining a massive **16.4x safety buffer** that physically eliminates bankruptcy/liquidation risk.
-> - **Email Alerts / 实时高频信号推送**: 15-minute pipeline listener dispatching instant alerts to `568701293@qq.com`.
+> **Historical service description / 历史服务说明（当前运行状态未核验）**:
+> - Earlier documentation described a 3x Top-1 rotation simulation and monitoring service. This archive does not establish that it is currently running or placing real orders.
+> - An ATR stop is a conditional exit rule, not a guaranteed execution price. Gap moves, slippage, liquidity and margin paths can defeat it; a ratio between a nominal stop distance and a liquidation threshold does not eliminate liquidation risk.
+> - Personal contact and monitoring endpoints have been removed from this public documentation revision. No service configuration was changed.
 
 > [!TIP]
 > **Institutional Research & Reproducibility Guide / 机构级科研复现指南**:
@@ -28,7 +31,7 @@
 >   [`docs/FORWARD_PAPER_EVALUATION_PROTOCOL.md`](docs/FORWARD_PAPER_EVALUATION_PROTOCOL.md)
 > - **Standardized Experiment Runner / 标准化实验运行器 (Manifest + Output Hashes)**:
 >   `python scripts/run_research_experiment.py --universe core4 --leverage 1.0 --period all`
-> - **Run Complete Test Suite (111 Tests 100% Passed) / 运行全量单元测试套件**:
+> - **Historical test-suite command / 历史测试套件命令（本次归档未重跑该套件）**:
 >   `python -m pytest tests/ -v`
 
 ---
@@ -37,9 +40,9 @@
 ## English Overview
 
 ### 1. Executive Summary
-This repository houses a **100% self-contained, peer-reviewed, and offline-reproducible** quantitative trading research framework designed for major cryptocurrencies (**BTC, ETH, SOL, and BNB**) based on a **Spatio-Temporal Relational Transformer (`CryptoSTTransformer`)**.
+This repository preserves an exploratory quantitative research framework for major cryptocurrencies (**BTC, ETH, SOL, and BNB**) based on a **Spatio-Temporal Relational Transformer (`CryptoSTTransformer`)**. Reproducibility depends on each experiment's code, data provenance, parameters and cost model; the archive does not establish independent peer review or universal offline reproducibility.
 
-All datasets (9-year daily, 5-year hourly, 6-year 4-hour OHLCV, DefiLlama on-chain TVL/stablecoin net flows, Alternative.me Fear & Greed sentiment, and US equity macro data) are **pre-packaged locally in [`data/`](data/)**. **No API keys, no external proxies, and no live Binance network connectivity are required** to replicate all unit tests, frequency grid sweeps, and historical backtests.
+Historical files refer to datasets under [`data/`](data/) and external local archives. Their presence does not establish source identity, complete coverage, redistribution permission or reproducibility of every historical backtest. This update adds no raw third-party market data.
 
 The architecture addresses fundamental crypto market dynamics:
 1. **Cross-Asset Lead-Lag Relations**: Captures inter-token information flow (e.g., Bitcoin macro lead, BNB exchange liquidity spillover, and Solana high-beta momentum) using spatial multi-head self-attention.
@@ -47,7 +50,7 @@ The architecture addresses fundamental crypto market dynamics:
 3. **Multi-Modal Macro & On-Chain Augmentation**: Integrates daily on-chain Ethereum TVL and net stablecoin capital flows (DefiLlama), sentiment indices (Alternative.me Crypto Fear & Greed), and US equity index spillovers (Nasdaq / S&P 500), combined with intraday cyclical time-of-day encodings.
 4. **Adaptive Holding Frequency**: Solves the over-trading vs. trend-holding trade-off. An adaptive momentum-exit mechanism captures sharp upward impulse waves while staying in 100% USDT cash during choppiness and drawdowns.
 5. **Strictly Causal Open-to-Open Execution**: Signals computed at bar $t$ close $ightarrow$ filled at bar $t+1$ Open at $open[t+1]$ $ightarrow$ exited at bar $t+k+1$ Open at $open[t+k+1]$. Bar returns are strictly Open-to-Open, fully accounting for 0.05% Taker fee and slippage.
-6. **Strict 3-Way Temporal Partitioning (Zero Lookahead / Zero Information Leak)**:
+6. **Historical temporal partitioning (not proof of zero information leakage)**:
    - **Training Set**: 2020-08-11 to 2023-12-31 (7,422 raw 4h bars $\rightarrow$ 7,369 aligned sequence samples after 42-bar rolling warmup and 12-bar sequence lookback)
    - **Validation & Hyperparameter Tuning**: 2024-01-01 to 2025-12-31 (2 full years, 4,386 4h bars)
    - **2026 Post-hoc Development & Stress-Test Period**: 2026-01-01 to 2026-09-13 (8.5 months, 1,537 4h bars, unobserved during model weights training, utilized for post-hoc stress-testing)
@@ -55,6 +58,8 @@ The architecture addresses fundamental crypto market dynamics:
 ---
 
 ### 2. Core Research Questions & Empirical Answers
+
+> **Historical selected-window results, not current recommendations.** The asset/frequency rankings below were selected on the 2024–2025 validation window. The [methodology audit](reports/backtest_methodology_audit.md) records missing funding in the legacy main backtest and an unauditable warm-start checkpoint. These numbers do not establish model alpha, an untouched OOS result or a complete net-return estimate.
 
 #### Q1: Does the Transformer perform best on Bitcoin (BTC), Ethereum (ETH), or Solana (SOL)?
 - **Ethereum (ETH)** achieves the **Highest Risk-Adjusted Quality (4h Sharpe: 2.09, Daily Resampled Sharpe: 2.18, Calmar: 3.13, MDD: -18.85%, Return: +152.88% in 2024-2025 Open-to-Open)**. ETH benefits most directly from on-chain stablecoin flows and BTC lead-lag cross-attention.
@@ -81,7 +86,7 @@ Integrating Spot-Perpetual Basis, Funding Rate, and OKX Spread expanded features
 
 ---
 
-### 4. Phase 17: Synchronized Portfolio Execution & Verified Performance
+### 4. Phase 17: Historical Portfolio Execution & Unreconciled Performance Table
 Under Phase 17, the execution engine operates under strict institutional standards:
 1. **Synchronized Single-Loop Event Loop**: ETH and SOL are simulated simultaneously within a unified portfolio event loop with centralized `PortfolioRiskManager` calling and gross/net leverage enforcement ($\le 1.50$ gross, $\le 1.00$ net).
 2. **Causal Execution Timing**: Signals confirmed at bar $t$ close $\to$ orders filled at bar $t+1$ open (`open[t+1]`), completely eliminating close-to-close lookahead.
@@ -89,10 +94,12 @@ Under Phase 17, the execution engine operates under strict institutional standar
 4. **Causal 8h Perpetual Funding Carry**: Discrete 8h settlement (00:00, 08:00, 16:00 UTC) charged only to positions active during settlement bars.
 5. **Realistic Execution Friction**: 0.04% taker fee + 0.04% normal slippage + 0.10% stop slippage + 0.15% gap slippage.
 
-#### Verified Empirical Performance (`docs/metrics.json` Single Source of Truth):
+#### Historical performance transcription (`docs/metrics.json` is not a reconciled single source of truth):
+
+> **UNRECONCILED_LEGACY_TABLE**: retained for auditability, not promoted as a result. The [claim audit](docs/CLAIM_CONSISTENCY_AUDIT.md) records conflicts between this table and the JSON, including full-history drawdown, raw-baseline zero rows and repeated asset columns. This archive does not select one conflicting version as correct or recompute it from raw data.
 | Period / Metric | Execution Mode | Portfolio Return | Max Drawdown | Daily Sharpe | Calmar Ratio | ETH Return | SOL Return | Total Trades |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **2024–2025 Out-of-Sample** | **Trial Mode (Downsizing)** | **+23.76%** | **-18.93%** | **0.82** | **0.59** | +11.86% | +11.86% | 704 |
+| **2024–2025 Reused Development Window** | **Trial Mode (Downsizing)** | **+23.76%** | **-18.93%** | **0.82** | **0.59** | +11.86% | +11.86% | 704 |
 | (2 Years, 4,386 4h bars) | Raw Baseline (No Throttles) | -11.81% | -11.88% | -0.65 | -0.51 | -5.91% | -5.91% | 722 |
 | **2026 Stress Period** | **Trial Mode (Downsizing)** | **-6.09%** | **-9.80%** | **-1.34** | **-0.88** | -4.43% | -4.43% | 179 |
 | (8.5 Months, 1,537 4h bars)| Raw Baseline (No Throttles) | -11.35% | -12.01% | -1.54 | -0.95 | -8.10% | -8.10% | 185 |
@@ -170,6 +177,8 @@ Under Phase 17, the execution engine operates under strict institutional standar
 - **SOLUSDT (139 笔独立交易)**：胜率 **52.5%**，盈亏比 **1.74:1**，利润因子 **1.92**，单笔平均净收益 **+0.80%**，偏度 **+1.73**，单笔最大盈利达 **+22.87%**，单笔最大亏损为 **-9.35%**，平均持仓 **13.8 小时**。
 
 #### 2. 杠杆敏感性回测净值对比 (1.0x - 3.0x vs 现货基准)
+
+> **本节旧杠杆推荐已撤回。** 下表保留原研究数字，但旧实现采用收益倍数放大与固定 funding 近似，未提供完整保证金/强平路径。表中的历史评级不构成当前推荐，不能由 1× 收益外推 1.5×–3× 实际表现。见[方法论审计 C3/M1](reports/backtest_methodology_audit.md)。
 ![ETH & SOL Leverage Comparison](docs/eth_sol_leverage_comparison.png)
 
 | 标的代币 | 杠杆模式 | 两年累计净值 | 年化复合 (CAGR) | 最大回撤 MDD | 日频重采样夏普 | 卡玛比率 Calmar | 实盘评级与建议 |
@@ -186,9 +195,7 @@ Under Phase 17, the execution engine operates under strict institutional standar
 | **SOLUSDT** | 2.0x 进取杠杆 | +569.51% | +158.52% | -54.04% | 1.80 | 2.93 | ⚠️ 回撤突破 -54%，存在清算风险 |
 | **SOLUSDT** | 3.0x 极限杠杆 | +1253.54% | +267.47% | -70.72% | 1.79 | 3.78 | ❌ 严禁使用（回撤达 -70%） |
 
-> 📌 **实操杠杆结论**：
-> 1. **为什么可以加杠杆？** 策略在场暴露仅 10.8%，89.2% 的时间处于 100% USDT 现金无风险状态，平均每笔仅持仓 13 小时，资金费率损耗微乎其微（单笔仅 0.01% 借贷成本）。
-> 2. **标的分化原则**：以太坊（ETH）回撤受控、胜率超 61%，非常适合 **1.5x ~ 2.0x 杠杆**（收益放大至 +281% ~ +460%）；索拉纳（SOL）波动剧烈，建议坚守 **1.0x 原版（最高不超 1.5x）**，杜绝插针爆仓。
+> 📌 **2026-10-23 纠正**：低平均持仓时间不能证明 funding 可以忽略，持仓是否跨越真实结算事件才决定费用。上表没有建立任何杠杆档位的实盘适用性，也不能保证止损成交或避免强平；原“黄金推荐/最优推荐”仅作为已撤回的历史措辞保留。
 
 ---
 
@@ -712,8 +719,8 @@ common_idx = feat_dfs['BTCUSDT'][valid_mask].index
    - 单边 20 bps：组合收益 +92.17%，夏普 1.14；
    - **单边 30 bps (极端惩罚，双边 60 bps)**：组合收益依然高达 **+80.35%，夏普仍达 1.04**！低换手结构趋势对交易摩擦具备极强免疫力。
 
-*研究判定与实盘准入建议*：
-- **Phase 19 纯结构趋势跟踪（Pure Structural Trend）**：各项前视偏差消除、滚动 Walk-Forward 及 30 bps 极限压力测试全部合格，**正式获批作为首要候选策略进入冻结参数模拟实盘（Forward Paper Testing）**；
+*历史研究判定（当前不构成实盘准入）*：
+- **Phase 19 纯结构趋势跟踪（Pure Structural Trend）**：历史版本曾提出冻结参数前向观察。上述开发回测和局部测试不能证明完整研究门禁通过；方法论审计仍记录旧引擎止损与成本问题，且本次未核验后续有效前向样本。状态为 `LEGACY_RESEARCH / UNVERIFIED`。
 - **Phase 20 ST-ChanTransformer**：降级为**实验性科研原型（Experimental Filter）**，继续探索长程宏观状态表征，暂不作为实盘主推方案。
 
 *一键复现实证命令*：

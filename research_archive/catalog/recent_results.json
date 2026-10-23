@@ -1,0 +1,80 @@
+{
+  "review_date": "2026-10-23",
+  "verification_scope": "Read-only reports, frozen result summaries, historical verification receipts and selected file hashes. No market-data reads or strategy/test reruns.",
+  "studies": [
+    {
+      "id": "langlang_fixed",
+      "title_zh": "浪浪启发固定规则三币永续",
+      "status": "VERIFIED_NEGATIVE_MODEL_RESULT",
+      "window_utc": ["2024-01-10T00:00:00Z", "2025-12-31T23:45:00Z"],
+      "capital": {"amount": 10000, "unit": "USDT", "kind": "shared simulated initial equity per scenario"},
+      "base_returns_percent": {"A_fixed": -28.91294632623056, "A_be": -32.33045389050706, "B_fixed": -26.923877583931024, "B_be": -26.211178163011294},
+      "base_trade_counts": {"A_fixed": 709, "A_be": 719, "B_fixed": 289, "B_be": 290},
+      "scenario_count": 36,
+      "negative_core_scenario_count": 24,
+      "costs_bps_per_side": {"base_fee": 6, "base_slippage": 5, "stress_fee": 12, "stress_slippage": 10},
+      "limitations": ["CONTENT_CONFLICT_UNRESOLVED including 2024–2025", "reused history, not untouched OOS", "hourly mark.open approximates settlement mark", "not exact original-author replication", "no validated real execution or liquidation path"],
+      "published_report": "research_archive/evidence/recent/langlang_fixed/REPORT_ZH.md"
+    },
+    {
+      "id": "two_wave",
+      "title_zh": "横盘蓄势两波箱体",
+      "status": "PENDING_VERIFICATION_SCOPE_EXPANDED",
+      "timeframes": ["5m", "10m", "1h", "4h", "1d"],
+      "planned_scenarios": 40,
+      "valid_historical_trade_count": null,
+      "return_percent": null,
+      "latest_evidence": "crypto-leverage/docs/TWO_WAVE_TIMEFRAME_SCOPE_V1_20261022.md",
+      "limitations": ["latest scope accepted but complete executable protocol not frozen", "no later 40-scenario result found in reviewed sources", "old benchmark NOT_ACCEPTED_AFTER_ACCESS_DENIAL and excluded from results", "old 25 synthetic tests do not establish historical validity"],
+      "published_report": "research_archive/evidence/recent/two_wave/STATUS_ZH.md"
+    },
+    {
+      "id": "human_protection",
+      "title_zh": "结构式浮盈保护算法对照",
+      "status": "VERIFIED_NEGATIVE_CONDITIONAL_RESULT",
+      "window_utc": ["2023-01-01T00:00:00Z", "2023-04-01T00:00:00Z"],
+      "symbols": ["BTCUSDT", "ETHUSDT"],
+      "trade_count": 25,
+      "notional_cap_per_trade_usdt": 1000,
+      "conditional_pnl_usdt": {"FIXED": -0.27160942303070335, "STRUCTURE": -23.66814055170621, "TIME6H": -11.534990509896805, "EXTREME": -0.27160942303070335},
+      "full_net_pnl": null,
+      "costs": "4bp fee per side and 2bp adverse exit slippage; funding not covered",
+      "limitations": ["reused 2023Q1 history", "only 25 common simulated entries", "no validated fill queue, mark or liquidation", "public excerpt excludes all personal interactive records and individual human counterfactuals"],
+      "published_report": "research_archive/evidence/recent/human_protection/ALGORITHM_REPORT_ZH.md"
+    },
+    {
+      "id": "funding_switch",
+      "title_zh": "BTC资金费切换事件预测",
+      "status": "NO_DEMONSTRATED_CONSISTENT_EVENT_GAIN",
+      "evaluation_years": [2024, 2025],
+      "logistic_events": {"positive_to_negative": {"TP": 0, "FP": 1, "FN": 132}, "negative_to_positive": {"TP": 122, "FP": 68, "FN": 10}},
+      "financial_backtest_status": "NOT_RUN_DATA_GAP",
+      "net_annual_return": null,
+      "limitations": ["reused history", "prior final funding and future schedule availability assumed, not historically proven", "no complete same-coin spot-plus-perpetual cash ledger", "negative-to-positive recall alone ignores 68 false alarms and always-positive baseline"],
+      "published_report": "research_archive/evidence/recent/funding_switch/REPORT_ZH.md"
+    },
+    {
+      "id": "small_cap_game",
+      "title_zh": "小资金博弈与C3筛选",
+      "status": "VERIFIED_NEGATIVE_FEE_SLIPPAGE_RESULT",
+      "window": "2023 ETH/SOL",
+      "trade_counts": {"BASE": 26, "C3": 15},
+      "notional_per_trade_usdt": 1000,
+      "base_fee_slippage_pnl_usdt": {"BASE": -21.250132719142016, "C3": -3.961945986831493},
+      "stress_fee_slippage_pnl_usdt": {"BASE": -47.23941595737773, "C3": -18.952325620857945},
+      "limitations": ["post-hoc analysis of existing simulated ledgers", "not a shared-account return", "funding real cashflow remains UNKNOWN", "less negative does not prove repeatable selection edge", "not fresh OOS"],
+      "published_report": "research_archive/evidence/recent/small_cap_game/REPORT_ZH.md"
+    },
+    {
+      "id": "new_listing_short",
+      "title_zh": "新上市永续做空",
+      "status": "PAUSED_NOT_RUN_DATA_GATES",
+      "old_universe_symbols": 325,
+      "old_history_requirement_days": 120,
+      "new_listing_eligible_count": null,
+      "return_percent": null,
+      "limitations": ["lifecycle and historical shortability not reconstructable from reviewed evidence", "first price observation is not listing/shortability timestamp", "unknown is not zero", "not run does not falsify strategy", "old provisional candidate count corrected from 627 to 623 but asset class remains unverified"],
+      "published_report": "research_archive/evidence/recent/new_listing_short/REPORT_ZH.md"
+    }
+  ]
+}

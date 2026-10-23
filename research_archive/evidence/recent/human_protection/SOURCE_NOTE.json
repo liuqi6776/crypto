@@ -1,0 +1,20 @@
+{
+  "artifact_kind": "public_algorithm_only_excerpt",
+  "created_utc_date": "2026-10-23",
+  "source_study": "research-runs/2026-10-21/task-2/offline_round1",
+  "source_report_sha256": "41c4efcb7fa79c1a1b3d6c5cd8b910e95fd888c55a56bdb89e19a08b6774890e",
+  "source_metrics_sha256": "74c472dbe2b8e1fd43d58a54d4a4c9c99e35b5a6cfb27446d234b83c9c61628c",
+  "source_results_audit_sha256": "6aa8b8154a02f096a491b8f26b0e255585fcce2775a2588d73a75b62cca4b436",
+  "selection": {
+    "scope": "overall",
+    "cohorts": ["state_filtered", "all_candidates", "equal_count_sha"],
+    "row_count": 6,
+    "removed_columns": ["equity_curve"],
+    "included_columns": ["cohort", "variant", "trade_count", "conditional_modeled_net_expectancy", "mean_R", "fees_usd", "slippage_usd", "full_net_expectancy", "max_drawdown_usd"]
+  },
+  "full_net_expectancy_empty_csv_means": "unknown; funding not covered, not zero",
+  "verification_this_archive": "Compared algorithm overall counts and conditional expectancy against source report; no strategy rerun or source market-data access.",
+  "original_verification_record": "24 tests and 23 result checks reported by original study; not rerun for this archive.",
+  "excluded": ["personal interactive sessions", "human entry records", "order identifiers", "individual human counterfactuals", "absolute user paths", "raw market data"],
+  "reproduction_scope": "Published aggregate arithmetic only; full study reproduction requires separately authorized source code and licensed data."
+}

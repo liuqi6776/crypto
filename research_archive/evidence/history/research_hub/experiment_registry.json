@@ -1,0 +1,2962 @@
+{
+  "registry_version": "1.1.0",
+  "status": "DRAFT_BOUNDED_EXPERIMENT_COMPLETED_NOT_A_GATE_PASS",
+  "as_of_evidence_utc": "2026-10-11T03:36:35Z",
+  "created_utc": "2026-10-10T23:58:08Z",
+  "scope": "The unified research hub and its four original platform contracts remain DRAFT. One bounded Core3 source-admission and frozen research replay is implemented and completed with an independent reconstruction-only audit; no strategy or model gate passed. The replay used exposed/reused windows. Final workspace pytest terminated 3930 passed, 24 failed, 1 skipped (242 warnings; exit 1); see the final failure-classification evidence. Source verification and import remained fail-closed.",
+  "records": [
+    {
+      "id": "channel-c1-c3-20261010",
+      "title": "MTF channel C1-C3 limited comparison",
+      "category": "strategy",
+      "version": "comparison_run_v1; six final code hashes matched",
+      "market_type": "perpetual",
+      "symbols": [
+        "ETH/USDT:USDT",
+        "SOL/USDT:USDT"
+      ],
+      "timeframe": [
+        "1h/15m",
+        "4h/1h"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": "2023-01-01T00:00:00Z",
+          "end_utc": "2024-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "2023 cases; no independent validation."
+        }
+      ],
+      "sample": {
+        "sample_unit": "BASE deduplicated event",
+        "count": 18,
+        "independence_notes": "BASE has 26 trades / 18 deduplicated events. C1 is 26/18, C2 is 121/79, and C3 is 15/11 trades/deduplicated events; those version-specific counts stay in result populations and are not pooled. Shared 2023 cases are exposed."
+      },
+      "cost_and_accounting": "1000 USDT notional, max 60 minutes. Base maker/taker/slippage 0.02%/0.05%/0.02%; stress 0.04%/0.10%/0.05%, ledger revaluation. Possible C2 funding-event valuation separate; true settlement UNKNOWN. Trade/case PnL, not account return.",
+      "results": [
+        {
+          "name": "BASE base / stress",
+          "value": "-21.250132719142023 / -47.23941595737773",
+          "unit": "descriptive_ledger_pnl_sum_usdt",
+          "population": "26 trades / 18 deduplicated",
+          "notes": "Descriptive case ledger."
+        },
+        {
+          "name": "C1 base / stress",
+          "value": "-32.09709672314501 / -58.09046258353637",
+          "unit": "descriptive_ledger_pnl_sum_usdt",
+          "population": "26 trades / 18 deduplicated",
+          "notes": "C1 mean loss 1.68 to 2.33."
+        },
+        {
+          "name": "C2 base / stress",
+          "value": "-89.42437723168989 / -210.44732078220215",
+          "unit": "descriptive_ledger_pnl_sum_usdt",
+          "population": "121 trades / 79 deduplicated",
+          "notes": "Eight common fragments signaled 0.5 min earlier with 0.141 percentage point less room."
+        },
+        {
+          "name": "C3 base / stress",
+          "value": "-3.961945986831493 / -18.952325620857938",
+          "unit": "descriptive_ledger_pnl_sum_usdt",
+          "population": "15 trades / 11 deduplicated",
+          "notes": "Fast-stop count fell from 21/26 to 11/15, retaining four winners; B arm only five trades."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "audit": {
+        "strength": "limited_artifact_audit",
+        "scope": "Existing comparison summary, manifest, comparison JSON, hash checks and scoped test report; global chain incomplete.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "priority_validation",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/mtf_channel_limited_compare_20261010_v1/root_review/ONE_PAGE_REVIEW_ZH.md",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Latest comparison one-page review."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/mtf_channel_limited_compare_20261010_v1/delivery_v1/FULL_RESULTS_ZH.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Detailed reported cases and assumptions."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/mtf_channel_limited_compare_20261010_v1/FINAL_MANIFEST.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Final code hashes and artifact manifest."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/mtf_channel_limited_compare_20261010_v1/comparison_run_v1/comparison.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Machine-readable comparison results."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative code provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative code SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": []
+    },
+    {
+      "id": "longcycle-trend-12-rules",
+      "title": "Long-cycle trend catalog, twelve rules",
+      "category": "strategy",
+      "version": "ACCOUNT_RESULTS_V3_20261003",
+      "market_type": "perpetual",
+      "symbols": [
+        "BTC",
+        "ETH",
+        "SOL"
+      ],
+      "timeframe": [
+        "4h",
+        "1d"
+      ],
+      "windows": [
+        {
+          "role": "train",
+          "start_utc": "2020-09-15T00:00:00Z",
+          "end_utc": "2025-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "Training/search history; repeated legacy use."
+        },
+        {
+          "role": "validation",
+          "start_utc": "2025-01-01T00:00:00Z",
+          "end_utc": "2026-01-01T00:00:00Z",
+          "exposure_status": "reused_validation",
+          "notes": "2025 reused validation; 2026 values were not numerically read in this audit."
+        }
+      ],
+      "sample": {
+        "sample_unit": "rule arm",
+        "count": 12,
+        "independence_notes": "Twelve rule arms share data and selection history. NO_BORROW_FAIL training results are not zero."
+      },
+      "cost_and_accounting": "5 bp fee per side plus 5 bp slippage; observed funding via prior-hour mark proxy. 100000 USDT segmented wallet, fixed initial slots, no compounding; capacity and margin path absent.",
+      "results": [
+        {
+          "name": "EMA200 4h 2025 account return",
+          "value": 21.65,
+          "unit": "account_return_percent",
+          "population": "95 completed trades",
+          "notes": "Sharpe 0.759; MDD -19.86%."
+        },
+        {
+          "name": "MACD plus EMA200 4h 2025 account return",
+          "value": 14.96,
+          "unit": "account_return_percent",
+          "population": "155 trades",
+          "notes": "Sharpe 0.706; MDD -19.11%."
+        },
+        {
+          "name": "Donchian55/20 4h 2025 account return",
+          "value": 8.16,
+          "unit": "account_return_percent",
+          "population": "41 trades",
+          "notes": "Sharpe 0.433; MDD -21.69%."
+        },
+        {
+          "name": "BB120 plus EMA200 plus ATR3 4h 2025 account return",
+          "value": 16.81,
+          "unit": "account_return_percent",
+          "population": "19 completed trades",
+          "notes": "Sharpe 1.269; MDD -7.62%; ETH contributed heavily, and top three winners contributed 81.2%."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "audit": {
+        "strength": "limited_summary_audit",
+        "scope": "Existing full account-results report; all twelve arms remain report-linked, no replay.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "retain_benchmark",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/longcycle_trend_catalog_v1/ACCOUNT_RESULTS_V3_20261003.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Twelve rule account-result summary and shared assumptions."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative code provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative code SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": [
+        {
+          "name": "Long-cycle account lock",
+          "sha256": "303650FCC9A70CDBBDF3A8FEE35305FF86B63E46CADF63504D42814CA2BE96B9",
+          "hash_type": "SHA-256",
+          "scope": "Long-cycle account lock artifact (lock semantics unresolved; not a pure parameter pin)",
+          "status": "REPORTED_ARTIFACT",
+          "evidence_path": "../reports/strategy_validation/longcycle_trend_catalog_v1/ACCOUNT_RESULTS_V3_20261003.md",
+          "evidence_locator": "account lock SHA256",
+          "reason": "Historical digest transcribed from the cited metadata field; current-byte preservation checks for selected artifacts do not independently establish the original experiment freeze."
+        },
+        {
+          "name": "Long-cycle receipt",
+          "sha256": "94328CF42B4D2FEC08F71D7F74E3E6B56DAFFC9A0CDFFEF8D859F4E98F875828",
+          "hash_type": "SHA-256",
+          "scope": "Long-cycle account-results receipt artifact",
+          "status": "REPORTED_ARTIFACT",
+          "evidence_path": "../reports/strategy_validation/longcycle_trend_catalog_v1/ACCOUNT_RESULTS_V3_20261003.md",
+          "evidence_locator": "receipt SHA256",
+          "reason": "Historical digest transcribed from the cited metadata field; current-byte preservation checks for selected artifacts do not independently establish the original experiment freeze."
+        }
+      ]
+    },
+    {
+      "id": "d1-r3k-20261005",
+      "title": "D1 and R3K minute model first conclusion",
+      "category": "model",
+      "version": "D1/R3K 2026-10-05; corrected identity coverage 2808",
+      "market_type": "perpetual",
+      "symbols": [
+        "ETH",
+        "BTC cross-input"
+      ],
+      "timeframe": [
+        "1m"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": "2022-08-01T00:00:00Z",
+          "end_utc": "2024-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "13 reset windows; 2022-2023 history exposed."
+        }
+      ],
+      "sample": {
+        "sample_unit": "seed-window trade ledger",
+        "count": 136,
+        "independence_notes": "Basic seed trade counts 74/29/33 across seeds 101/202/303; shared historical windows are dependent. Higher-cost variant selects different entries and has 19/7/6 trades, not a same-trade stress."
+      },
+      "cost_and_accounting": "10000 USDT equity / 1000 USDT notional per window; decision T+61s, fill T+120s. Reported funding is observed; execution/accounting assumptions remain incomplete. Cited summary describes 7 bp per-side fee+slippage baseline.",
+      "results": [
+        {
+          "name": "Basic PnL seeds 101/202/303",
+          "value": "-17.29 / +89.67 / -34.13",
+          "unit": "reset_window_pnl_sum_usdt",
+          "population": "74 / 29 / 33 trades",
+          "notes": "Seeds share market history."
+        },
+        {
+          "name": "Higher-cost-selection variant PnL",
+          "value": "+169.85 / +61.55 / +35.81",
+          "unit": "reset_window_pnl_sum_usdt",
+          "population": "19 / 7 / 6 trades",
+          "notes": "Changed entry set; cannot be described as same-trade cost stress improvement."
+        },
+        {
+          "name": "Transformer vs Ridge H5 corrected p",
+          "value": 0.00069993,
+          "unit": "p_value",
+          "population": "reported corrected comparison",
+          "notes": "Standardized loss better; raw MSE slightly worse than zero baseline."
+        },
+        {
+          "name": "H7 BTC daily linear relative result",
+          "value": -0.2141,
+          "unit": "return_difference_percentage_points",
+          "population": "reported H7 result",
+          "notes": "Average weekly return difference; worse by 0.2141 percentage points."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "audit": {
+        "strength": "limited_summary_audit",
+        "scope": "Existing conclusion and detailed R3K report; no refit or replay. Six experts lack support; IV no stable gain; old route pending repair.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "pause_current_version",
+      "refs": [
+        {
+          "relative_path": "../reports/EMA_IV_FIRST_CONCLUSION_CN_20261005.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Existing first conclusion."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/r3k_20261005/d1_r3k_20261005.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Correctly named detailed report."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": "f5cd91f0fb71077a5bfb70419dd0f9de41f8c8c3692216ab287fea097d684bd1",
+          "hash_type": "SHA-256",
+          "scope": "r3g_freeze_manifest_v2.json (manifest with 69 input pins; not raw data file digests)",
+          "status": "REPORTED_FROZEN",
+          "reason": "Reported frozen input-manifest digest transcribed from cited evidence; not independently rehashed during this bounded pass.",
+          "evidence_path": "../research_data/ema_iv_minute_research_v1/r3k_final_code_freeze_v1.json",
+          "evidence_locator": "receipt_bindings.input_freeze_sha256"
+        },
+        "code": {
+          "sha256": "db1d59b07bb28e07290bd21ba16ecaa814e570a2c6c4c40af0e90faa59853b58",
+          "hash_type": "SHA-256",
+          "scope": "tools/perptools/ema_iv_v2/r3k_execution_code_manifest_v1.json (27 execution-code manifest)",
+          "status": "REPORTED_FROZEN",
+          "reason": "Reported frozen execution-code-manifest digest transcribed from cited evidence; not independently rehashed during this bounded pass.",
+          "evidence_path": "../research_data/ema_iv_minute_research_v1/r3k_final_code_freeze_v1.json",
+          "evidence_locator": "receipt_bindings.execution_code_manifest_sha256"
+        },
+        "parameters": {
+          "sha256": "0628fc609765edc4906acac952280c9812ca64902dc4c8fab066ca1ab3f02a9f",
+          "hash_type": "SHA-256",
+          "scope": "r3g_run_config_v4.json (run configuration)",
+          "status": "REPORTED_FROZEN",
+          "reason": "Reported frozen run-configuration digest transcribed from cited evidence; not independently rehashed during this bounded pass.",
+          "evidence_path": "../research_data/ema_iv_minute_research_v1/r3k_final_code_freeze_v1.json",
+          "evidence_locator": "receipt_bindings.run_config_sha256"
+        }
+      },
+      "artifact_hashes": [
+        {
+          "name": "D1/R3K code-freeze manifest",
+          "sha256": "e2f7a5830a9600c392455316aa3aa0823fbf0c8d729b8e22fd35fb4c61494e3c",
+          "hash_type": "SHA-256",
+          "scope": "research_data/ema_iv_minute_research_v1/r3k_final_code_freeze_v1.json (code-freeze manifest file; not an individual code or parameter digest)",
+          "status": "REPORTED_ARTIFACT",
+          "evidence_path": "../reports/strategy_validation/r3k_20261005/d1_r3k_20261005.md",
+          "evidence_locator": "r3k_final_code_freeze_v1.json SHA256",
+          "reason": "Historical digest transcribed from the cited metadata field; current-byte preservation checks for selected artifacts do not independently establish the original experiment freeze."
+        },
+        {
+          "name": "D1/R3K one-run configuration",
+          "sha256": "fc0349cf58481cd330bbe951bc6f93feaad2146e0f60882c2ce198e3fef70a50",
+          "hash_type": "SHA-256",
+          "scope": "r3k_run_once_config_v1.json (one-run configuration file)",
+          "status": "REPORTED_ARTIFACT",
+          "evidence_path": "../research_data/ema_iv_minute_research_v1/r3k_final_code_freeze_v1.json",
+          "evidence_locator": "receipt_bindings.once_config_sha256",
+          "reason": "Historical digest transcribed from the cited metadata field; current-byte preservation checks for selected artifacts do not independently establish the original experiment freeze."
+        }
+      ]
+    },
+    {
+      "id": "ridge-1h24-risk-2021",
+      "title": "Ridge 1h/24 risk prediction arithmetic audit",
+      "category": "model",
+      "version": "V1R2; derived_arithmetic_audit_v1r3",
+      "market_type": "perpetual",
+      "symbols": [
+        "BTC",
+        "ETH",
+        "SOL",
+        "BNB"
+      ],
+      "timeframe": [
+        "1h prediction, 24h target"
+      ],
+      "windows": [
+        {
+          "role": "train",
+          "start_utc": "2021-01-01T00:00:00Z",
+          "end_utc": "2021-07-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "7-day embargo before validation."
+        },
+        {
+          "role": "validation",
+          "start_utc": "2021-07-08T00:00:00Z",
+          "end_utc": "2022-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "Historical validation; no position PnL evidence."
+        }
+      ],
+      "sample": {
+        "sample_unit": "overlapping forecast origin",
+        "count": 4228,
+        "independence_notes": "4248 prediction rows, 4228 scored; forecast origins overlap and are dependent."
+      },
+      "cost_and_accounting": "Prediction-only arithmetic audit; no position sizing, funding account cashflows, or PnL evidence.",
+      "results": [
+        {
+          "name": "Pooled MSE improvement versus EWMA",
+          "value": 13.7937,
+          "unit": "prediction_metric",
+          "population": "4228 scored overlapping origins",
+          "notes": "BTC did not improve; 75 arithmetic checks."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "audit": {
+        "strength": "arithmetic_only",
+        "scope": "Derived-only; no refit and no raw data read.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "priority_validation",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/trend_vol_1h_risk2021_v1/derived_arithmetic_audit_v1r3.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Derived arithmetic checks and metrics."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/trend_vol_1h_risk2021_v1/core_run_contract.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Run contract and declared windows."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative code provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative code SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": [
+        {
+          "name": "Ridge execution lock",
+          "sha256": "75e87144211508c635e2b7b173d56a97171b759bf1ba2a1aa300ea38e124e339",
+          "hash_type": "SHA-256",
+          "scope": "locks/execution_lock_trend_vol_1h_risk2021_root_approved_v1r2.json (reported lock artifact)",
+          "status": "REPORTED_ARTIFACT",
+          "evidence_path": "../reports/strategy_validation/trend_vol_1h_risk2021_v1/run_manifest.json",
+          "evidence_locator": "lock_sha256",
+          "reason": "Historical digest transcribed from the cited metadata field; current-byte preservation checks for selected artifacts do not independently establish the original experiment freeze."
+        },
+        {
+          "name": "Ridge annual-inputs manifest",
+          "sha256": "7fe35627775167b1b66cb837ca865c2d6a2a7d0dca94a2dd25960a20d123a805",
+          "hash_type": "SHA-256",
+          "scope": "Ridge annual-inputs manifest artifact; reported digest is not verified as a frozen raw-market-data pin",
+          "status": "REPORTED_ARTIFACT",
+          "evidence_path": "../reports/strategy_validation/trend_vol_1h_risk2021_v1/run_manifest.json",
+          "evidence_locator": "annual_inputs_sha256",
+          "reason": "Historical digest transcribed from the cited metadata field; current-byte preservation checks for selected artifacts do not independently establish the original experiment freeze."
+        }
+      ]
+    },
+    {
+      "id": "c3-x3-overlay-2023",
+      "title": "C3/X3 volatility overlay",
+      "category": "strategy",
+      "version": "V1R3 gate report; 2023 overlay",
+      "market_type": "perpetual",
+      "symbols": [
+        "BTC",
+        "ETH"
+      ],
+      "timeframe": [
+        "unknown from limited summary"
+      ],
+      "windows": [
+        {
+          "role": "train",
+          "start_utc": "2023-06-20T00:00:00Z",
+          "end_utc": "2023-09-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "Constants trained; 7-day embargo."
+        },
+        {
+          "role": "validation",
+          "start_utc": "2023-09-08T00:00:00Z",
+          "end_utc": "2023-10-24T00:00:00Z",
+          "exposure_status": "reused_validation",
+          "notes": "Validation window reused."
+        }
+      ],
+      "sample": {
+        "sample_unit": "common trade",
+        "count": 3,
+        "independence_notes": "Only three common trades; all positive results derive from one BTC winner."
+      },
+      "cost_and_accounting": "Primary fee 5 bp and slippage 5 bp; funding uses prior-hour mark proxy, publication-time availability unknown. ATM reduced winner while leaving full size on losses.",
+      "results": [
+        {
+          "name": "E0 return",
+          "value": 1.70464,
+          "unit": "account_return_percent",
+          "population": "three common trades",
+          "notes": "Reported overlay result."
+        },
+        {
+          "name": "EWMA return",
+          "value": 1.56018,
+          "unit": "account_return_percent",
+          "population": "three common trades",
+          "notes": "Reported overlay result."
+        },
+        {
+          "name": "ATM return",
+          "value": 1.08354,
+          "unit": "account_return_percent",
+          "population": "three common trades",
+          "notes": "Reported overlay result."
+        },
+        {
+          "name": "Saved ledger arithmetic checks",
+          "value": 24,
+          "unit": "descriptive_text",
+          "population": "saved-ledger checks",
+          "notes": "Arithmetic pass only, not strategy gate."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "audit": {
+        "strength": "limited_artifact_audit",
+        "scope": "Existing gate report and results summary; no replay.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "retain_hypothesis",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/c3_vol_overlay2023_v1r3/C3_VOL_OVERLAY_2023_V1R3_GATE_REPORT_CN_V1R2.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Existing limited gate report."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/c3_vol_overlay2023_v1r3/C3_VOL_OVERLAY_2023_V1R3_RESULTS_CN.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Existing overlay results."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative code provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative code SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": []
+    },
+    {
+      "id": "c3-risk-train-shrink",
+      "title": "C3 risk-training position shrink",
+      "category": "strategy",
+      "version": "AUDITED V1R3",
+      "market_type": "perpetual",
+      "symbols": [
+        "BTC",
+        "ETH"
+      ],
+      "timeframe": [
+        "1h"
+      ],
+      "windows": [
+        {
+          "role": "train",
+          "start_utc": "2021-01-01T00:00:00Z",
+          "end_utc": "2022-07-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "FIT window."
+        },
+        {
+          "role": "validation",
+          "start_utc": "2022-07-08T00:00:00Z",
+          "end_utc": "2023-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "CAL window, internal exposure."
+        }
+      ],
+      "sample": {
+        "sample_unit": "account identity",
+        "count": 16,
+        "independence_notes": "Eight arms and 16 account identities; market E0 has 34 FIT trades and 10 CAL trades. 352 ledger rows are not market samples."
+      },
+      "cost_and_accounting": "5 bp fee plus 5 bp slippage, funding proxy. Lower exposure substantial; constant controls do not fully match.",
+      "results": [
+        {
+          "name": "E0 FIT return",
+          "value": 2.91,
+          "unit": "account_return_percent",
+          "population": "E0 FIT: 34 trades",
+          "notes": "FIT has 34 trades; CAL has 10."
+        },
+        {
+          "name": "E0 CAL return",
+          "value": -1.952,
+          "unit": "account_return_percent",
+          "population": "E0 CAL: 10 trades",
+          "notes": "Reported account result."
+        },
+        {
+          "name": "New stop scaled MAE FIT / CAL",
+          "value": "+0.781 / -0.450",
+          "unit": "account_return_percent",
+          "population": "reported risk-shrink result",
+          "notes": "Downside FIT/CAL +0.984/-0.463%; not evidence of alpha."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "audit": {
+        "strength": "limited_summary_audit",
+        "scope": "Saved output audit reported PASS for arithmetic only; not a gate pass.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "retain_hypothesis",
+      "refs": [
+        {
+          "relative_path": "../docs/C3_RISK_TRAIN_REFINEMENT_REPORT_AUDITED_V1R3.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Existing risk training refinement summary."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": "288DD2F1D314D3A23FA1932F4A94EE6B35610BF5DE4261259EC440DC080EBED9",
+          "hash_type": "SHA-256",
+          "scope": "scripts/run_c3_risk_train_refinement_v1r1.py (implementation file digest reported in the approved lock)",
+          "status": "REPORTED_FROZEN",
+          "reason": "Reported implementation digest transcribed from cited C3 evidence; not independently rehashed during this bounded pass.",
+          "evidence_path": "../reports/strategy_validation/c3_risk_train_refinement_v1/execution_lock_root_approved_v1r1_technical.json",
+          "evidence_locator": "implementation_sha256"
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": [
+        {
+          "name": "C3 source identity set",
+          "sha256": "7A2FBBD26187FD83D6804537FC6824483E60B8900E24A21A1A1C28059553D2C9",
+          "hash_type": "SHA-256",
+          "scope": "C3 source identity set (not a raw input-file digest)",
+          "status": "REPORTED_ARTIFACT",
+          "evidence_path": "../reports/strategy_validation/c3_risk_train_refinement_v1/execution_lock_root_approved_v1r1_technical.json",
+          "evidence_locator": "source_identities_sha256",
+          "reason": "Historical digest transcribed from the cited metadata field; current-byte preservation checks for selected artifacts do not independently establish the original experiment freeze."
+        },
+        {
+          "name": "C3 protocol freeze",
+          "sha256": "5E2CC3EF8E5FAA312B171EB261BD7B3C693E90283B8E69FDD7F2F331C45441DA",
+          "hash_type": "SHA-256",
+          "scope": "reports/strategy_validation/c3_entry_anchored_risk_v1/ROOT_TRAIN_REFINEMENT_PROTOCOL_FREEZE_V1.json (protocol-freeze artifact; not a coefficient digest)",
+          "status": "REPORTED_ARTIFACT",
+          "evidence_path": "../reports/strategy_validation/c3_risk_train_refinement_v1/execution_lock_root_approved_v1r1_technical.json",
+          "evidence_locator": "protocol_freeze_sha256",
+          "reason": "Historical digest transcribed from the cited metadata field; current-byte preservation checks for selected artifacts do not independently establish the original experiment freeze."
+        },
+        {
+          "name": "C3 execution lock",
+          "sha256": "577AA9A446F91CD0B070FC9ED1422338C53A6BB39E2FBC9187AA8663B778698F",
+          "hash_type": "SHA-256",
+          "scope": "execution_lock_root_approved_v1r1_technical.json (execution-lock artifact)",
+          "status": "REPORTED_ARTIFACT",
+          "evidence_path": "../docs/C3_RISK_TRAIN_REFINEMENT_REPORT_AUDITED_V1R3.md",
+          "evidence_locator": "execution_lock_root_approved_v1r1_technical.json SHA256",
+          "reason": "Historical digest transcribed from the cited metadata field; current-byte preservation checks for selected artifacts do not independently establish the original experiment freeze."
+        },
+        {
+          "name": "C3 receipt",
+          "sha256": "AC104A123A99C3FA9AE9FCF9AFD7B1B8EFF31787500420E4E5AD8F2F7E0B8EFD",
+          "hash_type": "SHA-256",
+          "scope": "C3 risk-training refinement receipt artifact",
+          "status": "REPORTED_ARTIFACT",
+          "evidence_path": "../docs/C3_RISK_TRAIN_REFINEMENT_REPORT_AUDITED_V1R3.md",
+          "evidence_locator": "receipt SHA256",
+          "reason": "Historical digest transcribed from the cited metadata field; current-byte preservation checks for selected artifacts do not independently establish the original experiment freeze."
+        }
+      ]
+    },
+    {
+      "id": "event-meta-2021-23",
+      "title": "Regime, event and meta-account families",
+      "category": "model",
+      "version": "round1/round2 and meta_account v5 independent audit",
+      "market_type": "perpetual",
+      "symbols": [
+        "multiple; see referenced reports"
+      ],
+      "timeframe": [
+        "multiple; see referenced reports"
+      ],
+      "windows": [
+        {
+          "role": "train",
+          "start_utc": "2021-01-01T00:00:00Z",
+          "end_utc": "2022-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "Meta family training window."
+        },
+        {
+          "role": "evaluation",
+          "start_utc": "2022-01-01T00:00:00Z",
+          "end_utc": "2024-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "2022-23 exposed evaluation; multiple family results."
+        }
+      ],
+      "sample": {
+        "sample_unit": "trade/case/account depending on cited sub-study",
+        "count": 461,
+        "independence_notes": "Event round reports 461 trades; regime route has only 3 trades; counts across families are not pooled independent samples."
+      },
+      "cost_and_accounting": "Meta CatBoost 135 and Ridge 123 primary cost ledgers were structurally reconciled with 5 bp fee plus 5 bp slippage each side and observed funding proxy. Financing failures are specific to E4_unfiltered primary/stress; they block the complete incremental comparison, not those two model ledgers. Sub-study units differ.",
+      "results": [
+        {
+          "name": "Regime baseline 2023 return",
+          "value": 24.53,
+          "unit": "account_return_percent",
+          "population": "43 trades",
+          "notes": "2023 baseline account return. Probabilistic route had 3 trades and about 10.4-10.6%; incremental CI crosses zero."
+        },
+        {
+          "name": "Meta CatBoost 135 CAGR",
+          "value": 6.89,
+          "unit": "account_cagr_percent",
+          "population": "2022-23 evaluation",
+          "notes": "Below E0 reported 17.09%; its primary cost ledger was structurally reconciled. E4_unfiltered financing failure blocks complete incremental comparison."
+        },
+        {
+          "name": "Meta Ridge 123 CAGR",
+          "value": 7.23,
+          "unit": "account_cagr_percent",
+          "population": "2022-23 evaluation",
+          "notes": "Below E0 reported 17.09%; its primary cost ledger was structurally reconciled. E4_unfiltered financing failure blocks complete incremental comparison."
+        },
+        {
+          "name": "Event round trades",
+          "value": 461,
+          "unit": "trade_count",
+          "population": "2021-23 event family",
+          "notes": "2022 negative."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "audit": {
+        "strength": "limited_summary_audit",
+        "scope": "Existing review documents; 10/12 ledgers pass, two financing failures; structural review only.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "pause_current_version",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/market_regime_round1_20260930/final_review_v1/README_CN.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Regime round 1 conclusion."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/regime_event_round2_20260930/evaluation2023_v1/ROOT_REVIEW_CN_v2_WITH_ALPHA.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Event round 2 review."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/regime_event_round2_20260930/meta_account_2022_2023_v5_independent_audit_v1/README_AUDIT_RESULTS_CN_v1.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Meta-account audit and financing blockers."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative code provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative code SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": []
+    },
+    {
+      "id": "channel-ml-maker-2024-25",
+      "title": "Channel ML R4 resume, selected CatBoost D6/I500",
+      "category": "model",
+      "version": "R4 resume; selected_catboost_d6_i500_20261008T132354Z",
+      "market_type": "perpetual",
+      "symbols": [
+        "ETH",
+        "SOL"
+      ],
+      "timeframe": [
+        "multiple / action rows"
+      ],
+      "windows": [
+        {
+          "role": "train",
+          "start_utc": "2022-01-01T00:00:00Z",
+          "end_utc": "2023-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "R4 training."
+        },
+        {
+          "role": "validation",
+          "start_utc": "2023-01-01T00:00:00Z",
+          "end_utc": "2024-01-01T00:00:00Z",
+          "exposure_status": "reused_validation",
+          "notes": "Selection year had no eligible positive result."
+        },
+        {
+          "role": "evaluation",
+          "start_utc": "2024-01-01T00:00:00Z",
+          "end_utc": "2026-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "2024/25 are exposed evaluation windows; selection occurred in 2023, not in these evaluation years."
+        }
+      ],
+      "sample": {
+        "sample_unit": "action row in selected CatBoost run",
+        "count": 397205,
+        "independence_notes": "397205 action rows are not independent account samples. 2023 selection had no eligible positive; 2024/25 are exposed evaluation, not stated as selection windows."
+      },
+      "cost_and_accounting": "Base and stress results reported negative for exposed ETH/SOL windows; inspect cited reports for variant details. Candidate row counts do not indicate performance.",
+      "results": [
+        {
+          "name": "R4 action rows",
+          "value": 397205,
+          "unit": "prediction_row_count",
+          "population": "selected CatBoost D6/I500 run",
+          "notes": "No eligible positive in 2023 selection; exposed 2024/25 base and stress all negative."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "audit": {
+        "strength": "limited_summary_audit",
+        "scope": "Existing selected run summary and completion artifact; no replay.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "pause_current_version",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/channel_ml_validation_resume_v1/selected_catboost_d6_i500_20261008T132354Z.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Selected channel ML run."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative code provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative code SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": []
+    },
+    {
+      "id": "maker-v2-r1",
+      "title": "MTF trend-range Maker v2_r1",
+      "category": "model",
+      "version": "v2_r1 completion",
+      "market_type": "perpetual",
+      "symbols": [
+        "ETH",
+        "SOL"
+      ],
+      "timeframe": [
+        "multiple / action rows"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "not_established_untouched",
+          "notes": "Version-specific window not established in the limited summary."
+        }
+      ],
+      "sample": {
+        "sample_unit": "candidate ledger row",
+        "count": 60374,
+        "independence_notes": "72 candidates and 60374 ledger rows are not independent account samples; zero eligible positive."
+      },
+      "cost_and_accounting": "Base and stress results reported negative for exposed ETH/SOL windows; inspect cited reports for variant details. Candidate row counts do not indicate performance.",
+      "results": [
+        {
+          "name": "Maker candidates / ledger rows / eligible positives",
+          "value": "72 / 60374 / 0",
+          "unit": "descriptive_text",
+          "population": "Maker v2_r1 completion",
+          "notes": "Not an account sample count."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "audit": {
+        "strength": "limited_summary_audit",
+        "scope": "Existing selected run summary and completion artifact; no replay.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "pause_current_version",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/mtf_trend_range_maker_v2_r1/completion.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Maker v2_r1 candidate/ledger completion counts."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative code provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative code SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": []
+    },
+    {
+      "id": "pattern-support-meta",
+      "title": "Pattern, execution-horizon, support-rebound and meta candidates",
+      "category": "mixed",
+      "version": "round2/round3 and 2025 development summaries",
+      "market_type": "perpetual",
+      "symbols": [
+        "ETH",
+        "four coin family; see reports"
+      ],
+      "timeframe": [
+        "multiple"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": "2022-01-01T00:00:00Z",
+          "end_utc": "2026-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "2022-25 reused/exposed across reported cases."
+        }
+      ],
+      "sample": {
+        "sample_unit": "case, closed trade, or fixed candidate by sub-study",
+        "count": 18257,
+        "independence_notes": "Pattern family: 24 cases/18257 closed trades; horizon family: 405 candidates, ETH passive 17 small positive but stress-negative; support: 89 trades; candidate counts are not independent samples."
+      },
+      "cost_and_accounting": "Pattern combined net bounds negative. Horizon small passive positives fail stress. Results are sub-study-specific, do not pool metrics.",
+      "results": [
+        {
+          "name": "Pattern combined net bounds",
+          "value": "negative",
+          "unit": "descriptive_text",
+          "population": "24 cases / 18257 closed trades",
+          "notes": "2022-25 exposed."
+        },
+        {
+          "name": "Support rebound mean per-coin compound",
+          "value": 0.29,
+          "unit": "account_return_percent",
+          "population": "89 trades in 2025",
+          "notes": "Rule result; exposed development year."
+        },
+        {
+          "name": "CatBoost meta F0/F1/F2",
+          "value": "all negative",
+          "unit": "descriptive_text",
+          "population": "four coins, 2025",
+          "notes": "Development validation report."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "audit": {
+        "strength": "limited_summary_audit",
+        "scope": "Existing family review reports; no replay.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "pause_current_version",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/pattern_comparison_round2_20261009/codex_final_review.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Pattern family review."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/b_execution_horizon_round3_20261009/codex_final_review_zh.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Execution horizon review."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/support_rebound_mtf/STAGE_C_DEV_VALIDATION_REPORT_V2.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Support rebound validation report."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/support_rebound_mtf/catboost_meta_dev_2025_v4/dev25_validation_report.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Four-coin meta model report."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative code provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative code SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": []
+    },
+    {
+      "id": "minute-return-2026",
+      "title": "Minute-return prediction and dynamic strategy",
+      "category": "mixed",
+      "version": "static minute_return_2026_v1; dynamic minute_return_dynamic_2026_v1",
+      "market_type": "perpetual",
+      "symbols": [
+        "see source reports"
+      ],
+      "timeframe": [
+        "minute"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": "2026-01-01T00:00:00Z",
+          "end_utc": "2026-09-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "Jan-Aug fixed-window results have been examined."
+        }
+      ],
+      "sample": {
+        "sample_unit": "separate reset-fold simulation ledger",
+        "count": null,
+        "independence_notes": "Fixed and dynamic results come from different simulated ledgers/windows; cumulative totals are not daily observations or independent samples. Eight negative months; no stable predictive increment."
+      },
+      "cost_and_accounting": "Primary 0.05% fee and 0.05% slippage each side; observed funding cash accounting missing.",
+      "results": [
+        {
+          "name": "Fixed-exit cumulative net PnL",
+          "value": -752.75,
+          "unit": "account_simulation_cumulative_usdt",
+          "population": "Jan-Aug 2026; 393 trades; reset-fold arithmetic cumulative account simulation",
+          "notes": "Observed result; funding cash accounting missing."
+        },
+        {
+          "name": "Dynamic cumulative net PnL",
+          "value": -783.06,
+          "unit": "account_simulation_cumulative_usdt",
+          "population": "Jan-Aug 2026; 413 trades; reset-fold arithmetic cumulative account simulation",
+          "notes": "Observed result; eight negative months; funding cash accounting missing."
+        },
+        {
+          "name": "Fixed-exit trade count",
+          "value": 393,
+          "unit": "trade_count",
+          "population": "Jan-Aug 2026 fixed-exit simulation ledger",
+          "notes": "Count is separate from the dynamic ledger."
+        },
+        {
+          "name": "Dynamic trade count",
+          "value": 413,
+          "unit": "trade_count",
+          "population": "Jan-Aug 2026 dynamic simulation ledger",
+          "notes": "Count is separate from the fixed-exit ledger."
+        },
+        {
+          "name": "Stable predictive increment",
+          "value": "not found",
+          "unit": "descriptive_text",
+          "population": "static study",
+          "notes": "Reported no stable predictive increment."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "audit": {
+        "strength": "limited_summary_audit",
+        "scope": "Existing results and review summaries; no replay.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "pause_current_version",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/minute_return_2026_v1/EMPIRICAL_RESULTS_CN_minute_return_2026_v1_20261004.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Static minute-return results."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/minute_return_dynamic_2026_v1/CODEX_REVIEW_20261004.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Dynamic strategy review."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative code provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative code SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": []
+    },
+    {
+      "id": "btc-minute-probability-2023",
+      "title": "BTC minute-probability model",
+      "category": "model",
+      "version": "run_20261007_v3",
+      "market_type": "perpetual",
+      "symbols": [
+        "BTC"
+      ],
+      "timeframe": [
+        "minute",
+        "15m score"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": "2023-01-01T00:00:00Z",
+          "end_utc": "2024-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "Single historical year."
+        }
+      ],
+      "sample": {
+        "sample_unit": "overlapping prediction score",
+        "count": 525000,
+        "independence_notes": "About 525k overlapping scores do not represent independent samples; trade count is 71."
+      },
+      "cost_and_accounting": "Base trading result negative; detailed costs in referenced result artifact.",
+      "results": [
+        {
+          "name": "15m accuracy",
+          "value": 53,
+          "unit": "prediction_metric",
+          "population": "approximately 525k overlapping scores",
+          "notes": "Classification accuracy is not trading return."
+        },
+        {
+          "name": "Base trades",
+          "value": 71,
+          "unit": "trade_count",
+          "population": "2023 base",
+          "notes": "Negative base result."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "audit": {
+        "strength": "limited_summary_audit",
+        "scope": "Existing Chinese-language results report; no replay.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "retain_benchmark",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/btc_minute_probability_v1/run_20261007_v3/RESULTS_中文.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Existing run result summary."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative code provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative code SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": []
+    },
+    {
+      "id": "source-spot-bb-benchmark",
+      "title": "Source spot BB120x2 benchmark",
+      "category": "strategy",
+      "version": "trend research report",
+      "market_type": "spot",
+      "symbols": [
+        "spot source universe"
+      ],
+      "timeframe": [
+        "multiple"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "exposed",
+          "notes": "Exact period not established from cited summary; spot-only benchmark."
+        }
+      ],
+      "sample": {
+        "sample_unit": "strategy benchmark configuration",
+        "count": null,
+        "independence_notes": "Spot-only reference; no perpetual inference. Performance not asserted by this entry."
+      },
+      "cost_and_accounting": "Benchmark definition only; no performance values asserted in this record.",
+      "results": [
+        {
+          "name": "BB benchmark definition",
+          "value": "BB120x2, no stop, four slots",
+          "unit": "descriptive_text",
+          "population": "spot reference",
+          "notes": "Do not conflate with Top1 annual trend results."
+        }
+      ],
+      "verdict": "LEGACY_RESEARCH",
+      "audit": {
+        "strength": "limited_summary_audit",
+        "scope": "Existing source reports and provenance docs; spot reference separated from perpetual claims.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "retain_benchmark",
+      "refs": [
+        {
+          "relative_path": "../../crypto/trend_research/reports/TREND_RESEARCH_REPORT.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Spot BB120x2/no-stop/four-slot benchmark."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative code provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative code SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": []
+    },
+    {
+      "id": "source-top1-annual-trend",
+      "title": "Source Top1 annual trend result",
+      "category": "strategy",
+      "version": "V1_1X_per_year_decision.md",
+      "market_type": "spot",
+      "symbols": [
+        "spot source universe"
+      ],
+      "timeframe": [
+        "multiple"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "exposed",
+          "notes": "Report gives full date span 2020-10-15 through 2026-09-22, but exact UTC boundary semantics are unknown. Recent 2024-01 through 2026-09 period is development-exposed."
+        }
+      ],
+      "sample": {
+        "sample_unit": "annual trend strategy account result",
+        "count": null,
+        "independence_notes": "Historical periods exposed; 2021 dominates the full-history result."
+      },
+      "cost_and_accounting": "Legacy 1x spot account simulation; do not transfer this result to perpetuals. Other leverage tables are not represented by this result.",
+      "results": [
+        {
+          "name": "Top1 updated 1x spot full-history account return",
+          "value": 1119.75,
+          "unit": "account_return_percent",
+          "population": "full cited history",
+          "notes": "MDD 69.95%; recent 2024-01 through 2026-09 result -19.54%. This is the 1x spot Top1 result, not the BB benchmark."
+        }
+      ],
+      "verdict": "LEGACY_RESEARCH",
+      "audit": {
+        "strength": "limited_summary_audit",
+        "scope": "Existing source reports and provenance docs; spot reference separated from perpetual claims.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "retain_benchmark",
+      "refs": [
+        {
+          "relative_path": "../../crypto/reports/V1_1X_per_year_decision.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Updated source trend result and recent period."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative code provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative code SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": []
+    },
+    {
+      "id": "source-ma-ml-legacy",
+      "title": "Source MA/ML legacy",
+      "category": "model",
+      "version": "legacy summary and provenance records",
+      "market_type": "mixed_reference",
+      "symbols": [
+        "spot source universe"
+      ],
+      "timeframe": [
+        "multiple"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "exposed",
+          "notes": "Exact evaluation window not extracted from cited MA/ML summary."
+        }
+      ],
+      "sample": {
+        "sample_unit": "evaluation event",
+        "count": 7199,
+        "independence_notes": "Selected events/models are not independent samples; source summary does not establish exact UTC bounds."
+      },
+      "cost_and_accounting": "Legacy MA/ML result; account/transaction costs are not established by this summary.",
+      "results": [
+        {
+          "name": "XGB selected result",
+          "value": 0.095,
+          "unit": "r_multiple",
+          "population": "7199 evaluation events; 16 selected",
+          "notes": "Reported +0.095R; gate FAILED."
+        }
+      ],
+      "verdict": "LEGACY_RESEARCH",
+      "audit": {
+        "strength": "limited_summary_audit",
+        "scope": "Existing source reports and provenance docs; spot reference separated from perpetual claims.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "retain_benchmark",
+      "refs": [
+        {
+          "relative_path": "../../crypto/reports/ma_ml/ML_RESEARCH_SUMMARY.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Legacy ML summary."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative code provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative code SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": []
+    },
+    {
+      "id": "source-transformer-stchan-legacy",
+      "title": "Source legacy Transformer/STChan models",
+      "category": "model",
+      "version": "legacy Transformer/STChan; 2024/25 selection and 2026 post-hoc changes (exact artifact dates not extracted)",
+      "market_type": "spot",
+      "symbols": [
+        "source-repository studies; exact universe not extracted"
+      ],
+      "timeframe": [
+        "unknown"
+      ],
+      "windows": [
+        {
+          "role": "validation",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "reused_validation",
+          "notes": "2024/25 history was used for selection; exact UTC boundaries not extracted."
+        },
+        {
+          "role": "evaluation",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "exposed",
+          "notes": "Changes were made post hoc in 2026; exact UTC boundaries not extracted."
+        }
+      ],
+      "sample": {
+        "sample_unit": "model evaluation event; exact count not extracted",
+        "count": null,
+        "independence_notes": "Legacy model evidence; no independent sample count established."
+      },
+      "cost_and_accounting": "No verified account-level cost or trading result is asserted for the legacy Transformer/STChan artifacts.",
+      "results": [
+        {
+          "name": "Stable incremental value",
+          "value": "not established",
+          "unit": "descriptive_text",
+          "population": "legacy Transformer/STChan reports",
+          "notes": "Existing provenance/incremental-value docs show no stable increment."
+        }
+      ],
+      "verdict": "LEGACY_RESEARCH",
+      "audit": {
+        "strength": "limited_summary_audit",
+        "scope": "Existing model provenance and incremental-value summaries; no replay.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "retain_benchmark",
+      "refs": [
+        {
+          "relative_path": "../../crypto/docs/model_provenance.json",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Legacy Transformer/STChan provenance; 2024/25 selection and post-hoc 2026 changes summarized from existing audit."
+        },
+        {
+          "relative_path": "../../crypto/docs/model_incremental_value.json",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Legacy incremental-value summary; no stable increment reported."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative code provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative code SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": []
+    },
+    {
+      "id": "factor-calibration-causal-2023",
+      "title": "Factor calibration, volatility and causal-timing evidence",
+      "category": "factor",
+      "version": "EOH/BVOL/foundation/follow-up/six-factor/timing summaries",
+      "market_type": "perpetual",
+      "symbols": [
+        "BTC",
+        "ETH",
+        "multiple; see reports"
+      ],
+      "timeframe": [
+        "multiple"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "unknown",
+          "notes": "Per-study windows and availability details are in source artifacts; limited audit does not infer them."
+        }
+      ],
+      "sample": {
+        "sample_unit": "score row / event, varies by study",
+        "count": 261,
+        "independence_notes": "EOH has 261 scores; BVOL has 1346 rows. Rows are not independent trades; several feature availability and causal controls unresolved."
+      },
+      "cost_and_accounting": "Prediction/calibration studies are not account ledgers. BVOL availability was assumed. Funding/basis/OI/book timing or continuity is unresolved in cited work.",
+      "results": [
+        {
+          "name": "EOH ATM loss calibration",
+          "value": "improved; publication-unit gap",
+          "unit": "descriptive_text",
+          "population": "261 scores",
+          "notes": "Skew did not help; publication timing remains a limitation."
+        },
+        {
+          "name": "Binance BVOL metrics",
+          "value": "QLIKE better; MSE worse",
+          "unit": "descriptive_text",
+          "population": "1346 rows",
+          "notes": "Availability assumed."
+        },
+        {
+          "name": "BTC strength trend residual CI",
+          "value": "crosses zero",
+          "unit": "descriptive_text",
+          "population": "focused follow-up",
+          "notes": "No residual increment established."
+        },
+        {
+          "name": "Six-factor basket",
+          "value": "low-funding basket no advantage; basis clock unresolved; OI/book continuity insufficient",
+          "unit": "descriptive_text",
+          "population": "six-factor study",
+          "notes": "Lead-lag timing inference is separately invalidated due to incomplete matched controls."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "audit": {
+        "strength": "limited_summary_audit",
+        "scope": "Existing factor summaries and validity notices; invalidated results remain explicitly invalidated.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "retain_hypothesis",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/eoh_train_scale_calibration_v1/calibration_metrics.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Calibration metrics summary."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/binance_bvol_increment_2023/core_run_contract.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "BVOL contract and row count."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/focused_followup_v1/FOCUSED_FOLLOWUP_RESULTS_CN_20261003_v1r2.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Focused residual follow-up."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/sixfactor_longcycle_v1/SIXFACTOR_LONGCYCLE_RESULTS_CN_20261003.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Six-factor results and data limits."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative code provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative code SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": []
+    },
+    {
+      "id": "source-universe-forward",
+      "title": "Source spot-universe and paper-forward status snapshots",
+      "category": "data",
+      "version": "2026-09-24 universe snapshot; status 2026-10-07",
+      "market_type": "spot",
+      "symbols": [
+        "718-symbol spot universe"
+      ],
+      "timeframe": [
+        "multiple files"
+      ],
+      "windows": [
+        {
+          "role": "unknown",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "unknown",
+          "notes": "Universe status source snapshot dated 2026-09-24; paper-forward status snapshot dated 2026-10-07T19:42:10Z. These are artifact snapshot dates, not market windows."
+        }
+      ],
+      "sample": {
+        "sample_unit": "universe symbol/file; paper-forward snapshot",
+        "count": 26076,
+        "independence_notes": "718 symbols and 26076 files are coverage counts, not strategy observations."
+      },
+      "cost_and_accounting": "Not an account-level evaluation in this registry entry.",
+      "results": [
+        {
+          "name": "Universe file count",
+          "value": 26076,
+          "unit": "file_count",
+          "population": "718 symbols",
+          "notes": "D3/D14/D15 blocked; dynamic backtest false."
+        },
+        {
+          "name": "Paper-forward BB spot snapshot",
+          "value": -1.71,
+          "unit": "account_return_percent",
+          "population": "snapshot through 2026-10-07 19:42:10Z",
+          "notes": "Old snapshot does not prove current observer is running."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "audit": {
+        "strength": "status_snapshot",
+        "scope": "Existing gate/status snapshot and old forward run status; no current-state inference.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "retain_benchmark",
+      "refs": [
+        {
+          "relative_path": "../../crypto/universe_research/reports/pit_spot_fullmarket_20260924_172948/D_GATE_STATUS.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Spot universe gate status snapshot."
+        },
+        {
+          "relative_path": "../../crypto/trend_research/paper_forward/runs/20260924_143017/STATUS.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Historical paper-forward status snapshot only."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative code provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative code SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": []
+    },
+    {
+      "id": "platform-boundary",
+      "title": "Source interfaces and platform capability boundary",
+      "category": "platform",
+      "version": "current limited source inspection and 2026-10-10 status snapshot",
+      "market_type": "mixed_reference",
+      "symbols": [],
+      "timeframe": [],
+      "windows": [
+        {
+          "role": "unknown",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "unknown",
+          "notes": "File counts and status timestamps do not describe research windows."
+        }
+      ],
+      "sample": {
+        "sample_unit": "file count / status registry entry",
+        "count": 83,
+        "independence_notes": "83 crypto_quant Python files in source; 499 scripts, 96 tools, 276 tests, 336 Markdown docs locally. Counts are inventory facts, not evidence quality."
+      },
+      "cost_and_accounting": "No cost or account model established. Source dataset_builder.py fill behavior is incompatible with no-imputation contract; do not reuse as shared implementation.",
+      "results": [
+        {
+          "name": "Source crypto_quant / scripts / tests / strategies files",
+          "value": "83 / 77 / 48 / 4",
+          "unit": "descriptive_text",
+          "population": "source repository",
+          "notes": "Four strategy Python files including init."
+        },
+        {
+          "name": "Local scripts / tools / tests / Markdown docs",
+          "value": "499 / 96 / 276 / 336",
+          "unit": "descriptive_text",
+          "population": "crypto-leverage workspace",
+          "notes": "One formal Freqtrade strategy: ExploratoryDonchianFutures.py."
+        },
+        {
+          "name": "Source data status snapshot",
+          "value": "44 registered; 25 configured; 25 success; 19 unconfigured",
+          "unit": "descriptive_text",
+          "population": "2026-10-10T20:00:03.816826Z",
+          "notes": "daily_sla_certified false; current loop process inactive at snapshot; does not prove no scheduler or current observer status."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "audit": {
+        "strength": "limited_summary_audit",
+        "scope": "Selected source code facts and status metadata; no broad source scan in this initialization.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "retain_benchmark",
+      "refs": [
+        {
+          "relative_path": "../../crypto/crypto_quant/data/research_adapter.py",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Source adapter entry point."
+        },
+        {
+          "relative_path": "../../crypto/crypto_quant/framework/engine.py",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Spot-only capability declaration."
+        },
+        {
+          "relative_path": "../../crypto/crypto_quant/framework_v3/engine.py",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Spot-only capability declaration."
+        },
+        {
+          "relative_path": "../../crypto/crypto_quant/dataset_builder.py",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Incompatible fill behavior; not a reusable contract."
+        },
+        {
+          "relative_path": "../../crypto/data/data_catalog_status.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Timestamped status snapshot only."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative code provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative code SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": []
+    },
+    {
+      "id": "local-conversion-boundary",
+      "title": "Local source-copy, conversion and bounded mark readiness snapshot",
+      "category": "data",
+      "version": "source_data manifest and generated inventory snapshot",
+      "market_type": "perpetual",
+      "symbols": [
+        "Core4"
+      ],
+      "timeframe": [
+        "4h",
+        "5m",
+        "15m",
+        "1h mark bounded"
+      ],
+      "windows": [
+        {
+          "role": "unknown",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "unknown",
+          "notes": "Coverage varies by dataset and selected window; this registry row records only the cited source-copy manifest and conversion/readiness status."
+        }
+      ],
+      "sample": {
+        "sample_unit": "manifest entry",
+        "count": 139,
+        "independence_notes": "139 manifest entries; 54 unverified and 71 weak basis at cited snapshot; all_copies_verified false. These are provenance statuses, not independent samples."
+      },
+      "cost_and_accounting": "Conversion defaults to refusal; readiness false for default full converted window. Genuine bounded mark data exists; do not claim no mark data. D: input not read for this hub.",
+      "results": [
+        {
+          "name": "Manifest status",
+          "value": "139 entries; 54 unverified; 71 weak basis; all copies verified false",
+          "unit": "descriptive_text",
+          "population": "source_data/MANIFEST.json snapshot",
+          "notes": "Snapshot reported by prior audit."
+        },
+        {
+          "name": "Default conversion readiness",
+          "value": "false",
+          "unit": "descriptive_text",
+          "population": "generated conversion report",
+          "notes": "Genuine mark files are registered and bounded; readiness depends on selected pair/window coverage."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "audit": {
+        "strength": "limited_summary_audit",
+        "scope": "Existing manifest/inventory report facts supplied by prior audit; no regeneration.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "retain_benchmark",
+      "refs": [
+        {
+          "relative_path": "../source_data/MANIFEST.json",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Prior audit-reported source-copy snapshot; not regenerated."
+        },
+        {
+          "relative_path": "../archive/inventory/conversion_report.json",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Prior audit-reported readiness and refusal status."
+        },
+        {
+          "relative_path": "../archive/catalog/mark_candle_registry.json",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Existing bounded mark declarations; no new registration."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative code provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative code SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": []
+    },
+    {
+      "id": "permission-denied-result",
+      "title": "Access-restricted trend result directory",
+      "category": "strategy",
+      "version": "unreadable in prior limited audit",
+      "market_type": "perpetual",
+      "symbols": [],
+      "timeframe": [],
+      "windows": [
+        {
+          "role": "unknown",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "unknown",
+          "notes": "Artifact contents are unknown; no inference is made."
+        }
+      ],
+      "sample": {
+        "sample_unit": "unknown; directory not read",
+        "count": null,
+        "independence_notes": "Contents were not accessible in prior audit; no attempt to bypass permissions."
+      },
+      "cost_and_accounting": "Unknown; no result values claimed.",
+      "results": [
+        {
+          "name": "Evidence availability",
+          "value": "permission denied",
+          "unit": "descriptive_text",
+          "population": "one formal result directory and 18 temporary directories in prior audit",
+          "notes": "Not read; no bypass attempted."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "audit": {
+        "strength": "permission_blocked",
+        "scope": "Path/status recorded only; content not inspected.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "priority_validation",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/high_return_trend_20260928/stage_e/e2_pit_volatility_input_audit_v1/results_c_c100_v1",
+          "access_status": "NOT_VERIFIED_PERMISSION_DENIED",
+          "audit_scope": "Directory existence/path as reported by prior audit; contents not read."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative code provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative code SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": []
+    },
+    {
+      "id": "garch-har-leakage-invalidated",
+      "title": "GARCH/HAR leakage-era volatility scores",
+      "category": "factor",
+      "version": "foundation review 2026-09-30; repair without market rerun",
+      "market_type": "perpetual",
+      "symbols": [
+        "BTC",
+        "ETH",
+        "multiple; see reports"
+      ],
+      "timeframe": [
+        "multiple"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "unknown",
+          "notes": "Per-study windows and availability details are in source artifacts; limited audit does not infer them."
+        }
+      ],
+      "sample": {
+        "sample_unit": "historical score row; exact independent count unknown",
+        "count": null,
+        "independence_notes": "Future innovation leakage and immature labels invalidate old scores; repair has no market rerun."
+      },
+      "cost_and_accounting": "Prediction score artifacts only; old leakage-era scores are invalidated. No trading ledger or account result is asserted.",
+      "results": [
+        {
+          "name": "Leakage-era scores",
+          "value": "INVALIDATED",
+          "unit": "descriptive_text",
+          "population": "legacy GARCH/HAR metrics",
+          "notes": "Do not reuse old scores as evidence; repair is not a market rerun."
+        }
+      ],
+      "verdict": "INVALIDATED",
+      "audit": {
+        "strength": "limited_summary_audit",
+        "scope": "Existing leakage repair notice only; no market rerun inspected.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "invalidated",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/foundation_review_20260930/VOLATILITY_CAUSAL_LEAKAGE_REPAIR.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Leakage invalidation and repair status."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative code provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative code SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": []
+    },
+    {
+      "id": "eth-btc-leadlag-invalidated",
+      "title": "ETH/BTC lead-lag inference with incomplete matched control",
+      "category": "factor",
+      "version": "c3_timing_eth_btc_v4 validity notice",
+      "market_type": "perpetual",
+      "symbols": [
+        "BTC",
+        "ETH",
+        "multiple; see reports"
+      ],
+      "timeframe": [
+        "multiple"
+      ],
+      "windows": [
+        {
+          "role": "evaluation",
+          "start_utc": null,
+          "end_utc": null,
+          "exposure_status": "unknown",
+          "notes": "Per-study windows and availability details are in source artifacts; limited audit does not infer them."
+        }
+      ],
+      "sample": {
+        "sample_unit": "matched timing episode",
+        "count": null,
+        "independence_notes": "Matched-control design incomplete; inferential result is invalid in its present form."
+      },
+      "cost_and_accounting": "Inference-only timing study; matched controls are incomplete. No account-level result or trading ledger is asserted.",
+      "results": [
+        {
+          "name": "Lead-lag inference",
+          "value": "INVALIDATED",
+          "unit": "descriptive_text",
+          "population": "ETH/BTC timing study",
+          "notes": "Incomplete matched control; no valid lead-lag inference."
+        }
+      ],
+      "verdict": "INVALIDATED",
+      "audit": {
+        "strength": "limited_summary_audit",
+        "scope": "Existing inference validity notice; no rerun.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "invalidated",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/c3_timing_eth_btc_v4/B_INFERENCE_VALIDITY_NOTICE_V1.md",
+          "access_status": "READ_SUMMARY_OR_METADATA",
+          "audit_scope": "Lead-lag inference validity notice."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative input provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative input SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative code provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative code SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Authoritative parameters provenance pin",
+          "status": "UNKNOWN",
+          "reason": "This bounded pass did not extract or verify an authoritative parameter SHA-256 pin from the cited evidence.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": []
+    },
+    {
+      "id": "core3-trend-risk-v1",
+      "title": "Core3 4h trend and 1h/24h risk-sizing adapter",
+      "category": "mixed",
+      "version": "v1r9 completed bounded research replay; one historical fit reused with zero refits; independent reconstruction passed, strategy gates remain blocked/not run",
+      "market_type": "perpetual",
+      "symbols": [
+        "BTC/USDT:USDT",
+        "ETH/USDT:USDT",
+        "SOL/USDT:USDT"
+      ],
+      "timeframe": [
+        "1h",
+        "4h",
+        "8h funding events"
+      ],
+      "windows": [
+        {
+          "role": "train",
+          "start_utc": "2021-01-01T00:00:00Z",
+          "end_utc": "2021-07-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "Fixed pooled Ridge fit; label maturity plus modeled lag must be strictly before cutoff."
+        },
+        {
+          "role": "validation",
+          "start_utc": "2021-07-08T00:00:00Z",
+          "end_utc": "2022-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "Known exposed; 7-day embargo from train cutoff; reset account, carry causal price warmup."
+        },
+        {
+          "role": "validation",
+          "start_utc": "2025-01-01T00:00:00Z",
+          "end_utc": "2026-01-01T00:00:00Z",
+          "exposure_status": "reused_validation",
+          "notes": "Known reused/exposed; fixed 2021 fit and full prior causal price history; no retraining."
+        }
+      ],
+      "sample": {
+        "sample_unit": "aligned 4h forecast origin with next-24 completed H1 return-square mean target",
+        "count": null,
+        "independence_notes": "24-hour targets overlap across origins; observations are dependent and pooled rows are not independent sample counts."
+      },
+      "cost_and_accounting": "Main case fee 5bp/side plus adverse slippage 5bp/side; one fixed sensitivity fee 5bp/side plus adverse slippage 15bp/side and 61-minute modeled signal delay. Each fold resets a 100,000 USDT no-borrow wallet, per-symbol initial slot 98%/3, dynamic gross cap 98% of then-known modeled NAV. Observed funding events retain native times; prior genuine mark close is only an ex-post valuation proxy, with actual publication/settlement mark availability unverified. Main and adverse sensitivity are assumption scenarios, not formal passes.",
+      "results": [
+        {
+          "name": "Ridge 1h/24h MSE 2021 BTC",
+          "value": 1.9367533973099216e-09,
+          "unit": "prediction_metric",
+          "population": "1,055 paired origins; BTCUSDT, exposed 2021 validation",
+          "notes": "EWMA MSE 1.8969692515717007e-09; Ridge was worse."
+        },
+        {
+          "name": "Ridge 1h/24h MSE 2021 ETH",
+          "value": 4.5452405123031875e-09,
+          "unit": "prediction_metric",
+          "population": "1,055 paired origins; ETHUSDT, exposed 2021 validation",
+          "notes": "EWMA MSE 4.564176393894115e-09; Ridge was better."
+        },
+        {
+          "name": "Ridge 1h/24h MSE 2021 SOL",
+          "value": 5.0021983269587155e-08,
+          "unit": "prediction_metric",
+          "population": "1,055 paired origins; SOLUSDT, exposed 2021 validation",
+          "notes": "EWMA MSE 5.750995164991595e-08; Ridge was better."
+        },
+        {
+          "name": "Ridge 1h/24h MSE 2025 BTC",
+          "value": 7.315349605487115e-10,
+          "unit": "prediction_metric",
+          "population": "2,183 paired origins; BTCUSDT, reused 2025 validation",
+          "notes": "EWMA MSE 7.311596921705845e-10; Ridge was slightly worse."
+        },
+        {
+          "name": "Ridge 1h/24h MSE 2025 ETH",
+          "value": 5.297201732094947e-09,
+          "unit": "prediction_metric",
+          "population": "2,183 paired origins; ETHUSDT, reused 2025 validation",
+          "notes": "EWMA MSE 5.757555493385241e-09; Ridge was better."
+        },
+        {
+          "name": "Ridge 1h/24h MSE 2025 SOL",
+          "value": 1.062218784461403e-08,
+          "unit": "prediction_metric",
+          "population": "2,183 paired origins; SOLUSDT, reused 2025 validation",
+          "notes": "EWMA MSE 9.907734360960498e-09; Ridge was worse."
+        },
+        {
+          "name": "Completed account replays",
+          "value": "60/60 completed",
+          "unit": "descriptive_text",
+          "population": "3 strategies x 2 folds x main/stress arms and controls",
+          "notes": "All 60 completed; no performance metric is a strategy gate pass."
+        },
+        {
+          "name": "Paired forecast rows reconstructed",
+          "value": 9714,
+          "unit": "prediction_row_count",
+          "population": "3 symbols x 2 exposed/reused folds",
+          "notes": "Independent audit reconstructed every paired row and confirmed model identity; overlapping 24-hour targets are dependent."
+        },
+        {
+          "name": "2021 main Ridge exposure matches",
+          "value": "0/3 matched",
+          "unit": "descriptive_text",
+          "population": "EMA200, MACD+EMA200, Donchian55/20",
+          "notes": "All three preregistered 2021 main Ridge matched controls failed the symbol-level exposure match; risk-PnL gain remains unproven."
+        },
+        {
+          "name": "2025 main Ridge vs q1 baseline",
+          "value": "close, not identical",
+          "unit": "descriptive_text",
+          "population": "EMA200, MACD+EMA200, Donchian55/20; reused 2025",
+          "notes": "Normalized ledger net returns: EMA200 0.2165166245642569 vs prior 0.2165158705882084; MACD+EMA200 0.1496005062733965 vs 0.1495995319309762; Donchian55/20 0.0815999458258927 vs 0.0815998785104972. New ledger uses genuine-prior-mark valuation, final-H1-open exit, and fee-aware exposure cap; differences are convention/accounting differences. Separate legacy sidecars are reported below."
+        },
+        {
+          "name": "Legacy 2025 sidecar trade counts",
+          "value": "95 / 155 / 41",
+          "unit": "descriptive_text",
+          "population": "EMA200 / MACD+EMA200 / Donchian55/20",
+          "notes": "All three sidecars have counts 95/155/41 and binary64 net returns equal to the original account_summary.csv literals after parsing. The independent literal round-trip audit confirms this; EMA200/Donchian runner exact_reference_match flags remain false because its stored expected constants use shorter precision. Numeric equality does not imply serialized-byte identity."
+        },
+        {
+          "name": "Independent reconstruction audit",
+          "value": "PASS_RECONSTRUCTION_ONLY_NOT_A_STRATEGY_GATE",
+          "unit": "descriptive_text",
+          "population": "60 accounts, 3 legacy sidecars, 9,714 paired rows",
+          "notes": "No refit; checkpoint model and ledger/NAV outputs reconstructed. Formal causality and every strategy gate remain unpassed."
+        }
+      ],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "audit": {
+        "strength": "limited_artifact_audit",
+        "scope": "Completed V1R9 bounded Core3 replay: 60/60 new accounts, 3/3 legacy sidecars and 9,714 paired forecasts. The single 2021 fit returned under the approved V1R8 run (3,237 rows); V1R9 reused its root-reviewed checkpoint with current-execution fit count 0. Independent audit status PASS_RECONSTRUCTION_ONLY_NOT_A_STRATEGY_GATE, bound to results SHA DE9F6DFA271F30DF68396B0AEC538E2123794E0091DCB7AAD30835186F5C202F, independently reconstructed all 60 accounts, sidecars and forecasts and confirmed checkpoint model identity and ledger/NAV reconstruction. Ridge beat EWMA on 3/6 fold-symbol MSE comparisons and underperformed on 3/6. All three 2021 main Ridge exposure-matched controls failed, so risk-overlay gains are unproven. 2025 normalized q1 account returns are close to but not identical with the prior Core3 reference: EMA200 0.2165166245642569 vs 0.2165158705882084, MACD+EMA200 0.1496005062733965 vs 0.1495995319309762, and Donchian55/20 0.0815999458258927 vs 0.0815998785104972; this reflects genuine-prior-mark valuation, final-H1-open exit and fee-aware exposure-cap conventions; separate legacy sidecars have trade counts 95/155/41 and numeric net returns equal to the original account_summary.csv literals after literal-to-binary64 parsing. The independent CSV round-trip audit (SHA-256 2E990A8486298EBF248EF80EAE3CFB9D9F48DB5F747E1E2D0189C12990FD16EF; original CSV SHA-256 3B51FF82FC55CCE4DB6825C6DA5BFF85F20B1DC880E44FB7A9A5BE3F17909DA4) confirms equality to parsed numeric references. The runner's two false exact_reference_match flags for EMA200 and Donchian remain preserved because its stored expected constants are shorter precision; MACD's flag is true. This is numeric equality after parsing, not serialized-byte identity. All nine strategy gates remain blocked or not run: venue publication/settlement availability and executable fills/capacity are unproven; lookahead/recursive tests and leverage/liquidation analyses were not run; both windows are exposed/reused; robustness, operational dry-run and live observation gates are not passed. Final workspace pytest terminated 3930 passed, 24 failed, 1 skipped and 242 warnings (native exit 1; 1,962.41 seconds). Classification: 21 pre-existing frozen issues, one OS rename permission failure and two subprocess encoding environment mismatches; the two encoding cases passed a PYTHONUTF8=1 counterfactual with unchanged code/tests, but remain in the full-run total. Twenty-two current failures matched the initial 49-failure baseline; zero were unclassified and zero implementation regressions were found. Mandatory-chain exits were [1, 3, 0, 0, 1]; source verification/import remained fail-closed. See final failure-classification evidence. Independent audit found 15/24 static controls within exposure tolerance and 9/24 outside; all three 2021 main Ridge controls were unmatched. Ridge MSE improvement versus EWMA by fold/symbol was 2021 BTC -2.097248%, ETH +0.414881%, SOL +13.020300%; 2025 BTC -0.051325%, ETH +7.995646%, SOL -7.211068%. These descriptive comparisons do not establish alpha.",
+        "replayed_for_hub": true
+      },
+      "recommendation": "priority_validation",
+      "refs": [
+        {
+          "relative_path": "platform_data/contracts/core3_trend_risk_protocol_v1.md",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Frozen Core3 protocol; no numeric run."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r3.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Superseded implementation snapshot; preserved unchanged after more test/registry changes."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/longcycle_trend_catalog_v1/accounts_v3_frozen_20261003/account_summary.csv",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Unchanged full-precision prior Core3 2025 comparison rows; original Core4 identity applies to Ridge, not this benchmark summary."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/research_hub_admission_20261011_v1r2/admission_report.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Accepted bounded Stage 1 source admission; not feature, timing, or execution clearance."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Historical superseded receipt; wrong Stage 1 binding, preserved unchanged."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r1.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Historical superseded code snapshot receipt; preserved unchanged in the failed-version lineage."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r2.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Historical superseded receipt; preserved unchanged in the failed-version lineage."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r4.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Superseded hash-only receipt; exact 1,001ms lag metadata correction and optimized strict-next-open implementation require v1r5."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r5.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Superseded pending-review receipt; independent review found and documented the multiple-fillable-origins ndarray truth-value bug. Preserved unchanged; see v1r6."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r6.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Superseded pending-review receipt; the first approved attempt stopped during source loading before any fit because source files extend beyond the selected 2025 window. Preserved unchanged; v1r7 now scopes full-history price/mark/funding inputs explicitly."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r7.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Superseded after loader incorrectly applied 8h identity to unconsumed historical years; first numeric attempts stopped before fit. Preserved unchanged; v1r8 scopes interval identity to the admitted native 2021 and 2025 windows."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r8.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Superseded no-refit parent receipt. The first approved replay returned its single 2021 fit, then the process was interrupted after 3 accounts and 5 controls without writing results.json. Preserved unchanged; v1r9 binds the saved model and independent training checkpoint for a zero-refit resume."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r9.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Current exact no-refit resume receipt. Its approved execution completed the bounded replay with 60 accounts, 3 legacy sidecars and 9,714 paired forecasts; independent reconstruction is PASS_RECONSTRUCTION_ONLY_NOT_A_STRATEGY_GATE. See results_v1r3 and the independent audit; no strategy gate passed."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/results_v1r3/results.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Completed V1R9 result: 60/60 accounts, 3 legacy sidecars, 9,714 paired forecasts; zero refits. All strategy-effectiveness, trading-readiness and formal-causality claims are false."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/research_hub_review_20261011_v1/INDEPENDENT_NUMERIC_AUDIT_V1R3.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "PASS_RECONSTRUCTION_ONLY_NOT_A_STRATEGY_GATE; independent reconstruction of all account, legacy and forecast rows, with checkpoint model identity and ledger/NAV reconciliation."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/research_hub_review_20261011_v1/LEGACY_REFERENCE_DECIMAL_PARSE_AUDIT.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Original CSV literal-to-binary64 round-trip check of the three legacy sidecar returns and trade counts; no replay/refit/production change. Runner’s false flags for EMA200 and Donchian are preserved."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/research_hub_review_20261011_v1/FULL_SUITE_FAILURE_CLASSIFICATION_FINAL.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Terminal full workspace pytest failure classification; distinguishes pre-existing issues and environment failures from implementation regressions."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": "DACF273FBB473F98DC4E5FA496506C51575E7129F11167A1D3F4BF250837EB6D",
+          "hash_type": "SHA-256",
+          "scope": "Canonical SHA-256 digest of the exact nine-source binding map in freeze receipt (not one market file digest).",
+          "status": "REPORTED_FROZEN",
+          "reason": "Frozen receipt binds each exact source path, identity, market kind, timeframe, sealed authority basis, and live SHA-256.",
+          "evidence_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r9.json",
+          "evidence_locator": "canonical exact receipt inputs map"
+        },
+        "code": {
+          "sha256": "CAA6BCA5E743E4C4D4C94DE1435EF3A6FFAC90FA481C21D43209FEE6140D29C7",
+          "hash_type": "SHA-256",
+          "scope": "Canonical digest of Core3 module, runner, and restored R3H/R3I pytest guard SHA-256 bindings.",
+          "status": "REPORTED_FROZEN",
+          "reason": "The current code digest is pinned by the approved V1R9 zero-refit receipt; independent reconstruction verified the completed bounded outputs.",
+          "evidence_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r9.json",
+          "evidence_locator": "artifact_bindings module,data_loader,execution,runner,protocol,tests,execution_tests,runner_tests,r3h_pytest_guard,r3i_pytest_guard"
+        },
+        "parameters": {
+          "sha256": "41F0AE89115307D7D078183E84856B4A74BEAF8EEBDE6503AA1ACDDB147A6A98",
+          "hash_type": "SHA-256",
+          "scope": "Canonical digest of fixed windows, fit/embargo, fee/slippage, stress, account, Ridge, EWMA and modeled availability parameters.",
+          "status": "REPORTED_FROZEN",
+          "reason": "No tuning or outcome-dependent parameter changes are permitted.",
+          "evidence_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r9.json",
+          "evidence_locator": "parameter_binding"
+        }
+      },
+      "artifact_hashes": [
+        {
+          "name": "core3_protocol",
+          "sha256": "B4EBF811EB41F6311538BC8A3D7144699301E220C8E652651EACA938DF18D1D1",
+          "hash_type": "SHA-256",
+          "scope": "Core3 frozen proposal protocol",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "platform_data/contracts/core3_trend_risk_protocol_v1.md",
+          "evidence_locator": "whole file bytes",
+          "reason": "Protocol digest is pinned in current receipt."
+        },
+        {
+          "name": "superseded_initial_freeze_receipt",
+          "sha256": "12DFD29DB9FAEF5B0ECA0792C9419E39B577719766C9545279F144EEAF85CF89",
+          "hash_type": "SHA-256",
+          "scope": "historical failed lineage",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1.json",
+          "evidence_locator": "whole file bytes",
+          "reason": "Preserved failed predecessor; it bound an incorrect admission version."
+        },
+        {
+          "name": "superseded_freeze_receipt_v1r1",
+          "sha256": "40C1DD41A8391D7DEB54C3C476920C9F84BAEBE748C8DC8D02448D31F0FEC7CD",
+          "hash_type": "SHA-256",
+          "scope": "historical earlier implementation receipt",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r1.json",
+          "evidence_locator": "whole file bytes",
+          "reason": "Preserved without modification; superseded by later implementation and reviewed V1R9 execution."
+        },
+        {
+          "name": "superseded_freeze_receipt_v1r2",
+          "sha256": "D1C6CB42ED11C486EBBF7A859D0B613F6B56FC43066AE962B4EDF4BDB45F7550",
+          "hash_type": "SHA-256",
+          "scope": "historical earlier implementation receipt",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r2.json",
+          "evidence_locator": "whole file bytes",
+          "reason": "Preserved without modification; superseded by later implementation and reviewed V1R9 execution."
+        },
+        {
+          "name": "historical_freeze_receipt_v1",
+          "sha256": "12DFD29DB9FAEF5B0ECA0792C9419E39B577719766C9545279F144EEAF85CF89",
+          "hash_type": "SHA-256",
+          "scope": "historical receipt bytes",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1.json",
+          "evidence_locator": "whole file bytes",
+          "reason": "Preserved failed predecessor; it bound an incorrect Stage 1 version."
+        },
+        {
+          "name": "historical_freeze_receipt_v1r1",
+          "sha256": "40C1DD41A8391D7DEB54C3C476920C9F84BAEBE748C8DC8D02448D31F0FEC7CD",
+          "hash_type": "SHA-256",
+          "scope": "historical receipt bytes",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r1.json",
+          "evidence_locator": "whole file bytes",
+          "reason": "Preserved earlier code snapshot receipt, superseded by later implementation changes."
+        },
+        {
+          "name": "historical_freeze_receipt_v1r2",
+          "sha256": "D1C6CB42ED11C486EBBF7A859D0B613F6B56FC43066AE962B4EDF4BDB45F7550",
+          "hash_type": "SHA-256",
+          "scope": "historical receipt bytes",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r2.json",
+          "evidence_locator": "whole file bytes",
+          "reason": "Preserved earlier receipt before dry-run and audited output fixes."
+        },
+        {
+          "name": "historical_freeze_receipt_v1r3",
+          "sha256": "F9BB9F428B1450BC62E6DEB6C668290BCE5E5C00684F998ED1E3FFE48FA56472",
+          "hash_type": "SHA-256",
+          "scope": "historical receipt bytes",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r3.json",
+          "evidence_locator": "whole file bytes",
+          "reason": "Preserved earlier receipt before final regression/registry changes."
+        },
+        {
+          "name": "superseded_freeze_receipt_v1r4",
+          "sha256": "EEE32ED3A4EF0323AFB29A2A885A30A121B29FA6A29B45CBA3D656339AEDF981",
+          "hash_type": "SHA-256",
+          "scope": "historical whole file bytes",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r4.json",
+          "evidence_locator": "whole file bytes",
+          "reason": "Superseded metadata rounding issue: receipt recorded 1000ms while frozen lag is exactly 1001ms."
+        },
+        {
+          "name": "superseded_freeze_receipt_v1r5",
+          "sha256": "EE48EB2D4ABD8DA97342306FBEE23DBF3F672E2CF7EB0C166BDE11DE342E0411",
+          "hash_type": "SHA-256",
+          "scope": "historical whole file bytes",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r5.json",
+          "evidence_locator": "whole file bytes",
+          "reason": "Superseded after independent review found the multiple-fillable-origins action-builder bug."
+        },
+        {
+          "name": "superseded_freeze_receipt_v1r6",
+          "sha256": "AC96AE2A2A0E1B3441C3D05997894EBA5F679F0758CAA35A07B5D98557C62E7C",
+          "hash_type": "SHA-256",
+          "scope": "historical whole file bytes",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r6.json",
+          "evidence_locator": "whole file bytes",
+          "reason": "Superseded after first authorized load stopped before fitting because raw source files include rows beyond the selected 2025 window."
+        },
+        {
+          "name": "superseded_freeze_receipt_v1r7",
+          "sha256": "1D25F8E5999E1401BFB878B0FFE045B2ABF68225AF87EA62087C9AF677881EAC",
+          "hash_type": "SHA-256",
+          "scope": "whole file bytes",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r7.json",
+          "evidence_locator": "whole file bytes",
+          "reason": "Superseded after independent loader review found source-wide funding interval validation blocked on unconsumed 2022 intervals; no fit occurred."
+        },
+        {
+          "name": "superseded_freeze_receipt_v1r8",
+          "sha256": "B7BE139F0618E494AC88EB1DF2D31D2DFCBB2021CCF1ABDE1207080E8A64935B",
+          "hash_type": "SHA-256",
+          "scope": "whole file bytes",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r8.json",
+          "evidence_locator": "whole file bytes",
+          "reason": "Preserved V1R8 parent receipt for the interrupted first run; one fit returned, but account replay did not complete. V1R9 binds its exact bytes and the independently reviewed frozen model for no-refit resume."
+        },
+        {
+          "name": "current_freeze_receipt_v1r9",
+          "sha256": "BC3B42332EB34A047E34E6BD7CE66E99E70D0F7D3A411C402D49E3A7C3D745F7",
+          "hash_type": "SHA-256",
+          "scope": "whole file bytes",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r9.json",
+          "evidence_locator": "whole file bytes",
+          "reason": "The approved no-refit resume completed the bounded account replay; this freeze remains the exact code/source/checkpoint/parameter binding for results_v1r3."
+        },
+        {
+          "name": "core3_v1r3_results",
+          "sha256": "DE9F6DFA271F30DF68396B0AEC538E2123794E0091DCB7AAD30835186F5C202F",
+          "hash_type": "SHA-256",
+          "scope": "whole file bytes",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "../reports/strategy_validation/core3_trend_risk_v1/results_v1r3/results.json",
+          "evidence_locator": "whole file bytes",
+          "reason": "Completed bounded research replay; no strategy gate pass."
+        },
+        {
+          "name": "core3_v1r3_independent_numeric_audit",
+          "sha256": "FC369105E7A8C3BC0C8201E7367E4FE659ED66584DFFB2257DD549B2D0882A0B",
+          "hash_type": "SHA-256",
+          "scope": "whole file bytes",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "../reports/strategy_validation/research_hub_review_20261011_v1/INDEPENDENT_NUMERIC_AUDIT_V1R3.json",
+          "evidence_locator": "whole file bytes",
+          "reason": "Independent reconstruction only; explicitly not a strategy gate."
+        },
+        {
+          "name": "legacy_csv_decimal_parse_audit",
+          "sha256": "2E990A8486298EBF248EF80EAE3CFB9D9F48DB5F747E1E2D0189C12990FD16EF",
+          "hash_type": "SHA-256",
+          "scope": "Original CSV decimal literal round-trip audit; numeric equality, not serialized byte identity",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "../reports/strategy_validation/research_hub_review_20261011_v1/LEGACY_REFERENCE_DECIMAL_PARSE_AUDIT.json",
+          "evidence_locator": "whole file bytes",
+          "reason": "Independently confirmed all three legacy sidecar net returns equal the original CSV literals after binary64 parsing and trade counts match; preserves two runner comparison false flags caused by shortened constants."
+        },
+        {
+          "name": "terminal_full_suite_failure_classification",
+          "sha256": "39ADF7DE9AA9331AFE58760A23F093A3D8CCC0B4D21EB5F0BCBBE592CDB4E376",
+          "hash_type": "SHA-256",
+          "scope": "Terminal full-suite failure classification report",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "../reports/strategy_validation/research_hub_review_20261011_v1/FULL_SUITE_FAILURE_CLASSIFICATION_FINAL.json",
+          "evidence_locator": "whole file bytes",
+          "reason": "Records 3930 passed, 24 failed, 1 skipped; 21 pre-existing failures, one permission failure and two encoding-environment failures; zero unclassified and zero implementation regressions."
+        }
+      ]
+    },
+    {
+      "id": "research-hub-admission-v1r2",
+      "title": "Core3 minimal source admission v1r2",
+      "category": "data",
+      "version": "v1r2 accepted bounded input check; v1 and v1r1 remain superseded failed lineage",
+      "market_type": "perpetual",
+      "symbols": [
+        "BTC/USDT:USDT",
+        "ETH/USDT:USDT",
+        "SOL/USDT:USDT"
+      ],
+      "timeframe": [
+        "1h trade",
+        "1h mark",
+        "8h observed funding events"
+      ],
+      "windows": [
+        {
+          "role": "validation",
+          "start_utc": "2021-07-08T00:00:00Z",
+          "end_utc": "2022-01-01T00:00:00Z",
+          "exposure_status": "exposed",
+          "notes": "Known exposed; 7-day embargo from train cutoff; reset account, carry causal price warmup."
+        },
+        {
+          "role": "validation",
+          "start_utc": "2025-01-01T00:00:00Z",
+          "end_utc": "2026-01-01T00:00:00Z",
+          "exposure_status": "reused_validation",
+          "notes": "Known reused/exposed; fixed 2021 fit and full prior causal price history; no retraining."
+        }
+      ],
+      "sample": {
+        "sample_unit": "sealed-source-verified raw source file",
+        "count": 9,
+        "independence_notes": "Nine exact raw source files; source bytes are not independent market observations."
+      },
+      "cost_and_accounting": "No strategy costs or account result. This record covers only a bounded Core3 input-admission slice. It does not establish publication timing, feature/label causality, tradeability, or effectiveness.",
+      "results": [],
+      "verdict": "EXPLORATORY_UNVERIFIED",
+      "audit": {
+        "strength": "limited_artifact_audit",
+        "scope": "Existing v1r2 admission report plus independently verified sealed source identities; 51 focused tests passed and ten independent negative probes rejected. Earlier v1 and v1r1 attempts are superseded after probes found false admissions; their reports and hashes are retained. No historical metrics run.",
+        "replayed_for_hub": false
+      },
+      "recommendation": "priority_validation",
+      "refs": [
+        {
+          "relative_path": "../reports/strategy_validation/research_hub_admission_20261011_v1r2/admission_report.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Accepted v1r2 bounded input admission report."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/research_hub_admission_20261011_v1r2/full_price_mark_warmup_independent.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Independent full-history structure and source identity evidence for the 6 price/mark frames; loader repeats checks on decoded frames."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/research_hub_admission_20261011_v1/admission_report.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Superseded failed first admission attempt; retained as lineage, not authority."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/research_hub_admission_20261011_v1r1/admission_report.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Superseded failed v1r1 attempt; retained as lineage, not authority."
+        },
+        {
+          "relative_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r3.json",
+          "access_status": "READ_LIMITED_ARTIFACT",
+          "audit_scope": "Current Phase 2 source-byte binding, pending independent review."
+        }
+      ],
+      "provenance_hashes": {
+        "input": {
+          "sha256": "DACF273FBB473F98DC4E5FA496506C51575E7129F11167A1D3F4BF250837EB6D",
+          "hash_type": "SHA-256",
+          "scope": "Canonical digest of the nine-source Core3 binding map in the v1r2/phase2 receipt.",
+          "status": "REPORTED_FROZEN",
+          "reason": "Each source path and sealed independent SHA is listed individually.",
+          "evidence_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r4.json",
+          "evidence_locator": "current receipt exact inputs"
+        },
+        "code": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Stage-one admission implementation/code hash was not separately reported in a reviewed stage-one freeze receipt.",
+          "status": "UNKNOWN",
+          "reason": "Unknown: no separate stage-one code pin is established here.",
+          "evidence_path": null,
+          "evidence_locator": null
+        },
+        "parameters": {
+          "sha256": null,
+          "hash_type": "SHA-256",
+          "scope": "Stage-one admission parameters hash was not separately reported in a reviewed stage-one freeze receipt.",
+          "status": "UNKNOWN",
+          "reason": "Unknown: the report defines bounded slices, but this registry entry does not mint a parameter freeze.",
+          "evidence_path": null,
+          "evidence_locator": null
+        }
+      },
+      "artifact_hashes": [
+        {
+          "name": "stage1_admission_report_v1r2",
+          "sha256": "36FB87456A9D34007FE1F52E817D8CD8F2B2743B7551EF4E38D5C39C13ADBA1B",
+          "hash_type": "SHA-256",
+          "scope": "accepted bounded Stage 1 report bytes",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "../reports/strategy_validation/research_hub_admission_20261011_v1r2/admission_report.json",
+          "evidence_locator": "whole file bytes",
+          "reason": "Accepted Stage 1 bounded admission report; no formal timing or strategy pass."
+        },
+        {
+          "name": "superseded_admission_v1_report",
+          "sha256": "CD3E290C29C596EA65F843662E7CA873DDAE4966FD0709EDA36A96B21C03AFEC",
+          "hash_type": "SHA-256",
+          "scope": "failed earlier admission attempt",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "../reports/strategy_validation/research_hub_admission_20261011_v1/admission_report.json",
+          "evidence_locator": "whole file bytes",
+          "reason": "Superseded after independent probes found false admissions; not accepted source authority."
+        },
+        {
+          "name": "superseded_admission_v1r1_report",
+          "sha256": "F050BDE953894504CA9EB384E06E8367588EB033C24DC3359525E12AD8381C69",
+          "hash_type": "SHA-256",
+          "scope": "failed earlier admission attempt",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "../reports/strategy_validation/research_hub_admission_20261011_v1r1/admission_report.json",
+          "evidence_locator": "whole file bytes",
+          "reason": "Superseded after additional independent probes; not accepted source authority."
+        },
+        {
+          "name": "phase2_source_binding_receipt_v1r4",
+          "sha256": "EEE32ED3A4EF0323AFB29A2A885A30A121B29FA6A29B45CBA3D656339AEDF981",
+          "hash_type": "SHA-256",
+          "scope": "current Phase 2 receipt bytes",
+          "status": "CURRENT_ARTIFACT_CHECK",
+          "evidence_path": "../reports/strategy_validation/core3_trend_risk_v1/locks/freeze_receipt_v1r4.json",
+          "evidence_locator": "whole file bytes",
+          "reason": "Superseded V1R4 receipt; preserved with its metadata-rounding defect. The approved V1R9 receipt and completed results are registered under core3-trend-risk-v1."
+        }
+      ]
+    }
+  ]
+}

@@ -1,10 +1,14 @@
 # Cross-Sectional Selection + Trend Hard Gate + Bear Funding Carry Implementation Plan
 # 截面选优 + 绝对趋势硬门控 + 熊市资金费套利系统落地方案与数据审核报告
 
+> **2026-10-23 更正：本方案与下表归入 `LEGACY_RESEARCH`，不是可部署方案或有效净收益证据。** [最终研究清单](../FINAL_RESEARCH_RESULTS_ZH.md)和[修正记录](../research_archive/CORRECTIONS_ZH.md)为当前入口。
+>
+> +31,914.64% 来自已经选参的训练期；2025/2026 也不能被本档案证明为未看样本外。第 2.3 节旧式 `max(0, FR_t)` 会事后截掉负资金费，不能表示实际持仓结算现金流。没有因果可用时间、退出执行、两腿成本、基差及保证金证据，不得把这些旧数字解释为可实现 spot+perp 净年化。本次保留原结果与公式用于追溯，没有重新计算或给出“修正后收益”。
+
 ## 1. Executive Summary / 方案概述
 
-- **EN**: This document details the institutional implementation plan and empirical verification for the quantitative trading architecture: **"Cross-Sectional Momentum Selection + Absolute Trend Hard Gate + Bear Market Delta-Neutral Funding Rate Carry"**. Tested across 6 years of continuous data (2020–2026, 13,348 4h bars and 6,779 8h funding settlement events) with strict causal open-to-open execution and 0.08% per-leg friction, this architecture achieves an extraordinary **+31,914.64% cumulative return (288.70% CAGR) with only -39.20% maximum drawdown** in the 2020–2024 training period, reverses 2025's choppy market into a **+13.79% profit**, and generates **+12.64%** during 2026's blind out-of-sample decline, significantly outperforming Bitcoin and Ethereum buy-and-hold benchmarks.
-- **ZH**: 本文档详细阐述了量化交易架构——**「截面动量选优 + 绝对趋势硬门控 + 熊市资金费无风险套利」**的机构级落地方案与实证审核详情。基于 2020 年至 2026 年连续 6 年历史数据（13,348 根 4h K 线与 6,779 次 8h 真实资金费结算）、严格因果无未来函数（次根 K 线 Open 价成交、双边 0.16% 摩擦扣除），该体系在 **2020–2024 训练期实现 +31,914.64% 收益（年化 288.70%），最大回撤仅 -39.20%**；在 **2025 全年剧烈震荡分化市中逆势盈利 +13.79%**；并在 **2026 年前三季度大盘阴跌中稳健获利 +12.64%**，全面大幅战胜 BTC 与 ETH 买入持有基准。
+- **EN — historical transcription, profitability claim withdrawn**: The original model combined cross-sectional momentum, trend gates and a funding-carry proxy, referring to 13,348 4h bars and 6,779 funding events over 2020–2026 with an asserted 0.08% per-leg friction. It reported **+31,914.64% return, 288.70% CAGR and -39.20% drawdown** for its 2020–2024 training period, **+13.79%** in 2025 and **+12.64%** in the reused 2026 stress period. These are retained historical model outputs, not independently reproduced net returns or proof of a deployable edge; the negative-funding clipping and other limitations above prevent that interpretation.
+- **ZH — 中性历史转录，盈利结论已撤回**：旧模型组合截面动量、趋势门控及 carry 代理，声称使用 13,348 根 4h K 线、6,779 次资金费事件及单边 8 bps 摩擦，曾报告 **2020–2024 训练期 +31,914.64%、CAGR 288.70%、回撤 -39.20%**，**2025 +13.79%**、**2026 事后压力期 +12.64%**。本次保留这些旧数值用于追溯；负资金费截断、重复使用历史窗口及未验证的完整账本使它们不能被解释为“无风险”“稳健获利”或可部署净收益。
 
 ---
 
@@ -42,7 +46,9 @@ flowchart TD
   - 当 $\text{Gate}_t = 1$ 时：进入进攻状态（持有龙头币多头）；
   - 当 $\text{Gate}_t = 0$ 时：触发避险硬门控，**全市场绝对空仓，强制进入资金费套利**。
 
-### 2.3 熊市资金费无风险套利 (Bear Delta-Neutral Carry)
+### 2.3 熊市资金费 carry（旧模型假设，不是无风险套利）
+
+> **原公式无效范围说明**：以下 `max` 公式仅为原版本的乐观代理，不能用于宣称净盈利。若在结算时持有空头，负 funding 是应付现金流；是否持有必须由当时已知信息决定，不能看到结算结果后选择只收正值。正文的“稳定收取”与“100% 抵消”不代表完整成本或风险被消除。
 - **对冲结构**：$50\%$ 资金配置为现货多头，$50\%$ 资金配置为 $1\times$ U 本位永续空头（净 Delta $= 0$，资产价格涨跌 100% 抵消）。
 - **现金流增益**：在每日 UTC 00:00, 08:00, 16:00（北京时间 08:00, 16:00, 24:00），空头端稳定收取多头支付的资金费率 $FR_t$：
   $$R_{\text{carry}, t} = \max(0, FR_t) \times 0.50 \quad (\text{若采用币本位反向永续合约则系数为 } 1.0)$$
@@ -61,18 +67,18 @@ flowchart TD
 | **训练期 Training**<br>**(2020-10 至 2024-12)** | 1. 永不空闲轮动 (Always Top-1) | +3,054.92% | 125.31% | **-85.55%** | 1.31 | 1.46 | 0.0% |
 | *(4.25年牛熊完整周期)* | 2. 单币门控 + 纯现金空仓 | +4,204.54% | 142.40% | -81.78% | 1.44 | 1.74 | 31.7% |
 | | 3. 单币门控 + 100%资金费套利 | +4,620.92% | 147.72% | -80.73% | 1.47 | 1.83 | 31.7% |
-| | **4. 【推荐】双重宏观门控 + 资金费套利** | **+31,914.64%** | **288.70%** | **-39.20%** | **2.10** | **7.36** | **44.5%** |
+| | **4. 【历史方案，未验证】双重宏观门控 + 资金费套利** | **+31,914.64%** | **288.70%** | **-39.20%** | **2.10** | **7.36** | **44.5%** |
 | | *基准 A: BTC 买入持有 (Buy & Hold)* | *+758.43%* | *65.86%* | *-77.05%* | *1.13* | *0.85* | - |
 | | *基准 B: ETH 买入持有 (Buy & Hold)* | *+828.27%* | *68.94%* | *-81.12%* | *1.06* | *0.85* | - |
 | **验证期 Validation**<br>**(2025 全年)** | 1. 永不空闲轮动 (Always Top-1) | -48.30% | -48.42% | -65.00% | -0.64 | 0.74 | 0.0% |
 | *(剧烈震荡洗盘分化市)* | 2. 单币门控 + 纯现金空仓 | -11.73% | -11.76% | -46.32% | -0.00 | 0.25 | 36.3% |
 | | 3. 单币门控 + 100%资金费套利 | -9.73% | -9.76% | -45.84% | 0.04 | 0.21 | 36.3% |
-| | **4. 【推荐】双重宏观门控 + 资金费套利** | **+13.79%** | **13.84%** | **-37.58%** | **0.52** | **0.37** | **54.4%** |
+| | **4. 【历史方案，未验证】双重宏观门控 + 资金费套利** | **+13.79%** | **13.84%** | **-37.58%** | **0.52** | **0.37** | **54.4%** |
 | | *基准 A: BTC 买入持有 (Buy & Hold)* | *-5.47%* | *-5.49%* | *-34.37%* | *0.05* | *0.16* | - |
 | | *基准 B: ETH 买入持有 (Buy & Hold)* | *-11.00%* | *-11.03%* | *-61.80%* | *0.21* | *0.18* | - |
-| **盲测期 Test**<br>**(2026-01 至 2026-09)** | 1. 永不空闲轮动 (Always Top-1) | -2.26% | -3.22% | -43.73% | 0.24 | 0.07 | 0.0% |
+| **事后压力期 Post-hoc Stress**<br>**(2026-01 至 2026-09)** | 1. 永不空闲轮动 (Always Top-1) | -2.26% | -3.22% | -43.73% | 0.24 | 0.07 | 0.0% |
 | *(大盘阴跌压力测试)* | 3. 单币门控 + 100%资金费套利 | +11.30% | 16.58% | -25.78% | 0.58 | 0.64 | 36.4% |
-| | **4. 【推荐】双重宏观门控 + 资金费套利** | **+12.64%** | **18.59%** | **-23.13%** | **0.65** | **0.80** | **55.3%** |
+| | **4. 【历史方案，未验证】双重宏观门控 + 资金费套利** | **+12.64%** | **18.59%** | **-23.13%** | **0.65** | **0.80** | **55.3%** |
 | | *基准 A: BTC 买入持有 (Buy & Hold)* | *-11.93%* | *-16.64%* | *-39.98%* | *-0.21* | *0.42* | - |
 | | *基准 B: ETH 买入持有 (Buy & Hold)* | *-15.17%* | *-21.00%* | *-54.11%* | *-0.08* | *0.39* | - |
 
@@ -130,9 +136,9 @@ python scripts/generate_cross_sectional_report.py
 
 ### 5.2 实时监控 Dashboard 与公网访问
 系统已经集成了实时 Web 看板与邮件报警功能，支持随时通过公网链接查看持仓状态：
-- **专属固定公网访问 URL**：`https://percolate-zipfile-corned.ngrok-free.dev`
+- **历史监控入口**：个人公网地址已从公开文档移除；本次没有核验服务运行状态。
 - **本地回环端口**：`http://127.0.0.1:8088`
 - **后台守护启动命令**：`scripts\start_service.bat`
 - **静默无黑框后台运行**：双击 `scripts\run_background_hidden.vbs`
 - **自启动安装脚本**：`powershell -ExecutionPolicy Bypass -File scripts\install_autostart_task.ps1`
-- **实时信号变动报警邮箱**：`568701293@qq.com`（每 60 秒轮询，信号翻转即刻发信）
+- **历史报警说明**：私人收件地址已移除；本次没有改动或启用报警服务。

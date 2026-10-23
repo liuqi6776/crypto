@@ -1,0 +1,82 @@
+{
+  "study_id": "mtf_trend_range_maker_v2",
+  "status": "completed_for_independent_review",
+  "verdict": "EXPLORATORY / UNVERIFIED",
+  "run_identity": {
+    "run_manifest_sha256": "74f60c5eda004cb295e282496aaf627c548b70390e37bea66f2513a4691f63fa",
+    "runner_sha256": "5c0577c0f24d4538c44626b28ba90e2b726a82f12df440b836088743bc64a6e4",
+    "framework_sha256": "2a7a21245edea2890524daee78b146415ee25ff058334e5902b044ba80717990",
+    "candidate_grid_sha256": "2874988d1894230afa95413a54c78610c99ab1c08b1ceaf02365fce855d30a6e",
+    "config_sha256": "246f6ae696bc3b9899085aa6ab4aee6f278af2787043fab048db29e267425d35"
+  },
+  "results": {
+    "candidate_count": 72,
+    "development_trade_rows": 54374,
+    "fixed_validation_and_later_base_stress_trade_rows": 6000,
+    "qualified_positive_family_winners": 0,
+    "qualified_positive_global_winner": false,
+    "display_only_dev_mean_net_bps": {
+      "edge_prepositioned": {"ETHUSDT": -5.5356553099786145, "SOLUSDT": -8.466889061612699},
+      "ma_crossover": {"ETHUSDT": -4.7133951047050715, "SOLUSDT": -2.2506976603281026},
+      "edge_plus_cross": {"ETHUSDT": -10.629735016666029, "SOLUSDT": -9.268190969245795}
+    },
+    "data_quality": {
+      "minute_price_files_sha256_verified": 50,
+      "ETHUSDT_minutes": 1095840,
+      "SOLUSDT_minutes": 1088640,
+      "SOLUSDT_missing_minutes": 7200,
+      "SOLUSDT_gap_policy": "gaps remain missing; no OHLC aggregation across gaps; pending canceled; unknown open positions blocked",
+      "funding_event_counts_in_replay_windows": {"ETHUSDT": 2190, "SOLUSDT": 2265},
+      "maximum_nearest_registered_hour_mark_delta_ms": 31
+    },
+    "independent_reconciliation": {
+      "ledger_rows": 60374,
+      "recorded_funding_cashflows_recomputed": 1251,
+      "maximum_gross_error_bps": 4.462208380573429e-12,
+      "maximum_fee_error_bps": 7.105427357601002e-15,
+      "maximum_net_error_bps": 4.447997525858227e-12,
+      "maximum_funding_error_bps": 8.881784197001252e-16,
+      "timestamp_or_hold_violations": 0,
+      "evaluation_window_violations": 0
+    }
+  },
+  "verification": {
+    "focused_command": ".venv\\Scripts\\python.exe -m pytest tests/test_mtf_trend_range_maker_v2_framework.py -q -p no:cacheprovider",
+    "focused_result": "26 passed",
+    "maintenance_chain": {
+      "fetch_local_source_copies.py --verify": "exit 1; 54 pre-existing unverified source_data entries; all_copies_verified=false",
+      "import_perp_data.py": "exit 1; refused legacy unverified 4h/5m/15m copies",
+      "build_inventory.py": "exit 0",
+      "build_reports.py": "exit 0",
+      "pytest tests -q": "exit 1 at collection; tests/test_r3i_pytest_guard_regression.py cannot import pre-existing missing r3i_pytest_guard_v2"
+    },
+    "independent_audit_command": ".venv\\Scripts\\python.exe scripts\\audit_mtf_trend_range_maker_v2.py",
+    "independent_audit_result": "exit 0; 50 price hashes, 2 funding/mark pairs, ledger arithmetic and recorded funding cashflows reconciled"
+  },
+  "artifacts": {
+    "runner": "scripts/run_mtf_trend_range_maker_v2.py",
+    "framework": "scripts/mtf_trend_range_maker_v2_framework.py",
+    "tests": "tests/test_mtf_trend_range_maker_v2_framework.py",
+    "output_directory": "reports/strategy_validation/mtf_trend_range_maker_v2_r1",
+    "comparison_report": "reports/strategy_validation/mtf_trend_range_maker_v2_r1_20261008.md",
+    "family_reports": [
+      "reports/strategy_validation/mtf_trend_range_maker_v2_edge_prepositioned_20261008.md",
+      "reports/strategy_validation/mtf_trend_range_maker_v2_ma_crossover_20261008.md",
+      "reports/strategy_validation/mtf_trend_range_maker_v2_edge_plus_cross_20261008.md"
+    ],
+    "ledgers": [
+      "reports/strategy_validation/mtf_trend_range_maker_v2_r1/development_all_candidates_ledger.csv",
+      "reports/strategy_validation/mtf_trend_range_maker_v2_r1/selected_validation_later_ledger.csv"
+    ],
+    "selection_freeze": "reports/strategy_validation/mtf_trend_range_maker_v2_r1/development_selection_freeze.json",
+    "audit": "reports/strategy_validation/mtf_trend_range_maker_v2_r1/independent_arithmetic_identity_audit.json"
+  },
+  "blockers": [
+    "No candidate in the frozen 72-case grid had positive development mean on both ETH and SOL with at least 50 trades per symbol.",
+    "Historical windows are already inspected and cannot establish untouched OOS.",
+    "SOL source window has 7,200 missing minutes.",
+    "Actual maker queue, quotes, spread, capacity, exact funding mark at calc_time and intraminute execution order are unavailable.",
+    "No account margin, path-dependent liquidation or 10x return model was created.",
+    "Workspace-wide source verification/import and full pytest retain pre-existing blockers documented above."
+  ]
+}

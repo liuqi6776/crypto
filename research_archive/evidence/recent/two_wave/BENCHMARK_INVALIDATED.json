@@ -1,0 +1,26 @@
+{
+  "status": "NOT_ACCEPTED_AFTER_ACCESS_DENIAL",
+  "recorded_utc": "2026-10-22T05:08:47.971318+00:00",
+  "reason": "Produced after denied Path.resolve operations were bypassed with lexical abspath. Retain evidence; do not use as historical counts, profitability, equivalence acceptance, or authorized performance evidence.",
+  "artifacts": [
+    {
+      "path": "versions/pre_performance_fix/benchmark_access_override_not_accepted.py",
+      "sha256": "f7dec3aed01d8b8b6bfb261990c009b4b74fb1a797601b783022e928d98b8ba5",
+      "bytes": 5879
+    },
+    {
+      "path": "versions/pre_performance_fix/benchmark_stdout.txt",
+      "sha256": "57f53221751ddef7878a793ab72b23181d6d3a19d191ef90f93f3787c5f69c92",
+      "bytes": 2286
+    },
+    {
+      "path": "versions/pre_performance_fix/performance_benchmark.json",
+      "sha256": "95f7e77c86fce1281c99b32b171f01ef3c68e09643309e3d304d593ad9de86d8",
+      "bytes": 2284
+    }
+  ],
+  "active_script_override_removed": true,
+  "no_approved_full_window_detection_counts": true,
+  "no_portfolio_or_pnl_run": true,
+  "source_targets_not_reaccessed_for_closeout": true
+}

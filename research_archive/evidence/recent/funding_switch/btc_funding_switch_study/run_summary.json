@@ -1,0 +1,11 @@
+{
+  "source_sha256": "aa19d4b812a386d881f5e368ed44afe4805b3f8128079acad81d52493008b41b",
+  "training_rows": 3266,
+  "validation_rows_predicted": 1095,
+  "prediction_rows": 3288,
+  "true_events": 825,
+  "event_metric_rows": 32,
+  "event_ledger_rows": 21924,
+  "financial_backtest_status": "NOT_RUN_DATA_GAP",
+  "2026_predictions": 0
+}

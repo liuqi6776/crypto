@@ -1,0 +1,3 @@
+﻿version,funding_status,rows,possible_event_count_sum,guaranteed_event_count_sum,ambiguous_event_count_sum,rows_with_no_possible_event,unknown_event_count_rows,actual_funding_unknown_rows,actual_funding_pnl_treated_as_zero
+BASE_V4,ESTIMATE_COMPLETE_FOR_OBSERVED_POSSIBLE_EVENTS,26,0,0,0,26,0,26,False
+C3_CHANNEL_UNBROKEN,ESTIMATE_COMPLETE_FOR_OBSERVED_POSSIBLE_EVENTS,15,0,0,0,15,0,15,False

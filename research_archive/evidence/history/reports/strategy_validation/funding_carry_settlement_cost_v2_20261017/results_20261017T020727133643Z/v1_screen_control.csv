@@ -1,0 +1,7 @@
+﻿arm,year,predeclared_historical_screen_supported,known_active_weeks_ge_40,net20_ci95_lower_gt_zero,net50_mean_gt_zero,no_proxy_insolvency,note
+CARRY_EQ,2024,False,True,False,False,True,
+CARRY_EQ,2025,False,False,False,False,True,
+CARRY_EQ,BOTH,False,,,,,historical descriptive screen only; does not pass strategy validation gates
+CARRY_BETA,2024,False,True,False,False,True,
+CARRY_BETA,2025,False,False,False,False,True,
+CARRY_BETA,BOTH,False,,,,,historical descriptive screen only; does not pass strategy validation gates
