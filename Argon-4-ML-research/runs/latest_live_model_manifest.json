@@ -1,0 +1,90 @@
+{
+  "default_strategy_mode": "M2_FIB_5M_1H_PROTECTED_NETTING",
+  "default_nominal_leverage": 3.0,
+  "model_bundle_path": "research\\zero_fee_maker_ml_v1\\runs\\pit_2026_fib_m2_bundle.pkl",
+  "model_bundle_sha256": "04ac118b18e72dddbb8fbea6087bbb0f921ca1087d11f430e6f0e7c84b2caa7f",
+  "target_symbol": "BTCUSDT",
+  "cross_asset_inputs": [
+    "SOLUSDT",
+    "ETHUSDT",
+    "BNBUSDT"
+  ],
+  "n_features": 259,
+  "n_fib_features": 82,
+  "train_window": [
+    "2024-01-05 00:00:00+00:00",
+    "2025-09-30 21:55:00+00:00"
+  ],
+  "val_window": [
+    "2025-10-01 00:00:00+00:00",
+    "2025-12-31 21:55:00+00:00"
+  ],
+  "entry_quantile": 0.92,
+  "hold_quantile": 0.58,
+  "y1_cap_quantile": 0.85,
+  "subbooks": {
+    "SB1_30M_SIGN_HGB": {
+      "th_long_entry": 0.5373014572208297,
+      "th_short_entry": 0.47618694837043973,
+      "th_long_hold": 0.5150101332282208,
+      "th_short_hold": 0.5042184446002042,
+      "y1_cap_long": 0.006928762740047091,
+      "y1_cap_short": 0.006582793446116564,
+      "step_bars": 6
+    },
+    "SB2_30M_60M_JOINT_HGB": {
+      "th_long_entry": 1.3580263980800213,
+      "th_short_entry": -1.4677521770836046,
+      "th_long_hold": 0.27687829436975925,
+      "th_short_hold": -0.17373114078909865,
+      "y1_cap_long": 0.009900285746322082,
+      "y1_cap_short": 0.009395598464324207,
+      "step_bars": 6
+    },
+    "SB3_15M_RIDGE_LIN": {
+      "th_long_entry": 1.0350664854049683,
+      "th_short_entry": -1.017808198928833,
+      "th_long_hold": 0.10661288350820541,
+      "th_short_hold": -0.16768231987953186,
+      "y1_cap_long": 0.006928762740047091,
+      "y1_cap_short": 0.006582793446116564,
+      "step_bars": 3
+    },
+    "SB4_30M_RIDGE_BLEND": {
+      "th_long_entry": 0.9792851805686951,
+      "th_short_entry": -0.967628002166748,
+      "th_long_hold": 0.10514552891254425,
+      "th_short_hold": -0.144955113530159,
+      "y1_cap_long": 0.006928762740047091,
+      "y1_cap_short": 0.006582793446116564,
+      "step_bars": 6
+    },
+    "SB5_META_30M": {
+      "th_long_entry": 1.0606045885474193,
+      "th_short_entry": -1.0882433995424352,
+      "th_long_hold": 0.17090962930542053,
+      "th_short_hold": -0.16504399437025438,
+      "y1_cap_long": 0.006928762740047091,
+      "y1_cap_short": 0.006582793446116564,
+      "step_bars": 6
+    },
+    "SB6_META_60M": {
+      "th_long_entry": 1.0606045885474193,
+      "th_short_entry": -1.0882433995424352,
+      "th_long_hold": 0.17090962930542053,
+      "th_short_hold": -0.16504399437025438,
+      "y1_cap_long": 0.009900285746322082,
+      "y1_cap_short": 0.009395598464324207,
+      "step_bars": 12
+    },
+    "SB7_60M_TAIL_HGB": {
+      "th_long_entry": 0.10795062629085887,
+      "th_short_entry": -0.08469929284664304,
+      "th_long_hold": 0.03239862295542941,
+      "th_short_hold": 0.0022370128859197304,
+      "y1_cap_long": 0.009900285746322082,
+      "y1_cap_short": 0.009395598464324207,
+      "step_bars": 12
+    }
+  }
+}
